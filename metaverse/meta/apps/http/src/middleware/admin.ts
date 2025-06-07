@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from "express";
 
 export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const header = req.headers["authorization"];
-    const token = header?.split(" ")[1];
+    const token = header?.split(" ")[1];// as header me token in the form "Bearer token" so [1] is the token
     
     if (!token) {
         res.status(403).json({message: "Unauthorized"})

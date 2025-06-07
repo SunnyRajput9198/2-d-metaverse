@@ -4,7 +4,7 @@ import { AddElementSchema, CreateAvatarSchema, CreateElementSchema, CreateMapSch
 import client from "@repo/db/client";
 export const adminRouter = Router();
 adminRouter.use(adminMiddleware)
-
+// it creates a new element
 adminRouter.post("/element", async (req, res) => {
     const parsedData = CreateElementSchema.safeParse(req.body)
     if (!parsedData.success) {
@@ -25,7 +25,7 @@ adminRouter.post("/element", async (req, res) => {
         id: element.id
     })
 })
-
+// it updates an element
 adminRouter.put("/element/:elementId", (req, res) => {
     const parsedData = UpdateElementSchema.safeParse(req.body)
     if (!parsedData.success) {
@@ -42,7 +42,7 @@ adminRouter.put("/element/:elementId", (req, res) => {
     })
     res.json({message: "Element updated"})
 })
-
+// it creates a new avatar
 adminRouter.post("/avatar", async (req, res) => {
     const parsedData = CreateAvatarSchema.safeParse(req.body)
     if (!parsedData.success) {
@@ -57,7 +57,7 @@ adminRouter.post("/avatar", async (req, res) => {
     })
     res.json({avatarId: avatar.id})
 })
-
+// it creates a new map
 adminRouter.post("/map", async (req, res) => {
     const parsedData = CreateMapSchema.safeParse(req.body)
     if (!parsedData.success) {

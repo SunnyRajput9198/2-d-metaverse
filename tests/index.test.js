@@ -3,6 +3,8 @@ const axios2 = require("axios");
 const BACKEND_URL = "http://localhost:3000"
 const WS_URL = "ws://localhost:3001"
 
+//(...args): This is the rest parameter syntax. It allows the function to accept an indefinite number of arguments as an array
+//  When you call post('url', { data: 'payload' }, { headers: {} }), args will be ['url', { data: 'payload' }, { headers: {} }]
 const axios = {
     post: async (...args) => {
         try {
@@ -39,6 +41,7 @@ const axios = {
 }
 
 describe("Authentication", () => {
+    //ek user jb phli baar request krega to vo succesfully register ho jaega another attemp with the same username will be rejected with code 400
     test('User is able to sign up only once', async () => {
         const username = "kirat" + Math.random(); // kirat0.12331313
         const password = "123456";
@@ -85,6 +88,7 @@ describe("Authentication", () => {
         });
 
         expect(response.status).toBe(200)
+        // expect(response.data.token).toBeDefined() menans value undefined nii honi chahiye
         expect(response.data.token).toBeDefined()
         
     })
@@ -96,7 +100,7 @@ describe("Authentication", () => {
         await axios.post(`${BACKEND_URL}/api/v1/signup`, {
             username,
             password,
-            role: "admin"
+            type: "admin"
         });
 
         const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
@@ -137,13 +141,13 @@ describe("User metadata endpoint", () => {
                 authorization: `Bearer ${token}`
             }
         })
-        console.log("avatarresponse is " + avatarResponse.data.avatarId)
+        // console.log("avatarresponse is " + avatarResponse.data.avatarId)
 
         avatarId = avatarResponse.data.avatarId;
 
     })
 
-    test("User cant update their metadata with a wrong avatar id", async () => {
+    test("User cannot update their metadata with a wrong avatar id", async () => {
         const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
             avatarId: "123123123"
         }, {
@@ -175,7 +179,16 @@ describe("User metadata endpoint", () => {
         expect(response.status).toBe(403)
     })
 
-    test("test 3", () => {
+    test("User can update their metadata with the right avatar id if Name is not present ", async() => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId
+        }, {
+            headers: {
+                "authorization": `Bearer ${token}`
+            }
+        })
+
+        expect(response.status).toBe(200)
         
     })
 });
@@ -197,7 +210,7 @@ describe("User avatar information", () => {
 
         userId = signupResponse.data.userId
  
-        console.log("userid is " + userId)
+        // console.log("userid is " + userId)
         const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
          username,
          password
@@ -219,10 +232,10 @@ describe("User avatar information", () => {
     })
 
     test("Get back avatar information for a user", async () => {
-        console.log("asking for user with id " + userId)
+        // console.log("asking for user with id " + userId)
         const response = await axios.get(`${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`);
-        console.log("response was " + userId)
-        console.log(JSON.stringify(response.data))
+        // console.log("response was " + userId)
+        // console.log(JSON.stringify(response.data))
         expect(response.data.avatars.length).toBe(1);
         expect(response.data.avatars[0].userId).toBe(userId);
     })
@@ -278,7 +291,7 @@ describe("Space information", () => {
         })
     
         userToken = userSigninResponse.data.token
-
+        //ek elemnt add kra hai
         const element1Response = await axios.post(`${BACKEND_URL}/api/v1/admin/element`, {
             "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
             "width": 1,
@@ -302,8 +315,8 @@ describe("Space information", () => {
         })
         element1Id = element1Response.data.id
         element2Id = element2Response.data.id
-        console.log(element2Id)
-        console.log(element1Id)
+        // console.log(element2Id)
+        // console.log(element1Id)
         const mapResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/map`, {
             "thumbnail": "https://thumbnail.com/a.png",
             "dimensions": "100x200",
@@ -327,12 +340,11 @@ describe("Space information", () => {
                 authorization: `Bearer ${adminToken}`
             }
          })
-         console.log("mapResponse.status")
-         console.log(mapResponse.data.id)
+        //  console.log(mapResponse.data.id)
 
          mapId = mapResponse.data.id
 
-    },15000);
+    },25000);
 
     test("User is able to create a space", async () => {
 
@@ -440,8 +452,7 @@ describe("Space information", () => {
                 authorization: `Bearer ${adminToken}`
             }
         });
-        console.log('jhflksdjflksdfjlksdfj')
-        console.log(spaceCreateReponse.data)
+        // console.log(spaceCreateReponse.data)
         const response = await axios.get(`${BACKEND_URL}/api/v1/space/all`, {
             headers: {
                 authorization: `Bearer ${adminToken}`
@@ -577,7 +588,7 @@ describe("Arena endpoints", () => {
         },
       }
     );
-    console.log(spaceResponse.data);
+    // console.log(spaceResponse.data);
     spaceId = spaceResponse.data.spaceId;
   }, 15000); // Increased timeout to 15 seconds
 
@@ -596,7 +607,7 @@ describe("Arena endpoints", () => {
         authorization: `Bearer ${userToken}`,
       },
     });
-    console.log(response.data);
+    // console.log(response.data);
     expect(response.data.dimensions).toBe("100x200");
     expect(response.data.elements.length).toBe(3);
   });
@@ -608,7 +619,7 @@ describe("Arena endpoints", () => {
       },
     });
 
-    console.log(response.data.elements[0].id);
+    // console.log(response.data.elements[0].id);
     let res = await axios.delete(`${BACKEND_URL}/api/v1/space/element`, {
       data: { id: response.data.elements[0].id },
       headers: {
@@ -622,7 +633,7 @@ describe("Arena endpoints", () => {
       },
     });
 
-    expect(newResponse.data.elements.length).toBe(2);
+    expect(newResponse.data.elements.length).toBe(2);//phle 3 thi ek delete ki to 2 bachi
   });
 
   test("Adding an element fails if the element lies outside the dimensions", async () => {
@@ -669,6 +680,7 @@ describe("Arena endpoints", () => {
     expect(newResponse.data.elements.length).toBe(3);
   });
 });
+
 describe("Admin Endpoints", () => {
     let adminToken;
     let adminId;
@@ -835,12 +847,22 @@ describe("Websocket tests", () => {
     let userY;
     let adminX;
     let adminY;
-
+//wait for a message to appear in a given array and then return that message, removing it from the array.
     function waitForAndPopLatestMessage(messageArray) {
+        // return new Promise(resolve => { ... }): This indicates that the function is asynchronous. 
+        // It immediately returns a Promise. The code inside the Promise constructor will eventually
+        // call resolve() when the desired message is found, fulfilling the Promise with that message. 
+        // This allows you to await this function call in your tests (const message = await waitForAndPopLatestMessage(ws1Messages);).
         return new Promise(resolve => {
             if (messageArray.length > 0) {
+            //.shift(): This array method removes the first element from the array and returns that element .It ensures messages array FIFO order me ho
                 resolve(messageArray.shift())
             } else {
+      //messageArray empty hai to and Inside the setInterval callback:
+// if (messageArray.length > 0): Every 100ms, it checks again if a message has arrived in the messageArray.
+// resolve(messageArray.shift()): If a message is now present, it shift()s it from the array and resolve()s the Promise with that message.
+// clearInterval(interval): Crucially, once the message is found and the Promise is resolved, clearInterval(interval) is called. 
+// This stops the setInterval from running indefinitely, preventing a memory leak and unnecessary processing.
                 let interval = setInterval(() => {
                     if (messageArray.length > 0) {
                         resolve(messageArray.shift())
@@ -867,8 +889,8 @@ describe("Websocket tests", () => {
 
         adminUserId = adminSignupResponse.data.userId;
         adminToken = adminSigninResponse.data.token;
-        console.log("adminSignupResponse.status")
-        console.log(adminSignupResponse.status)
+        // console.log("adminSignupResponse.status")
+        // console.log(adminSignupResponse.status)
         
         const userSignupResponse = await axios.post(`${BACKEND_URL}/api/v1/signup`, {
             username: username + `-user`,
@@ -881,7 +903,7 @@ describe("Websocket tests", () => {
         })
         userId = userSignupResponse.data.userId
         userToken = userSigninResponse.data.token
-        console.log("useroktne", userToken)
+        // console.log("usertokne", userToken)
         const element1Response = await axios.post(`${BACKEND_URL}/api/v1/admin/element`, {
             "imageUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcRCRca3wAR4zjPPTzeIY9rSwbbqB6bB2hVkoTXN4eerXOIkJTG1GpZ9ZqSGYafQPToWy_JTcmV5RHXsAsWQC3tKnMlH_CsibsSZ5oJtbakq&usqp=CAE",
             "width": 1,
@@ -909,7 +931,7 @@ describe("Websocket tests", () => {
         const mapResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/map`, {
             "thumbnail": "https://thumbnail.com/a.png",
             "dimensions": "100x200",
-            "name": "Defaul space",
+            "name": "Default space",
             "defaultElements": [{
                     elementId: element1Id,
                     x: 20,
@@ -939,9 +961,10 @@ describe("Websocket tests", () => {
             "authorization": `Bearer ${userToken}`
         }})
 
-        console.log(spaceResponse.status)
+        // console.log(spaceResponse.status)
         spaceId = spaceResponse.data.spaceId
     }
+
     async function setupWs() {
         ws1 = new WebSocket(WS_URL)
 

@@ -11,9 +11,10 @@ import { JWT_PASSWORD } from "../../config";
 export const router = Router();
 
 router.post("/signup", async (req, res) => {
-    console.log("inside signup")
-    // check the user
+    // console.log("inside signup")
+    // check the user body me pass hoga isliye req.body kiya hai
     const parsedData = SignupSchema.safeParse(req.body)
+    //if the parsed data is not successful, it means the data is not valid
     if (!parsedData.success) {
         console.log("parsed data incorrect")
         res.status(400).json({message: "Validation failed"})
@@ -23,6 +24,8 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await hash(parsedData.data.password)
 
     try {
+        //prisma.user: Exposes CRUD operations for the User model in this case client.user
+        //Database me user table me store hoga parshed data
          const user = await client.user.create({
             data: {
                 username: parsedData.data.username,
@@ -34,8 +37,8 @@ router.post("/signup", async (req, res) => {
             userId: user.id
         })
     } catch(e) {
-        console.log("erroer thrown")
-        console.log(e)
+        // console.log("erroer thrown")
+        // console.log(e)
         res.status(400).json({message: "User already exists"})
     }
 })
@@ -48,6 +51,7 @@ router.post("/signin", async (req, res) => {
     }
 
     try {
+        //.findUnique(): This is a method on the user model that attempts to find a single record in the User table based on a unique identifier.
         const user = await client.user.findUnique({
             where: {
                 username: parsedData.data.username
@@ -77,10 +81,12 @@ router.post("/signin", async (req, res) => {
         res.status(400).json({message: "Internal server error"})
     }
 })
-
+// it fetches all the elements from the database
 router.get("/elements", async (req, res) => {
+    //.findMany(): When called without any where clause (as it is here), it fetches all records from the element table/collection in your database.
     const elements = await client.element.findMany()
-
+//elements.map(e => ({ ... })): This is a standard JavaScript array method. 
+// It iterates over each element record (e) retrieved from the database. For each e, it creates a new JavaScript object.
     res.json({elements: elements.map(e => ({
         id: e.id,
         imageUrl: e.imageUrl,
@@ -89,7 +95,7 @@ router.get("/elements", async (req, res) => {
         static: e.static
     }))})
 })
-
+// it fetches all the avatars from the database
 router.get("/avatars", async (req, res) => {
     const avatars = await client.avatar.findMany()
     res.json({avatars: avatars.map(x => ({
