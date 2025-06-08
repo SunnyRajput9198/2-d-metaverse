@@ -12,6 +12,7 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         res.status(400).json({message: "Validation failed"})
         return
     }
+    const { name, dimensions, mapId, imageUrl } = parsedData.data; // Destructure imageUrl
 // if no mapId is provided, it creates a new empty space with the provided name and dimensions
     if (!parsedData.data.mapId) {
         //.create(): This is a method on the space model that creates a new record in the Space table/collection in your database.
@@ -20,7 +21,8 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
                 name: parsedData.data.name,
                 width: parseInt(parsedData.data.dimensions.split("x")[0]),
                 height: parseInt(parsedData.data.dimensions.split("x")[1]),
-                creatorId: req.userId!
+                creatorId: req.userId!,
+                thumbnail: imageUrl || null // Save the imageUrl as thumbnail, allow null if not provided
             }
         });
         res.json({spaceId: space.id})
@@ -33,7 +35,8 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         }, select: {
             mapElements: true,
             width: true,
-            height: true
+            height: true,
+            thumbnail: true
         }
     })
     // console.log("after")
@@ -51,7 +54,10 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
                 name: parsedData.data.name,
                 width: map.width,
                 height: map.height,
-                creatorId: req.userId!
+                creatorId: req.userId!,
+                // If an imageUrl is provided in the request body, use it.
+                    // Otherwise, fall back to the map's thumbnail, or null.
+                    thumbnail: imageUrl || map.thumbnail || null
             }
         });
 
@@ -140,7 +146,7 @@ spaceRouter.get("/all", userMiddleware, async (req, res) => {
         spaces: spaces.map(s => ({
             id: s.id,
             name: s.name,
-            thumbnail: s.thumbnail,
+            imageUrl: s.thumbnail,
             dimensions: `${s.width}x${s.height}`,
         }))
     })
@@ -206,6 +212,9 @@ spaceRouter.get("/:spaceId",async (req, res) => {
 
     res.json({
         "dimensions": `${space.width}x${space.height}`,
+        "imageUrl": space.thumbnail,
+        "name": space.name,
+        "id": space.id,
         elements: space.elements.map(e => ({
             id: e.id,
             element: {

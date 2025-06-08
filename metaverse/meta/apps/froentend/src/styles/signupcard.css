@@ -1,0 +1,169 @@
+
+/* Signup Page Container */
+.signup-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px; /* Add some padding around the whole page */
+    box-sizing: border-box;
+}
+
+/* Signup Card - The main white box */
+.signup-card {
+    background-color: #ffffff;
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Soft shadow */
+    padding: 40px;
+    width: 100%;
+    max-width: 450px; /* Max width for the card */
+    text-align: center; /* Center the content within the card */
+    box-sizing: border-box;
+}
+
+/* Title */
+.signup-title {
+    font-size: 2.2em;
+    color: #4A4A4A; /* Slightly darker grey */
+    margin-bottom: 30px;
+    font-weight: 700; /* Bold title */
+}
+
+/* Form Group - For each input field */
+.form-group {
+    margin-bottom: 25px;
+    text-align: left; /* Align labels and inputs to the left */
+}
+
+.form-group label {
+    display: block; /* Make label take its own line */
+    font-size: 0.95em;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* Form Input Fields */
+.form-input {
+    width: calc(100% - 20px); /* Adjust for padding */
+    padding: 12px 10px;
+    border: 1px solid #dcdcdc; /* Light border */
+    border-radius: 8px; /* Rounded input fields */
+    font-size: 1em;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.form-input::placeholder {
+    color: #aaa;
+}
+
+.form-input:focus {
+    border-color: #6c5ce7; /* Gather.town often uses purples/blues */
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2); /* Subtle focus glow */
+    outline: none; /* Remove default outline */
+}
+
+/* Role Selection Radio Buttons */
+.role-selection {
+    display: flex;
+    justify-content: center; /* Center radio buttons */
+    gap: 20px; /* Space between radio options */
+    margin-top: 10px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1em;
+    color: #555;
+}
+
+.radio-label input[type="radio"] {
+    -webkit-appearance: none; /* Hide default radio button */
+    -moz-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #6c5ce7; /* Border color for unselected */
+    border-radius: 50%;
+    margin-right: 8px;
+    position: relative;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.radio-label input[type="radio"]:checked {
+    background-color: #6c5ce7; /* Fill color when selected */
+    border-color: #6c5ce7; /* Border color when selected */
+}
+
+.radio-label input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff; /* Inner dot color */
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+/* Signup Button */
+.signup-button {
+    background-color: #6c5ce7; /* Gather.town purple */
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px; /* Rounded button */
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    width: 100%; /* Full width button */
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); /* Subtle shadow for button */
+}
+
+.signup-button:hover {
+    background-color: #5a4bcf; /* Slightly darker purple on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+.signup-button:active {
+    transform: translateY(0);
+}
+
+/* Error Message */
+.error-message {
+    color: #e74c3c; /* Red for errors */
+    margin-top: 20px;
+    font-size: 0.9em;
+}
+
+/* Login Link */
+.login-link-text {
+    margin-top: 25px;
+    font-size: 0.95em;
+    color: #777;
+}
+
+.login-link {
+    color: #6c5ce7; /* Match primary button color */
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link:hover {
+    text-decoration: underline;
+}
+
+/* Optional: Google Fonts Import */
+/* To use the 'Inter' font, add this to the top of your CSS file or in your public/index.html <head> */
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap'); */

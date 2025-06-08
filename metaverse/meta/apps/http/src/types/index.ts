@@ -19,6 +19,7 @@ export const CreateSpaceSchema = z.object({
     name: z.string(),
     dimensions: z.string().regex(/^[0-9]{1,4}x[0-9]{1,4}$/),//you can create 10000x10000 spaces bcse [1-4]
     mapId: z.string().optional(),
+    imageUrl: z.string().optional(),
 })
 
 export const DeleteElementSchema = z.object({

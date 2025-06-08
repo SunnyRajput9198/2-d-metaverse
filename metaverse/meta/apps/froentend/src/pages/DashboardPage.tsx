@@ -1,16 +1,15 @@
-// src/pages/DashboardPage.tsx
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import type { Space } from '../types'; // Import Space type
+import type { Space } from '../types';
 
 const DashboardPage: React.FC = () => {
     const { token, isAuthenticated, signout, BACKEND_URL } = useAuth();
     const navigate = useNavigate();
     const [spaces, setSpaces] = useState<Space[]>([]);
     const [newSpaceName, setNewSpaceName] = useState<string>('');
+    const [newSpaceImageUrl, setNewSpaceImageUrl] = useState<string>('https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png');
     const [newSpaceDimensions, setNewSpaceDimensions] = useState<string>('100x200');
 
     useEffect(() => {
@@ -20,10 +19,9 @@ const DashboardPage: React.FC = () => {
         }
         fetchSpaces();
     }, [isAuthenticated, navigate, token]);
-
+  const defaultImageUrl = "https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png";
     const fetchSpaces = async () => {
-        if (!token) return; // Ensure token exists before fetching
-
+        if (!token) return;
         try {
             const response = await axios.get<{ spaces: Space[] }>(`${BACKEND_URL}/api/v1/space/all`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -31,28 +29,27 @@ const DashboardPage: React.FC = () => {
             setSpaces(response.data.spaces);
         } catch (error: any) {
             console.error('Error fetching spaces:', error.response?.data || error.message);
-            if (error.response?.status === 403) {
-                signout(); // Token expired or invalid
-            }
+            if (error.response?.status === 403) signout();
         }
     };
 
     const handleCreateSpace = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!token) return;
-
         try {
             const response = await axios.post<{ spaceId: string }>(`${BACKEND_URL}/api/v1/space`, {
                 name: newSpaceName,
                 dimensions: newSpaceDimensions,
-                // mapId: "..." // You might add a dropdown to select a map later
+                imageUrl: newSpaceImageUrl || defaultImageUrl
+
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (response.status === 200) {
-                fetchSpaces(); // Refresh the list
+                fetchSpaces();
                 setNewSpaceName('');
                 setNewSpaceDimensions('100x200');
+                setNewSpaceImageUrl('https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png'); // Clear the image URL input after creation
             }
         } catch (error: any) {
             console.error('Error creating space:', error.response?.data || error.message);
@@ -62,57 +59,121 @@ const DashboardPage: React.FC = () => {
 
     const handleDeleteSpace = async (spaceId: string) => {
         if (!token) return;
-
         try {
             await axios.delete(`${BACKEND_URL}/api/v1/space/${spaceId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            fetchSpaces(); // Refresh the list
+            fetchSpaces();
         } catch (error: any) {
             console.error('Error deleting space:', error.response?.data || error.message);
-            alert(`Could not delete space: ${error.response?.data?.message || error.message}. You might not have permission or it does not exist.`);
+            alert(`Could not delete space: ${error.response?.data?.message || error.message}`);
         }
     };
+return (
+     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+            {/* New Single Header - combines all top elements */}
+            <header className="fixed top-0 left-0 right-0 h-20 bg-white shadow-md z-50 flex items-center justify-between px-6">
+                {/* Left Side: Logo and Title */}
+                <div className="flex items-center gap-4">
+                   <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
+    <img 
+        className="h-10 w-10" 
+        src="https://app.gather.town/images/spinner.png" 
+        alt="Logo" 
+    />
+</div>
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Spaces</h1>
+                </div>
 
-    return (
-        <div>
-            <h1>Your Spaces</h1>
-            <button onClick={signout}>Sign Out</button>
+                {/* Right Side: Create Form and Sign Out Button */}
+                <div className="flex items-center gap-6">
+                    <form onSubmit={handleCreateSpace} className="flex items-center gap-2">
+                        <input
+                            type="text"
+                            placeholder="New Space Name"
+                            value={newSpaceName}
+                            onChange={(e) => setNewSpaceName(e.target.value)}
+                            className="px-3 py-1.5 border border-gray-300 rounded-md w-40 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            required
+                        />
+                        <input
+                            type="text"
+                            placeholder="100x200"
+                            value={newSpaceDimensions}
+                            onChange={(e) => setNewSpaceDimensions(e.target.value)}
+                            className="px-3 py-1.5 border border-gray-300 rounded-md w-28 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            required
+                        />
+                        <input
+                            type="url"
+                            placeholder="Image URL (optional)"
+                            value={newSpaceImageUrl}
+                            onChange={(e) => setNewSpaceImageUrl(e.target.value)}
+                            className="px-3 py-1.5 border border-gray-300 rounded-md w-48 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                        
+                        <button
+                            type="submit"
+                            className="bg-purple-600 text-white px-5 py-1.5 rounded-md hover:bg-purple-700 transition font-semibold"
+                        >
+                            Create
+                        </button>
+                    </form>
+                    <button
+                        onClick={signout}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md transition font-semibold text-sm"
+                    >
+                        Sign Out
+                    </button>
+                </div>
+            </header>
 
-            <h2>Create New Space</h2>
-            <form onSubmit={handleCreateSpace}>
-                <input
-                    type="text"
-                    placeholder="Space Name"
-                    value={newSpaceName}
-                    onChange={(e) => setNewSpaceName(e.target.value)}
-                    required
-                />
-                <input
-                    type="text"
-                    placeholder="Dimensions (e.g., 100x200)"
-                    value={newSpaceDimensions}
-                    onChange={(e) => setNewSpaceDimensions(e.target.value)}
-                    required
-                />
-                <button type="submit">Create Space</button>
-            </form>
-
-            <h2>Available Spaces</h2>
-            {spaces.length === 0 ? (
-                <p>No spaces created yet. Create one above!</p>
-            ) : (
-                <ul>
-                    {spaces.map(space => (
-                        <li key={space.id}>
-                            {space.name} ({space.dimensions}) - <button onClick={() => navigate(`/space/${space.id}`)}>Join</button>
-                            <button onClick={() => handleDeleteSpace(space.id)}>Delete</button>
-                        </li>
-                    ))}
-                </ul>
-            )}
+            {/* Main Content - adjusted with padding-top to appear below the fixed header */}
+            <main className="pt-24 px-8">
+                {/* Space Grid section remains the same */}
+                <section className="bg-white rounded-lg shadow-sm p-6">
+                    <h2 className="text-xl font-semibold mb-6 text-gray-900">Available Spaces</h2>
+                    {spaces.length === 0 ? (
+                        <p className="text-gray-500">No spaces created yet. Create one above!</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {spaces.map((space) => (
+                                <div
+                                    key={space.id}
+                                    className="border border-gray-200 p-5 rounded-md bg-white hover:shadow-lg transition"
+                                >{space.imageUrl && (
+                                        <img
+                                            src={space.imageUrl}
+                                            alt={space.name}
+                                            className="w-full h-32 object-cover rounded-md mb-4 flex-shrink-0"
+                                            onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x200/cccccc/FFFFFF?text=No+Image'; }} // Fallback image on error
+                                        />
+                                    )}
+                                    <h3 className="text-lg font-semibold text-purple-600 truncate">{space.name}</h3>
+                                    <p className="text-sm text-gray-500 mb-4 flex-grow">Dimensions: {space.dimensions}</p>
+                                    <div className="flex gap-3 mt-auto"> {/* mt-auto pushes buttons to bottom */}
+                                        <button
+                                            onClick={() => navigate(`/space/${space.id}`)}
+                                            className="w-full px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+                                        >
+                                            Join
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteSpace(space.id)}
+                                            className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            </main>
         </div>
-    );
+);
+    
 };
 
 export default DashboardPage;

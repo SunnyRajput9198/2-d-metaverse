@@ -36,6 +36,7 @@ export interface Space {
     id: string;
     name: string;
     dimensions: string;
+    imageUrl: string;
     mapId?: string;
     ownerId: string;
 }
