@@ -55,6 +55,8 @@ adminRouter.post("/avatar", async (req, res) => {
             imageUrl: parsedData.data.imageUrl
         }
     })
+    //avatarId: cmbotnz900000wblgvoe7m5k5
+    //cmbotouet0001wblgqsqifijl
     res.json({avatarId: avatar.id})
 })
 // it creates a new map
