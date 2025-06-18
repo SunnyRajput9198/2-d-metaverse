@@ -3,6 +3,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import type { Space } from '../types';
+import {
+    Card,
+    CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 
 const DashboardPage: React.FC = () => {
     const { token, isAuthenticated, signout, BACKEND_URL } = useAuth();
@@ -10,7 +16,7 @@ const DashboardPage: React.FC = () => {
     const [spaces, setSpaces] = useState<Space[]>([]);
     const [newSpaceName, setNewSpaceName] = useState<string>('');
     const [newSpaceImageUrl, setNewSpaceImageUrl] = useState<string>('https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png');
-    const [newSpaceDimensions, setNewSpaceDimensions] = useState<string>('100x200');
+    const [newSpaceDimensions, setNewSpaceDimensions] = useState<string>('20x20');
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -19,7 +25,7 @@ const DashboardPage: React.FC = () => {
         }
         fetchSpaces();
     }, [isAuthenticated, navigate, token]);
-  const defaultImageUrl = "https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png";
+    const defaultImageUrl = "https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png";
     const fetchSpaces = async () => {
         if (!token) return;
         try {
@@ -69,19 +75,19 @@ const DashboardPage: React.FC = () => {
             alert(`Could not delete space: ${error.response?.data?.message || error.message}`);
         }
     };
-return (
-     <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+    return (
+        <div className="min-h-screen bg-[#121212] font-sans text-gray-900">
             {/* New Single Header - combines all top elements */}
             <header className="fixed top-0 left-0 right-0 h-20 bg-white shadow-md z-50 flex items-center justify-between px-6">
                 {/* Left Side: Logo and Title */}
                 <div className="flex items-center gap-4">
-                   <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
-    <img 
-        className="h-10 w-10" 
-        src="https://app.gather.town/images/spinner.png" 
-        alt="Logo" 
-    />
-</div>
+                    <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <img
+                            className="h-10 w-10"
+                            src="https://app.gather.town/images/spinner.png"
+                            alt="Logo"
+                        />
+                    </div>
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Spaces</h1>
                 </div>
 
@@ -98,7 +104,7 @@ return (
                         />
                         <input
                             type="text"
-                            placeholder="100x200"
+                            placeholder="20x20"
                             value={newSpaceDimensions}
                             onChange={(e) => setNewSpaceDimensions(e.target.value)}
                             className="px-3 py-1.5 border border-gray-300 rounded-md w-28 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -111,69 +117,81 @@ return (
                             onChange={(e) => setNewSpaceImageUrl(e.target.value)}
                             className="px-3 py-1.5 border border-gray-300 rounded-md w-48 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
-                        
-                        <button
+
+                        <Button
                             type="submit"
                             className="bg-purple-600 text-white px-5 py-1.5 rounded-md hover:bg-purple-700 transition font-semibold"
                         >
                             Create
-                        </button>
+                        </Button>
                     </form>
-                    <button
+                    <Button
                         onClick={signout}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md transition font-semibold text-sm"
                     >
                         Sign Out
-                    </button>
+                    </Button>
                 </div>
             </header>
 
             {/* Main Content - adjusted with padding-top to appear below the fixed header */}
             <main className="pt-24 px-8">
                 {/* Space Grid section remains the same */}
-                <section className="bg-white rounded-lg shadow-sm p-6">
+                <section className="bg-[#121212] rounded-lg shadow-sm p-6">
                     <h2 className="text-xl font-semibold mb-6 text-gray-900">Available Spaces</h2>
                     {spaces.length === 0 ? (
                         <p className="text-gray-500">No spaces created yet. Create one above!</p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {spaces.map((space) => (
-                                <div
+                                <Card
                                     key={space.id}
-                                    className="border border-gray-200 p-5 rounded-md bg-white hover:shadow-lg transition"
-                                >{space.imageUrl && (
+                                    className="bg-gradient-to-br from-blue-50 to-blue-100 shadow-md rounded-lg"
+
+                                >
+                                    <CardContent className="p-4 flex flex-col gap-3">
                                         <img
                                             src={space.imageUrl}
                                             alt={space.name}
-                                            className="w-full h-32 object-cover rounded-md mb-4 flex-shrink-0"
-                                            onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x200/cccccc/FFFFFF?text=No+Image'; }} // Fallback image on error
+                                            className="w-full h-36 object-cover rounded-md"
+                                            onError={(e) => {
+                                                e.currentTarget.src = 'https://placehold.co/400x200/cccccc/FFFFFF?text=No+Image';
+                                            }}
                                         />
-                                    )}
-                                    <h3 className="text-lg font-semibold text-purple-600 truncate">{space.name}</h3>
-                                    <p className="text-sm text-gray-500 mb-4 flex-grow">Dimensions: {space.dimensions}</p>
-                                    <div className="flex gap-3 mt-auto"> {/* mt-auto pushes buttons to bottom */}
-                                        <button
-                                            onClick={() => navigate(`/space/${space.id}`)}
-                                            className="w-full px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-                                        >
-                                            Join
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteSpace(space.id)}
-                                            className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
+
+                                        <div className="flex flex-col gap-1">
+                                            <h3 className="text-lg font-semibold text-gray-800 truncate">
+                                                {space.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-500">Dimensions: {space.dimensions}</p>
+                                        </div>
+
+                                        <div className="flex justify-between mt-2">
+                                            <Button
+                                                onClick={() => navigate(`/space/${space.id}`)}
+                                                className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-1.5 rounded-md transition"
+                                            >
+                                                Join
+                                            </Button>
+                                            <Button
+                                                onClick={() => handleDeleteSpace(space.id)}
+                                                className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-1.5 rounded-md transition"
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+
                             ))}
                         </div>
                     )}
                 </section>
             </main>
         </div>
-);
-    
+    );
+
 };
 
 export default DashboardPage;

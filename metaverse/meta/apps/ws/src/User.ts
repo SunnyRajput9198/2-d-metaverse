@@ -33,7 +33,7 @@ export class User {
 
   initHandlers() {
     this.ws.on("message", async (data) => {
-      console.log("data",data);
+      console.log("data", data);
       const parsedData = JSON.parse(data.toString());
       console.log("parsedData", parsedData);
       switch (parsedData.type) {
@@ -60,26 +60,31 @@ export class User {
           }
           // console.log("jouin receiverdfd 4");
           this.spaceId = spaceId;
-          console.log("space",space);
-          console.log("space id",spaceId);
+          console.log("space", space);
+          console.log("space id", spaceId);
           // Fetch elements belonging to this space
           const elements = await client.spaceElements.findMany({
             where: { spaceId: spaceId },
             include: {
-              element: true
-            }
+              element: true,
+            },
           });
-          console.log("elements",elements);
+          console.log("elements", elements);
           console.dir(elements, { depth: null });
           // Build the 2D map grid
-const mapGrid: string[][] = Array.from({ length: space.height }, () =>
-  Array.from({ length: space.width }, () => "empty")
-);
-for (const el of elements) {
-  if (el.x >= 0 && el.x < space.width && el.y >= 0 && el.y < space.height) {
-   mapGrid[el.y][el.x] = "element"; // Or use `el.element.id` or a custom label
-  }
-}
+          const mapGrid: string[][] = Array.from({ length: space.height }, () =>
+            Array.from({ length: space.width }, () => "empty")
+          );
+          for (const el of elements) {
+            if (
+              el.x >= 0 &&
+              el.x < space.width &&
+              el.y >= 0 &&
+              el.y < space.height
+            ) {
+              mapGrid[el.y][el.x] = "element"; // Or use `el.element.id` or a custom label
+            }
+          }
           RoomManager.getInstance().addUser(spaceId, this);
           this.x = Math.floor(Math.random() * space?.width);
           this.y = Math.floor(Math.random() * space?.height);
@@ -106,8 +111,15 @@ for (const el of elements) {
                 id: e.id,
                 x: e.x,
                 y: e.y,
+                elementId: e.elementId,
+                element: {
+                  imageUrl: e.element.imageUrl,
+                  width: e.element.width,
+                  height: e.element.height,
+                },
               })),
-               map: mapGrid, // <<< Add this!
+
+              map: mapGrid, // <<< Add this!
             },
           });
           console.log("jouin receiverdf 5");

@@ -18,7 +18,8 @@ function useWebSocket(spaceId: string) {
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [usersInSpace, setUsersInSpace] = useState<{ [key: string]: UserMetadata }>({});
     const [spaceElements, setSpaceElements] = useState<SpaceElementInstance[]>([]);
-    const [mapDimensions, setMapDimensions] = useState<string | null>(null); // e.g., "20x20"
+    const [mapDimensions, setMapDimensions] = useState<{ width: number; height: number } | null>(null);
+
     const [spawnPoint, setSpawnPoint] = useState<{ x: number; y: number } | null>(null);
     const [map, setMap] = useState<string[][]>();
 
@@ -90,7 +91,13 @@ function useWebSocket(spaceId: string) {
 
                     setUsersInSpace(initialUsersMap);
                     setSpaceElements(spaceJoinedPayload.elements);
-                    setMapDimensions(spaceJoinedPayload.dimensions);
+
+                    const [widthStr, heightStr] = spaceJoinedPayload.dimensions.split("x");
+                    const parsedDimensions = {
+                        width: parseInt(widthStr, 10),
+                        height: parseInt(heightStr, 10)
+                    };
+                    setMapDimensions(parsedDimensions);
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map); // ✅ Add this line
                     break;
@@ -106,12 +113,15 @@ function useWebSocket(spaceId: string) {
                     setUsersInSpace(prev => ({
                         ...prev,
                         [movementPayload.userId]: {
-                            ...prev[movementPayload.userId], // Keep existing metadata
+                            ...prev[movementPayload.userId],
                             x: movementPayload.x,
-                            y: movementPayload.y
+                            y: movementPayload.y,
+                            direction: movementPayload.direction || 'down',
+                            frame: movementPayload.frame ?? 0
                         }
                     }));
                     break;
+
                 case 'user-left':
                     const userLeftPayload = message.payload as UserLeftPayload;
                     setUsersInSpace(prev => {
@@ -161,28 +171,61 @@ function useWebSocket(spaceId: string) {
         };
     }, [spaceId, token, WS_URL, sendJsonMessage, userId]); // Re-run if these dependencies change
 
-    // This `move` function sends the movement request to the backend
-    const move = useCallback((newX: number, newY: number) => {
-        sendJsonMessage({
-            type: "move",
-            payload: { x: newX, y: newY }
-        });
-        // Optimistic update: Update current user's position immediately
-        // The 'movement-rejected' message will correct if the move is invalid
-        setUsersInSpace(prev => {
-            if (userId && prev[userId]) {
-                return {
-                    ...prev,
-                    [userId]: {
-                        ...prev[userId],
-                        x: newX,
-                        y: newY
-                    }
-                };
-            }
-            return prev;
-        });
-    }, [sendJsonMessage, userId]);
+    // This `move` function sends the movement request to the backen
+    const frameCounterRef = useRef<number>(0);
+
+
+   const move = useCallback((newX: number, newY: number) => {
+    const current = usersInSpace[userId || ""];
+
+    if (!current) return;
+
+    const dx = newX - current.x;
+    const dy = newY - current.y;
+
+    let direction: 'up' | 'down' | 'left' | 'right' = current.direction || 'down';
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        direction = dx > 0 ? 'right' : 'left';
+    } else if (dy !== 0) {
+        direction = dy > 0 ? 'down' : 'up';
+    }
+
+    // Advance animation frame
+    frameCounterRef.current = (frameCounterRef.current + 1) % 3;
+
+    const frame = frameCounterRef.current;
+
+    // Send move message
+    sendJsonMessage({
+        type: "move",
+        payload: {
+            x: newX,
+            y: newY,
+            direction,
+            frame
+        }
+    });
+
+    // Optimistic update
+    setUsersInSpace(prev => {
+        if (userId && prev[userId]) {
+            return {
+                ...prev,
+                [userId]: {
+                    ...prev[userId],
+                    x: newX,
+                    y: newY,
+                    direction,
+                    frame
+                }
+            };
+        }
+        return prev;
+    });
+}, [sendJsonMessage, userId, usersInSpace]);
+
+
 
     const currentPlayerPosition = userId && usersInSpace[userId]
         ? usersInSpace[userId]

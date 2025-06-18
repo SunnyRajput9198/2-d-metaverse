@@ -7,3 +7,26 @@ body {
 }
 @import "tailwindcss";
 
+/* Optional animation plugin */
+@import "tw-animate-css";
+
+
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Optional layer base additions */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+* {
+  image-rendering: pixelated;
+  box-sizing: border-box;
+}

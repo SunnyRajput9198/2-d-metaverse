@@ -2,8 +2,9 @@ import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import useWebSocket from "../hooks/useWebsocket";
 
-const TILE_SIZE = 24;
-
+const TILE_SIZE = 32;
+           const SPRITE_WIDTH = 256;
+const SPRITE_HEIGHT = 320;
 const SpacePage: React.FC = () => {
     const { spaceId } = useParams<{ spaceId: string }>();
 
@@ -11,6 +12,7 @@ const SpacePage: React.FC = () => {
         isConnected,
         usersInSpace,
         map,
+        spaceElements,
         move,
         currentPlayerPosition
     } = useWebSocket(spaceId ?? "");
@@ -49,43 +51,87 @@ const SpacePage: React.FC = () => {
 
     return (
         <div className="p-4 overflow-auto h-screen bg-black text-white">
-            <div className="text-xl font-bold mb-4">Space ID: {spaceId}</div>
-
-            {/* 🗺️ Background map with overlaid players */}
             <div
-                className="inline-block"
+                className="inline-block relative"
                 style={{
-                    width: "1920px",
-                    height: "1440px",
-                    backgroundImage: "url('/maps/mata4.png')", // make sure image is in public/maps
+                    width: `${map[0].length * TILE_SIZE}px`,
+                    height: `${map.length * TILE_SIZE}px`,
+                    backgroundImage: "url('/maps/m4.png')",
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     imageRendering: "pixelated",
-                    position: "relative",
                 }}
             >
-                {/* 🧍 Render each user */}
-                {Object.values(usersInSpace).map((user) => (
+                {/* 🧱 Map Elements (above background, below players) */}
+                {spaceElements.map((ele, index) => (
                     <img
-                        key={user.id}
-                        src="/maps/avatar.png" // your custom image
-                        alt="player"
+                        key={index}
+                        src={ele.element.imageUrl || "/maps/object.png"}
+                        alt="element"
                         style={{
                             position: "absolute",
-                            width: TILE_SIZE * 1.5, // 48px
-                            height: TILE_SIZE * 1.5, // 48px
-                            left: user.x * TILE_SIZE - TILE_SIZE / 1.5, // shift left by 12px
-                            top: user.y * TILE_SIZE - TILE_SIZE / 1.5, // shift up by 12px
-                            transition: "left 0.15s, top 0.15s",
-                            zIndex: 10,
+                            width: TILE_SIZE * 2,
+                            height: TILE_SIZE * 2,
+                            left: ele.x * TILE_SIZE,
+                            top: ele.y * TILE_SIZE,
                             imageRendering: "pixelated",
+                            transition: "left 0.2s, top 0.2s",
+                            zIndex: ele.y * 100, // Depth sorting by Y
                         }}
                     />
                 ))}
+
+                {/* 🧍 Render Players (top-most layer) */}
+
+
+{Object.values(usersInSpace).map((user) => {
+    const frame = user.frame ?? 0;
+    const direction = user.direction ?? "down";
+   const rowMap = {
+    down: 0,
+    left: 1,
+    right: 2,
+    up: 3,
+} as const;
+
+    const row = rowMap[direction];
+    const col = frame % 2;
+
+    return (
+        <div
+            key={user.id}
+            style={{
+                position: "absolute",
+                left: user.x * TILE_SIZE,
+                top: user.y * TILE_SIZE,
+                width: SPRITE_WIDTH,
+                height: SPRITE_HEIGHT,
+                overflow: "hidden",
+                zIndex: user.y * 100 + 50,
+                imageRendering: "pixelated",
+                transition: "left 0.15s, top 0.15s",
+                transform: "scale(0.125)",
+                transformOrigin: "top left",
+            }}
+        >
+            <div
+                style={{
+                    width: SPRITE_WIDTH * 2,
+                    height: SPRITE_HEIGHT * 4,
+                    backgroundImage: "url('/maps/a6.png')",
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: `${SPRITE_WIDTH * 2}px ${SPRITE_HEIGHT * 4}px`,
+                    backgroundPosition: `-${col * SPRITE_WIDTH}px -${row * SPRITE_HEIGHT}px`,
+                }}
+            />
+        </div>
+    );
+})}
+
             </div>
 
-            {/* Movement Buttons */}
-            <div className="mt-6 flex gap-2">
+            {/* 🕹️ Movement Buttons (for mobile) */}
+            <div className="mt-6 flex justify-center gap-2">
                 <button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-3 py-2 rounded">Up</button>
                 <button onClick={() => move(currentPlayerPosition.x - 1, currentPlayerPosition.y)} className="bg-blue-600 px-3 py-2 rounded">Left</button>
                 <button onClick={() => move(currentPlayerPosition.x + 1, currentPlayerPosition.y)} className="bg-blue-600 px-3 py-2 rounded">Right</button>

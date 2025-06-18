@@ -13,15 +13,21 @@ export interface UserMetadata {
     x: number;
     y: number;
     avatarId?: string;
+    frame?: number;
     username?: string;
+    direction?: 'up' | 'down' | 'left' | 'right';
 }
 
 export interface SpaceElementInstance {
     id: string; // ID of this specific instance of the element in the space
-    type: string; // Type of element (e.g., chair, table, etc.)
     elementId: string; // ID of the base element from /admin/element
     x: number;
     y: number;
+    element: {
+        imageUrl: string;
+        width: number;
+        height: number;
+    };
 }
 
 export interface MapData {
@@ -77,12 +83,14 @@ export interface SpaceJoinedPayload {
 }
 
 export interface UserJoinedPayload extends UserMetadata {} // UserMetadata already has userId, x, y, avatarId, name
-
-export interface MovementPayload {
+export type MovementPayload = {
     userId: string;
     x: number;
     y: number;
-}
+    direction?: 'up' | 'down' | 'left' | 'right';
+    frame?: number;
+};
+
 
 export interface UserLeftPayload {
     userId: string;
