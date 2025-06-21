@@ -16,7 +16,7 @@ import type {
 
 function useWebSocket(spaceId: string) {
     const { token, WS_URL, userId, username, avatarId } = useAuth();
-    const ws = useRef<WebSocket | null>(null);
+    const wsRef = useRef<WebSocket | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [usersInSpace, setUsersInSpace] = useState<{ [key: string]: UserMetadata }>({});
     const [spaceElements, setSpaceElements] = useState<SpaceElementInstance[]>([]);
@@ -26,8 +26,8 @@ function useWebSocket(spaceId: string) {
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
     const sendJsonMessage = useCallback((message: WebSocketMessage) => {
-        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify(message));
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify(message));
         } else {
             console.warn("WebSocket not open. Message not sent:", message);
         }
@@ -55,14 +55,14 @@ function useWebSocket(spaceId: string) {
             return;
         }
 
-        if (ws.current) {
-            ws.current.close();
-            ws.current = null;
+        if (wsRef.current) {
+            wsRef.current.close();
+            wsRef.current = null;
         }
 
-        ws.current = new WebSocket(WS_URL);
+        wsRef.current = new WebSocket(WS_URL);
 
-        ws.current.onopen = () => {
+        wsRef.current.onopen = () => {
             console.log('WebSocket connected.');
             setIsConnected(true);
             sendJsonMessage({
@@ -71,7 +71,7 @@ function useWebSocket(spaceId: string) {
             });
         };
 
-        ws.current.onmessage = (event) => {
+        wsRef.current.onmessage = (event) => {
             const message: WebSocketMessage = JSON.parse(event.data);
             console.log('Received WS message:', message);
 
@@ -161,20 +161,20 @@ function useWebSocket(spaceId: string) {
             }
         };
 
-        ws.current.onclose = () => {
+        wsRef.current.onclose = () => {
             console.log('WebSocket disconnected.');
             setIsConnected(false);
             setUsersInSpace({});
         };
 
-        ws.current.onerror = (error) => {
+        wsRef.current.onerror = (error) => {
             console.error('WebSocket error:', error);
             setIsConnected(false);
         };
 
         return () => {
-            if (ws.current) {
-                ws.current.close();
+            if (wsRef.current) {
+                wsRef.current.close();
             }
         };
     }, [spaceId, token, WS_URL, sendJsonMessage, userId]);
@@ -233,7 +233,8 @@ function useWebSocket(spaceId: string) {
         map,
         chatMessages,
         sendChatMessage,
-        userId
+        userId,
+        ws: wsRef.current
     };
 }
 

@@ -50,4 +50,13 @@ export class RoomManager {
       }
     });
   }
+  
+  // ✅ ADD THIS METHOD to find a user by their `userId` across all rooms
+  public findUserByUserId(userId: string): User | undefined {
+    for (const [, users] of this.rooms) {
+      const match = users.find((u) => u.userId === userId);
+      if (match) return match;
+    }
+    return undefined;
+  }
 }

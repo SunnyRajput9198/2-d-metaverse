@@ -181,16 +181,60 @@ export class User {
               this,
               this.spaceId!
             );
-            return;
+          } else {
+            this.send({
+              type: "movement-rejected",
+              payload: {
+                x: this.x,
+                y: this.y,
+              },
+            });
+            break;
           }
 
-          this.send({
-            type: "movement-rejected",
-            payload: {
-              x: this.x,
-              y: this.y,
+        case "video-signal": {
+          if (!parsedData.payload || !parsedData.payload.to) return;
+
+          const { from, to, signal } = parsedData.payload;
+
+          // Forward the signal to the target user
+          const target = RoomManager.getInstance().findUserByUserId(to);
+          if (target) {
+            target.send({
+              type: "video-signal",
+              payload: { from, to, signal },
+            });
+          }
+          break;
+        }
+
+        case "start-video": {
+          if (!this.spaceId || !this.userId) return;
+
+          RoomManager.getInstance().broadcast(
+            {
+              type: "start-video",
+              payload: { userId: this.userId },
             },
-          });
+            this, // exclude sender
+            this.spaceId
+          );
+          break;
+        }
+
+        case "stop-video": {
+          if (!this.spaceId || !this.userId) return;
+
+          RoomManager.getInstance().broadcast(
+            {
+              type: "stop-video",
+              payload: { userId: this.userId },
+            },
+            this, // exclude sender
+            this.spaceId
+          );
+          break;
+        }
       }
     });
   }

@@ -2,9 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import useWebSocket from "@/hooks/useWebsocket";
 import { Button } from "@/components/ui/button";
+import { useVideoCall } from "@/hooks/useVideocall";
+import { useMemo } from "react";
 const TILE_SIZE = 32;
 const SPRITE_WIDTH = 256;
 const SPRITE_HEIGHT = 320;
+
 const SpacePage: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
 
@@ -17,16 +20,59 @@ const SpacePage: React.FC = () => {
     currentPlayerPosition,
     chatMessages,
     sendChatMessage,
-    userId: currentUserId
+    userId: currentUserId,
+    ws,
   } = useWebSocket(spaceId ?? "");
+
+  const {
+    startVideo,
+    stopVideo,
+    localStream,
+    peerStreams,
+  } = useVideoCall(ws, currentUserId!);
+
   const [inputValue, setInputValue] = useState("");
   const chatBoxRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [chatMessages]);
-  // Movement Controls
+
+  const renderedVideos = useMemo(() => {
+    return (
+      <>
+        {localStream && (
+          <video
+            key="local"
+            className="w-40 h-32 border border-white"
+            ref={(video) => {
+              if (video && video.srcObject !== localStream) {
+                video.srcObject = localStream;
+                video.autoplay = true;
+                video.muted = true;
+              }
+            }}
+          />
+        )}
+        {peerStreams.map(({ peerId, stream }) => (
+          <video
+            key={peerId}
+            className="w-40 h-32 border border-yellow-500"
+            ref={(video) => {
+              if (video && video.srcObject !== stream) {
+                video.srcObject = stream;
+                video.autoplay = true;
+              }
+            }}
+          />
+        ))}
+      </>
+    );
+  }, [localStream, peerStreams]);
+
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!currentPlayerPosition) return;
@@ -57,6 +103,7 @@ const SpacePage: React.FC = () => {
   if (!isConnected || !map || !currentPlayerPosition) {
     return <div className="text-white text-center mt-10">Connecting to space...</div>;
   }
+
   return (
     <div className="h-screen w-screen flex bg-black text-white">
       {/* 70% Map Area */}
@@ -90,6 +137,7 @@ const SpacePage: React.FC = () => {
               }}
             />
           ))}
+
           {/* Players */}
           {Object.values(usersInSpace).map((user) => {
             const frame = user.frame ?? 0;
@@ -133,6 +181,7 @@ const SpacePage: React.FC = () => {
             );
           })}
         </div>
+
         {/* Movement Buttons */}
         <div className="mt-6 flex justify-center gap-2">
           <button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-3 py-2 rounded">Up</button>
@@ -140,11 +189,21 @@ const SpacePage: React.FC = () => {
           <button onClick={() => move(currentPlayerPosition.x + 1, currentPlayerPosition.y)} className="bg-blue-600 px-3 py-2 rounded">Right</button>
           <button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y + 1)} className="bg-blue-600 px-3 py-2 rounded">Down</button>
         </div>
+
+        {/* Video Buttons */}
+        <div className="mt-6 flex justify-center gap-2">
+          <Button onClick={startVideo} className="bg-green-600">Start Video</Button>
+          <Button onClick={stopVideo} className="bg-red-600">Stop Video</Button>
+        </div>
+
+        {/* Local & Remote Video */}
+        <div className="mt-4 flex gap-2 flex-wrap">
+          {renderedVideos}
+        </div>
       </div>
 
       {/* 30% Chat Area */}
       <div className="w-[30%] h-full flex flex-col border-l border-gray-700 p-4">
-        {/* Chat Messages */}
         <div ref={chatBoxRef} className="flex-1 overflow-y-auto bg-gray-900 rounded-lg p-3 mb-3">
           {chatMessages.map((msg, index) => (
             <div
@@ -152,8 +211,7 @@ const SpacePage: React.FC = () => {
               className={`mb-2 flex ${msg.userId === currentUserId ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-700 text-white"
-                  }`}
+                className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}`}
               >
                 <div className="font-semibold text-xs opacity-80 mb-1">
                   {usersInSpace[msg.userId]?.username || "Anonymous"}
@@ -164,7 +222,6 @@ const SpacePage: React.FC = () => {
           ))}
         </div>
 
-        {/* Chat Input */}
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -194,7 +251,6 @@ const SpacePage: React.FC = () => {
       </div>
     </div>
   );
-
 };
 
 export default SpacePage;

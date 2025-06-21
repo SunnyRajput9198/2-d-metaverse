@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext'; // Make sure path is correct
@@ -10,7 +11,7 @@ interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
-// A private route component to protect authenticated routes
+// A private route component to protect authenticated routescdconst PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   // --- THIS IS THE KEY PART ---
   const { isAuthenticated, isLoadingAuth } = useAuth();
