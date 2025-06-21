@@ -8,6 +8,8 @@ import {
     CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Plus } from 'lucide-react';
+import { Input } from "@/components/ui/input"
 
 
 const DashboardPage: React.FC = () => {
@@ -17,6 +19,8 @@ const DashboardPage: React.FC = () => {
     const [newSpaceName, setNewSpaceName] = useState<string>('');
     const [newSpaceImageUrl, setNewSpaceImageUrl] = useState<string>('https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png');
     const [newSpaceDimensions, setNewSpaceDimensions] = useState<string>('20x20');
+    const [showForm, setShowForm] = useState(false);
+
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -54,7 +58,7 @@ const DashboardPage: React.FC = () => {
             if (response.status === 200) {
                 fetchSpaces();
                 setNewSpaceName('');
-                setNewSpaceDimensions('100x200');
+                setNewSpaceDimensions('20x20');
                 setNewSpaceImageUrl('https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png'); // Clear the image URL input after creation
             }
         } catch (error: any) {
@@ -76,9 +80,9 @@ const DashboardPage: React.FC = () => {
         }
     };
     return (
-        <div className="min-h-screen bg-[#121212] font-sans text-gray-900">
+        <div className="min-h-screen bg-[#282d4e] font-sans text-gray-900">
             {/* New Single Header - combines all top elements */}
-            <header className="fixed top-0 left-0 right-0 h-20 bg-white shadow-md z-50 flex items-center justify-between px-6">
+            <header className="fixed bg-[#333a64] top-0 left-0 right-0 h-20 shadow-md z-50 flex items-center justify-between px-6">
                 {/* Left Side: Logo and Title */}
                 <div className="flex items-center gap-4">
                     <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
@@ -88,43 +92,63 @@ const DashboardPage: React.FC = () => {
                             alt="Logo"
                         />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Spaces</h1>
+                    <div className=' class:layout display:flex margin:4px'></div>
+                    <Button className="bg-[#4c5381] text-white font-semibold hover:bg-[#3d436b] transition-colors">
+                        My Spaces
+                    </Button>
+
                 </div>
 
                 {/* Right Side: Create Form and Sign Out Button */}
                 <div className="flex items-center gap-6">
-                    <form onSubmit={handleCreateSpace} className="flex items-center gap-2">
-                        <input
-                            type="text"
-                            placeholder="New Space Name"
-                            value={newSpaceName}
-                            onChange={(e) => setNewSpaceName(e.target.value)}
-                            className="px-3 py-1.5 border border-gray-300 rounded-md w-40 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            required
-                        />
-                        <input
-                            type="text"
-                            placeholder="20x20"
-                            value={newSpaceDimensions}
-                            onChange={(e) => setNewSpaceDimensions(e.target.value)}
-                            className="px-3 py-1.5 border border-gray-300 rounded-md w-28 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                            required
-                        />
-                        <input
-                            type="url"
-                            placeholder="Image URL (optional)"
-                            value={newSpaceImageUrl}
-                            onChange={(e) => setNewSpaceImageUrl(e.target.value)}
-                            className="px-3 py-1.5 border border-gray-300 rounded-md w-48 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-
+                    <div className="flex items-center gap-2">
+                        {/* Toggle Button */}
                         <Button
-                            type="submit"
-                            className="bg-purple-600 text-white px-5 py-1.5 rounded-md hover:bg-purple-700 transition font-semibold"
+                            type="button"
+                            onClick={() => setShowForm((prev) => !prev)}
+                            className="bg-purple-600 text-white px-4 py-1.5 rounded-md hover:bg-purple-700 transition font-semibold flex items-center gap-2"
                         >
-                            Create
+                            <Plus className="w-4 h-4" />
+                            Create Space
                         </Button>
-                    </form>
+
+                        {/* Conditionally Rendered Form */}
+                        {showForm && (
+                            <form onSubmit={handleCreateSpace} className="flex items-center gap-2">
+                                <Input
+                                    type="text"
+                                    placeholder="New Space Name"
+                                    value={newSpaceName}
+                                    onChange={(e) => setNewSpaceName(e.target.value)}
+                                    className="bg-[#1e1e2f] text-white placeholder:text-gray-400 px-4 py-2 w-52 rounded-md border-2 border-purple-600 focus:ring-2 focus:ring-pink-500 shadow hover:shadow-md transition"
+                                    required
+                                />
+                                <Input
+                                    type="text"
+                                    placeholder="20x20"
+                                    value={newSpaceDimensions}
+                                    onChange={(e) => setNewSpaceDimensions(e.target.value)}
+                                    className="bg-[#1e1e2f] text-white placeholder:text-gray-400 px-4 py-2 w-32 rounded-md border-2 border-purple-600 focus:ring-2 focus:ring-pink-500 shadow hover:shadow-md transition"
+                                    required
+                                />
+                                <Input
+                                    type="url"
+                                    placeholder="Image URL (optional)"
+                                    value={newSpaceImageUrl}
+                                    onChange={(e) => setNewSpaceImageUrl(e.target.value)}
+                                    className="bg-[#1e1e2f] text-white placeholder:text-gray-400 px-4 py-2 w-60 rounded-md border-2 border-purple-600 focus:ring-2 focus:ring-pink-500 shadow hover:shadow-md transition"
+                                />
+                                <Button
+                                    type="submit"
+                                    className="bg-green-600 text-white px-5 py-1.5 rounded-md hover:bg-green-700 transition font-semibold"
+                                >
+                                    Save
+                                </Button>
+                            </form>
+                        )}
+                    </div>
+
+                    {/* Sign Out Button */}
                     <Button
                         onClick={signout}
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md transition font-semibold text-sm"
@@ -134,20 +158,17 @@ const DashboardPage: React.FC = () => {
                 </div>
             </header>
 
-            {/* Main Content - adjusted with padding-top to appear below the fixed header */}
             <main className="pt-24 px-8">
-                {/* Space Grid section remains the same */}
-                <section className="bg-[#121212] rounded-lg shadow-sm p-6">
-                    <h2 className="text-xl font-semibold mb-6 text-gray-900">Available Spaces</h2>
+                <section className="rounded-lg shadow-sm p-6">
+                    <h2 className="text-xl font-semibold mb-6 text-white">Available Spaces</h2>
                     {spaces.length === 0 ? (
-                        <p className="text-gray-500">No spaces created yet. Create one above!</p>
+                        <p className="text-gray-400">No spaces created yet. Create one above!</p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {spaces.map((space) => (
                                 <Card
                                     key={space.id}
-                                    className="bg-gradient-to-br from-blue-50 to-blue-100 shadow-md rounded-lg"
-
+                                    className="bg-[#232347] shadow-md rounded-xl transition-transform hover:scale-[1.02]"
                                 >
                                     <CardContent className="p-4 flex flex-col gap-3">
                                         <img
@@ -160,35 +181,34 @@ const DashboardPage: React.FC = () => {
                                         />
 
                                         <div className="flex flex-col gap-1">
-                                            <h3 className="text-lg font-semibold text-gray-800 truncate">
+                                            <h3 className="text-lg font-semibold text-white truncate">
                                                 {space.name}
                                             </h3>
-                                            <p className="text-sm text-gray-500">Dimensions: {space.dimensions}</p>
                                         </div>
 
                                         <div className="flex justify-between mt-2">
                                             <Button
                                                 onClick={() => navigate(`/space/${space.id}`)}
-                                                className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-1.5 rounded-md transition"
+                                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
                                             >
                                                 Join
                                             </Button>
+
                                             <Button
                                                 onClick={() => handleDeleteSpace(space.id)}
-                                                className="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-1.5 rounded-md transition"
+                                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2  shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
                                             >
                                                 Delete
                                             </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
-
-
                             ))}
                         </div>
                     )}
                 </section>
             </main>
+
         </div>
     );
 

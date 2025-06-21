@@ -6,6 +6,8 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import SpacePage from './Space/[spaceid]/page';
+import HomePage from './pages/Homepage'; // ✅ New homepage
+
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -42,6 +44,7 @@ const App: React.FC = () => {
     <div className="App">
       <Routes>
 
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={
@@ -54,8 +57,8 @@ const App: React.FC = () => {
             <SpacePage />
           </PrivateRoute>
         } />
+<Route path="*" element={<Navigate to="/" />} /> {/* Optional catch-all */}
 
-        <Route path="/" element={<Navigate to="/dashboard" />} /> {/* Default route */}
       </Routes>
     </div>
   );
