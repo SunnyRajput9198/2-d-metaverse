@@ -136,11 +136,32 @@ export class User {
             this.spaceId!
           );
           break;
+        // 👇 ADD THIS CASE
+        case "chat-message":
+          if (!this.spaceId || !this.userId) return;
+
+          RoomManager.getInstance().broadcastToAll(
+            {
+              type: "chat-message",
+              payload: {
+                userId: this.userId,
+                message: parsedData.payload.message,
+                timestamp: Date.now(),
+              },
+            },
+            this.spaceId
+          );
+          break;
         case "move":
           const moveX = parsedData.payload.x;
           const moveY = parsedData.payload.y;
           const xDisplacement = Math.abs(this.x - moveX);
           const yDisplacement = Math.abs(this.y - moveY);
+          let direction = "down";
+          if (moveX > this.x) direction = "right";
+          else if (moveX < this.x) direction = "left";
+          else if (moveY > this.y) direction = "down";
+          else if (moveY < this.y) direction = "up";
           if (
             (xDisplacement == 1 && yDisplacement == 0) ||
             (xDisplacement == 0 && yDisplacement == 1)
@@ -154,6 +175,7 @@ export class User {
                   userId: this.userId, // ✅ ADD THIS
                   x: this.x,
                   y: this.y,
+                  direction: direction, // ✅ send direction
                 },
               },
               this,

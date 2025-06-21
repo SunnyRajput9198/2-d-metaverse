@@ -7,6 +7,21 @@ export interface AuthResponse {
     avatarId?: string;
 }
 
+export interface ChatMessage {
+  userId: string;
+  message: string;
+  timestamp: string; // or number
+}
+
+export interface ChatPayload {
+  message: string;
+}
+
+export interface ChatMessageBroadcast {
+  userId: string;
+  message: string;
+  timestamp: string;
+}
 export interface UserMetadata {
     id: string; //Internal WebSocket connection ID
     userId: string; //the actual  user's unique userID
@@ -57,11 +72,7 @@ export interface Avatar {
     name: string;
 }
 
-// WebSocket Message Types
-export interface WebSocketMessage<T = any> {
-    type: string;
-    payload: T;
-}
+// WebSocket Message Type
 
 // --- Payloads for Outgoing Messages (Frontend -> Backend) --
 export interface JoinPayload {
@@ -108,3 +119,11 @@ export interface ChatMessagePayload {
     message: string;
     timestamp: number;
 }
+export type WebSocketMessage =
+  | { type: 'join'; payload: JoinPayload }
+  | { type: 'space-joined'; payload: SpaceJoinedPayload }
+  | { type: 'user-joined'; payload: UserJoinedPayload }
+  | { type: 'movement'; payload: MovementPayload }
+  | { type: 'movement-rejected'; payload: MovementRejectedPayload }
+  | { type: 'user-left'; payload: UserLeftPayload }
+  | { type: 'chat-message'; payload: ChatMessageBroadcast }; // 👈 NEW

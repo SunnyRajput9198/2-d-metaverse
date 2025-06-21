@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { signin } = useAuth();
-const navigate = useNavigate();
+    const navigate = useNavigate();
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         console.log("handleSubmit");
@@ -21,7 +21,10 @@ const navigate = useNavigate();
             console.log("response", response);
             if (response.success) {
                 console.log("Successfully signed in");
-                navigate('/dashboard');
+                const redirectPath = localStorage.getItem("redirectAfterLogin");
+                navigate(redirectPath || '/dashboard');
+                localStorage.removeItem("redirectAfterLogin");
+
             }
         } catch (err: any) {
             setError(err.message || 'An unexpected error occurred during login.');
