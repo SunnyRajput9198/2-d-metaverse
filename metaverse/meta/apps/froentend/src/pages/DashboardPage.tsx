@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { Input } from "@/components/ui/input"
-
+import { Popover } from '@/components/ui/popover';
 
 const DashboardPage: React.FC = () => {
     const { token, isAuthenticated, signout, BACKEND_URL } = useAuth();
@@ -142,7 +142,7 @@ const DashboardPage: React.FC = () => {
                                     type="submit"
                                     className="bg-green-600 text-white px-5 py-1.5 rounded-md hover:bg-green-700 transition font-semibold"
                                 >
-                                    Save
+                                    Create
                                 </Button>
                             </form>
                         )}

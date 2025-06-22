@@ -49,6 +49,25 @@ const SpacePage: React.FC = () => {
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
 
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
+  const [reactBtnPosition, setReactBtnPosition] = useState<{ top: number, left: number }>({ top: 200, left: 20 });
+  const reactBtnRef = useRef<HTMLDivElement | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const offset = useRef({ x: 0, y: 0 });
+  const wasDragging = useRef(false);
+
+
+
+  const recentReactions = useMemo(() => {
+    const now = Date.now();
+
+    return Object.entries(emojiReactions)
+      .filter(([_, { timestamp }]) => now - timestamp < 8000) // keep reactions within 8 seconds
+      .map(([userId, { emoji }]) => {
+        const username = usersInSpace[userId]?.username || "Guest";
+        return { userId, emoji, username };
+      })
+      .sort((a, b) => (emojiReactions[b.userId].timestamp - emojiReactions[a.userId].timestamp));
+  }, [emojiReactions, usersInSpace]);
 
 
   useEffect(() => {
@@ -56,6 +75,31 @@ const SpacePage: React.FC = () => {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [chatMessages]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!dragging) return;
+ wasDragging.current = true; // ✅ Mark that a drag occurred
+
+      setReactBtnPosition({
+        top: e.clientY - offset.current.y,
+        left: e.clientX - offset.current.x,
+      });
+    };
+
+    const handleMouseUp = () => {
+      setDragging(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging]);
+
 
 
   const renderedVideos = useMemo(() => {
@@ -83,12 +127,12 @@ const SpacePage: React.FC = () => {
                 }
               }}
             />
-            <button
+            <Button
               onClick={() => requestFullscreen(document.querySelector("video"))}
               className="absolute top-1 right-1 bg-black bg-opacity-60 hover:bg-opacity-90 p-1 rounded-full"
             >
               <Maximize2 className="h-4 w-4 text-white" />
-            </button>
+            </Button>
             <span className="text-xs mt-1 text-white opacity-80">You</span>
           </div>
         )}
@@ -110,12 +154,12 @@ const SpacePage: React.FC = () => {
                   }
                 }}
               />
-              <button
+              <Button
                 onClick={() => requestFullscreen(document.getElementById(videoId) as HTMLVideoElement)}
                 className="absolute top-1 right-1 bg-black bg-opacity-60 hover:bg-opacity-90 p-1 rounded-full"
               >
                 <Maximize2 className="h-4 w-4 text-white" />
-              </button>
+              </Button>
               <span className="text-xs mt-1 text-white opacity-80 truncate max-w-[10rem] text-center">
                 {peerUsername}
               </span>
@@ -227,7 +271,8 @@ const SpacePage: React.FC = () => {
                       transform: "translateX(-50%)",
 
                       fontSize: "7rem",                // ⬅️ Increased emoji size
-                      animation: "fadeOut 7s ease-out forwards", // ⬅️ Increased display time to match timeout
+                      animation: "fadeOut 5s ease-out forwards", // instead of fadeOut
+
 
                       pointerEvents: "none",
                     }}
@@ -252,26 +297,45 @@ const SpacePage: React.FC = () => {
       </div>
 
       <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 z-40">
-        <button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-4 py-2 rounded">↑</button>
-        <button onClick={() => move(currentPlayerPosition.x - 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">←</button>
-        <button onClick={() => move(currentPlayerPosition.x + 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">→</button>
-        <button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y + 1)} className="bg-blue-600 px-4 py-2 rounded">↓</button>
+        <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-4 py-2 rounded">↑</Button>
+        <Button onClick={() => move(currentPlayerPosition.x - 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">←</Button>
+        <Button onClick={() => move(currentPlayerPosition.x + 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">→</Button>
+        <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y + 1)} className="bg-blue-600 px-4 py-2 rounded">↓</Button>
       </div>
       {/* Standalone Emoji Reaction Button */}
-      <div className="absolute bottom-24 right-4 z-50">
-        <button
+      <div
+        ref={reactBtnRef}
+        className="fixed z-50 cursor-move"
+        style={{
+          top: reactBtnPosition.top,
+          left: reactBtnPosition.left,
+        }}
+        onMouseDown={(e) => {
+          const rect = reactBtnRef.current?.getBoundingClientRect();
+          if (rect) {
+            offset.current = {
+              x: e.clientX - rect.left,
+              y: e.clientY - rect.top,
+            };
+          }
+            wasDragging.current = false; // reset on click
+          setDragging(true);
+        }}
+      >
+        <Button
           onClick={(e) => {
+             if (wasDragging.current) return; // ✅ Skip if drag just happened
             const rect = (e.target as HTMLElement).getBoundingClientRect();
             setShowAvatarEmojiPicker(true);
             setAvatarEmojiPickerPosition({ top: rect.top - 350, left: rect.left - 200 });
           }}
-
           className="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded text-black text-lg"
           title="React with Emoji"
         >
           😊 React
-        </button>
+        </Button>
       </div>
+
       {showAvatarEmojiPicker && avatarEmojiPickerPosition && (
         <div
           className="absolute z-50"
@@ -353,13 +417,13 @@ const SpacePage: React.FC = () => {
               }}
             />
             {/* Emoji Picker Button */}
-            <button
+            <Button
               onClick={() => setShowChatEmojiPicker((prev) => !prev)}
               className="text-xl bg-gray-700 rounded px-2 hover:bg-gray-600"
               title="Pick Emoji"
             >
               😊
-            </button>
+            </Button>
 
             {/* Emoji Picker Component */}
             {showChatEmojiPicker && (
@@ -388,6 +452,20 @@ const SpacePage: React.FC = () => {
           </div>
         </div>
       )}
+      {recentReactions.length > 0 && (
+        <div className="absolute top-24 left-4 bg-black/70 backdrop-blur-md rounded-md px-4 py-2 text-white shadow z-50 max-w-[200px]">
+          <div className="text-sm font-bold mb-1 text-yellow-300">Recent Reactions</div>
+          <ul className="space-y-1 text-sm">
+            {recentReactions.map((reaction) => (
+              <li key={reaction.userId} className="flex items-center gap-2">
+                <span className="text-xl">{reaction.emoji}</span>
+                <span className="text-white/80 truncate">{reaction.username}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
     </div>
   );
 };
