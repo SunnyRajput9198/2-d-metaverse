@@ -1,22 +1,28 @@
-/* General Body Styles - Sets a background and font */
-body {
-    margin: 0;
-    font-family: 'Inter', sans-serif; /* A modern, friendly sans-serif font like Inter, Montserrat, or Poppins works well. You might need to import it from Google Fonts. */
-    background-color:#5680E9; /* Light grey background */
-    color: #333;
-}
+/* ✅ All @import at the top */
 @import "tailwindcss";
-
-/* Optional animation plugin */
 @import "tw-animate-css";
 
-
-
+/* ✅ Global styles */
 body {
+  margin: 0;
   font-family: 'Inter', sans-serif;
+  background-color: #5680E9;
+  color: #333;
 }
 
-/* Optional layer base additions */
+/* ✅ Animation must be defined at the top-level */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* ✅ Optional Tailwind layer */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -26,6 +32,7 @@ body {
   }
 }
 
+/* ✅ Pixel rendering for game visuals */
 * {
   image-rendering: pixelated;
   box-sizing: border-box;

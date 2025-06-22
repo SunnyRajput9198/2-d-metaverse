@@ -126,4 +126,17 @@ export type WebSocketMessage =
   | { type: 'movement'; payload: MovementPayload }
   | { type: 'movement-rejected'; payload: MovementRejectedPayload }
   | { type: 'user-left'; payload: UserLeftPayload }
-  | { type: 'chat-message'; payload: ChatMessageBroadcast }; // 👈 NEW
+  | { type: 'chat-message'; payload: ChatMessageBroadcast }
+  | { type: "emoji-reaction"; payload: { userId: string; emoji: string ; timestamp: number } }
+
+  // Client to Server
+export type SendEmojiPayload = {
+  emoji: string;
+};
+
+// Server to Client
+export type UserEmojiPayload = {
+  userId: string;
+  emoji: string;
+  timestamp: number;
+};

@@ -27,6 +27,8 @@ const SpacePage: React.FC = () => {
     sendChatMessage,
     userId: currentUserId,
     ws,
+    emojiReactions,
+    sendEmojiReaction
   } = useWebSocket(spaceId ?? "");
 
   const {
@@ -40,13 +42,21 @@ const SpacePage: React.FC = () => {
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Separate emoji picker state for chat and avatar reaction
+  const [showChatEmojiPicker, setShowChatEmojiPicker] = useState(false);
+  // New state for avatar emoji picker position only
+  const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
+
+  const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
+
 
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [chatMessages]);
+
 
   const renderedVideos = useMemo(() => {
     const requestFullscreen = (videoElement: HTMLVideoElement | null) => {
@@ -180,6 +190,10 @@ const SpacePage: React.FC = () => {
           ))}
 
           {Object.values(usersInSpace).map((user) => {
+            const reaction = emojiReactions[user.userId];
+            const emoji = reaction?.emoji;
+
+
             const frame = user.frame ?? 0;
             const direction = user.direction ?? "down";
             const rowMap = { down: 0, left: 1, right: 2, up: 3 } as const;
@@ -202,6 +216,25 @@ const SpacePage: React.FC = () => {
                   transformOrigin: "top left",
                 }}
               >
+                {/* 👇 Add this inside the avatar container */}
+                {emoji && (
+                  <div
+                    key={reaction.timestamp} // 👈 force re-render on new emoji
+                    style={{
+                      position: "absolute",
+                      top: -20,
+                      left: SPRITE_WIDTH / 2,
+                      transform: "translateX(-50%)",
+
+                      fontSize: "7rem",                // ⬅️ Increased emoji size
+                      animation: "fadeOut 7s ease-out forwards", // ⬅️ Increased display time to match timeout
+
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {emoji}
+                  </div>
+                )}
                 <div
                   style={{
                     width: SPRITE_WIDTH * 2,
@@ -224,6 +257,42 @@ const SpacePage: React.FC = () => {
         <button onClick={() => move(currentPlayerPosition.x + 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">→</button>
         <button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y + 1)} className="bg-blue-600 px-4 py-2 rounded">↓</button>
       </div>
+      {/* Standalone Emoji Reaction Button */}
+      <div className="absolute bottom-24 right-4 z-50">
+        <button
+          onClick={(e) => {
+            const rect = (e.target as HTMLElement).getBoundingClientRect();
+            setShowAvatarEmojiPicker(true);
+            setAvatarEmojiPickerPosition({ top: rect.top - 350, left: rect.left - 200 });
+          }}
+
+          className="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded text-black text-lg"
+          title="React with Emoji"
+        >
+          😊 React
+        </button>
+      </div>
+      {showAvatarEmojiPicker && avatarEmojiPickerPosition && (
+        <div
+          className="absolute z-50"
+          style={{
+            top: avatarEmojiPickerPosition.top,
+            left: avatarEmojiPickerPosition.left,
+            position: "fixed",
+          }}
+        >
+          <Picker
+            data={data}
+            onEmojiSelect={(emoji: any) => {
+              sendEmojiReaction(emoji.native);
+              setShowAvatarEmojiPicker(false);
+            }}
+            theme="dark"
+          />
+        </div>
+      )}
+
+
 
       <div className="absolute top-4 left-4 flex gap-2 z-40">
         {!isVideoOpen && (
@@ -285,7 +354,7 @@ const SpacePage: React.FC = () => {
             />
             {/* Emoji Picker Button */}
             <button
-              onClick={() => setShowEmojiPicker((prev) => !prev)}
+              onClick={() => setShowChatEmojiPicker((prev) => !prev)}
               className="text-xl bg-gray-700 rounded px-2 hover:bg-gray-600"
               title="Pick Emoji"
             >
@@ -293,18 +362,19 @@ const SpacePage: React.FC = () => {
             </button>
 
             {/* Emoji Picker Component */}
-            {showEmojiPicker && (
+            {showChatEmojiPicker && (
               <div className="absolute bottom-14 right-12 z-50">
                 <Picker
                   data={data}
                   onEmojiSelect={(emoji: any) => {
                     setInputValue((prev) => prev + emoji.native);
-                    setShowEmojiPicker(false);
+                    setShowChatEmojiPicker(false);
                   }}
                   theme="dark"
                 />
               </div>
             )}
+
 
             <Button
               onClick={() => {

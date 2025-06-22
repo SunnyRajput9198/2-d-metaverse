@@ -235,6 +235,25 @@ export class User {
           );
           break;
         }
+        case "emoji-reaction": {
+          if (!this.spaceId || !this.userId) return;
+
+          const { emoji } = parsedData.payload;
+
+          RoomManager.getInstance().broadcast(
+            {
+              type: "emoji-reaction",
+              payload: {
+                userId: this.userId,
+                emoji,
+              },
+            },
+            this, // exclude self (optional)
+            this.spaceId
+          );
+
+          break;
+        }
       }
     });
   }

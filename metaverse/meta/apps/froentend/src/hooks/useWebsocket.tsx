@@ -24,6 +24,8 @@ function useWebSocket(spaceId: string) {
     const [spawnPoint, setSpawnPoint] = useState<{ x: number; y: number } | null>(null);
     const [map, setMap] = useState<string[][]>();
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [emojiReactions, setEmojiReactions] = useState<Record<string, { emoji: string, timestamp: number }>>({});
+
 
     const sendJsonMessage = useCallback((message: WebSocketMessage) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -47,6 +49,20 @@ function useWebSocket(spaceId: string) {
             type: 'chat-message',
             payload,
         });
+    }, [sendJsonMessage, userId]);
+
+    const sendEmojiReaction = useCallback((emoji: string) => {
+        if (!userId) return;
+        const timestamp = Date.now();
+        sendJsonMessage({
+            type: 'emoji-reaction',
+            payload: { emoji, userId, timestamp },
+        });
+        // Optional local update for immediate feedback
+        setEmojiReactions((prev) => ({
+            ...prev,
+            [userId]: { emoji, timestamp }
+        }));
     }, [sendJsonMessage, userId]);
 
     useEffect(() => {
@@ -156,6 +172,25 @@ function useWebSocket(spaceId: string) {
                     });
                     break;
 
+                case 'emoji-reaction':
+                    const { userId: reactingUserId, emoji } = message.payload;
+                    setEmojiReactions((prev) => ({
+                        ...prev,
+                        [reactingUserId]: { emoji, timestamp: Date.now() }
+                    }));
+
+
+                    // Remove the emoji after 3 seconds
+                    setTimeout(() => {
+                        setEmojiReactions(prev => {
+                            const updated = { ...prev };
+                            delete updated[reactingUserId];
+                            return updated;
+                        });
+                    }, 5000);
+                    break;
+
+
                 default:
                     console.log('Unhandled WS message type:', message.type, message);
             }
@@ -180,6 +215,7 @@ function useWebSocket(spaceId: string) {
     }, [spaceId, token, WS_URL, sendJsonMessage, userId]);
 
     const frameCounterRef = useRef<number>(0);
+
 
     const move = useCallback((newX: number, newY: number) => {
         const current = usersInSpace[userId || ""];
@@ -215,6 +251,9 @@ function useWebSocket(spaceId: string) {
         });
     }, [sendJsonMessage, userId, usersInSpace]);
 
+
+
+
     const currentPlayerPosition = userId && usersInSpace[userId]
         ? usersInSpace[userId]
         : spawnPoint
@@ -234,6 +273,8 @@ function useWebSocket(spaceId: string) {
         chatMessages,
         sendChatMessage,
         userId,
+        emojiReactions,
+        sendEmojiReaction,
         ws: wsRef.current
     };
 }

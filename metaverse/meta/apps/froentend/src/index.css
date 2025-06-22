@@ -5,4 +5,15 @@ body {
     background-color:#5680E9; /* Light grey background */
     color: #333;
 }
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
 @import "tailwindcss";
