@@ -7,7 +7,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import SpacePage from './Space/[spaceid]/page';
 import HomePage from './pages/Homepage'; // ✅ New homepage
-
+import FeaturesPage from './pages/featurepage';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -55,6 +55,11 @@ const App: React.FC = () => {
         <Route path="/space/:spaceId" element={
           <PrivateRoute>
             <SpacePage />
+          </PrivateRoute>
+        } />
+        <Route path="/features" element={
+          <PrivateRoute>
+            <FeaturesPage />
           </PrivateRoute>
         } />
 <Route path="*" element={<Navigate to="/" />} /> {/* Optional catch-all */}

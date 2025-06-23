@@ -1,6 +1,8 @@
 /* General Body Styles - Sets a background and font */
+/* this is the main file for chaging syntax */
 body {
     margin: 0;
+    font-family: 'DM Sans', sans-serif; /* A modern, friendly sans-serif font like Inter, Montserrat, or Poppins works well. You might need to import it from Google Fonts. */
     font-family: 'Inter', sans-serif; /* A modern, friendly sans-serif font like Inter, Montserrat, or Poppins works well. You might need to import it from Google Fonts. */
     background-color:#5680E9; /* Light grey background */
     color: #333;
@@ -15,5 +17,70 @@ body {
     transform: translateY(-20px);
   }
 }
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
 
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes popAndFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(0);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1.2) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1) translateY(-20px);
+  }
+}
+
+@keyframes floatUpFade {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.9;
+    scale: 1.2;
+  }
+  100% {
+    transform: translateY(-150px);
+    opacity: 0;
+    scale: 1;
+  }
+}
+.floating-emoji {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.5rem;
+  animation: floatUpFade 2s ease-out forwards;
+  pointer-events: none;
+}
 @import "tailwindcss";

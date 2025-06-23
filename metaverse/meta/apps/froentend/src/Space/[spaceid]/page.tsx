@@ -8,6 +8,7 @@ import { Maximize2 } from "lucide-react";
 import { Fullscreen, VideoOff } from "lucide-react";
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
+import { useHandGesture } from "@/hooks/useHandgesture";
 
 const TILE_SIZE = 32;
 const SPRITE_WIDTH = 256;
@@ -54,6 +55,9 @@ const SpacePage: React.FC = () => {
   const [dragging, setDragging] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
   const wasDragging = useRef(false);
+const localVideoRef = useRef<HTMLVideoElement | null>(null);
+
+
 
 
 
@@ -99,6 +103,17 @@ const SpacePage: React.FC = () => {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragging]);
+useHandGesture(localVideoRef, (gesture) => {
+  const emojiMap = {
+    thumbs_up: "👍",
+    heart: "❤️",
+  };
+  const emoji = emojiMap[gesture];
+  if (emoji) {
+    sendEmojiReaction(emoji); 
+  }
+});
+
 
 
 
@@ -120,6 +135,7 @@ const SpacePage: React.FC = () => {
               key="local"
               className="w-40 h-32 border-2 border-white rounded-md"
               ref={(video) => {
+                localVideoRef.current = video; // 👈 Add this
                 if (video && video.srcObject !== localStream) {
                   video.srcObject = localStream;
                   video.autoplay = true;
@@ -271,7 +287,7 @@ const SpacePage: React.FC = () => {
                       transform: "translateX(-50%)",
 
                       fontSize: "7rem",                // ⬅️ Increased emoji size
-                      animation: "fadeOut 5s ease-out forwards", // instead of fadeOut
+                      animation: "popAndFade 5s ease-out forwards", // instead of fadeOut
 
 
                       pointerEvents: "none",
@@ -284,9 +300,9 @@ const SpacePage: React.FC = () => {
                   style={{
                     width: SPRITE_WIDTH * 2,
                     height: SPRITE_HEIGHT * 4,
-                    backgroundImage: "url('/maps/a6.png')",
+                    backgroundImage: "url('/maps/a9.png')",
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: `${SPRITE_WIDTH * 2}px ${SPRITE_HEIGHT * 4}px`,
+                    backgroundSize: `${SPRITE_WIDTH * 4}px ${SPRITE_HEIGHT * 4}px`,
                     backgroundPosition: `-${col * SPRITE_WIDTH}px -${row * SPRITE_HEIGHT}px`,
                   }}
                 />

@@ -12,9 +12,12 @@
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
+    "@mediapipe/hands": "^0.4.1675469240",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.8",
+    "@tensorflow-models/handpose": "^0.1.0",
+    "@tensorflow/tfjs": "^4.22.0",
     "@types/emoji-mart": "^3.0.14",
     "@types/simple-peer": "^9.11.8",
     "class-variance-authority": "^0.7.1",

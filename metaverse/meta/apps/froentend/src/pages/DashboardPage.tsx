@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { Input } from "@/components/ui/input"
-import { Popover } from '@/components/ui/popover';
 
 const DashboardPage: React.FC = () => {
     const { token, isAuthenticated, signout, BACKEND_URL } = useAuth();
