@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom";
 import useWebSocket from "@/hooks/useWebsocket";
 import { Button } from "@/components/ui/button";
 import { useVideoCall } from "@/hooks/useVideocall";
-import { Maximize2 } from "lucide-react";
-
 import { Fullscreen, VideoOff } from "lucide-react";
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import { useHandGesture } from "@/hooks/useHandgesture";
+import FloatingEmoji from "@/components/FloatingEmoji";
+import VideoPanel from "@/components/VideoPanel";
+import ChatPanel from "@/components/Chatpanel";
+import MapCanvas from "@/components/Mapcanvas";
 
 const TILE_SIZE = 32;
 const SPRITE_WIDTH = 256;
@@ -39,13 +41,9 @@ const SpacePage: React.FC = () => {
     peerStreams,
   } = useVideoCall(ws, currentUserId!);
 
-  const [inputValue, setInputValue] = useState("");
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
-
-  // Separate emoji picker state for chat and avatar reaction
-  const [showChatEmojiPicker, setShowChatEmojiPicker] = useState(false);
   // New state for avatar emoji picker position only
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
 
@@ -55,12 +53,20 @@ const SpacePage: React.FC = () => {
   const [dragging, setDragging] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
   const wasDragging = useRef(false);
-const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
+  const [floatingEmojis, setFloatingEmojis] = useState<
+    { id: string; emoji: string; x: number; y: number }[]
+  >([]);
 
+  const triggerFloatingEmoji = (emoji: string, x: number, y: number) => {
+    const id = `${Date.now()}-${Math.random()}`;
+    setFloatingEmojis((prev) => [...prev, { id, emoji, x, y }]);
+  };
 
-
-
+  const handleFloatingEmojiComplete = (id: string) => {
+    setFloatingEmojis((prev) => prev.filter((e) => e.id !== id));
+  };
   const recentReactions = useMemo(() => {
     const now = Date.now();
 
@@ -83,7 +89,7 @@ const localVideoRef = useRef<HTMLVideoElement | null>(null);
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragging) return;
- wasDragging.current = true; // ✅ Mark that a drag occurred
+      wasDragging.current = true; // ✅ Mark that a drag occurred
 
       setReactBtnPosition({
         top: e.clientY - offset.current.y,
@@ -103,89 +109,23 @@ const localVideoRef = useRef<HTMLVideoElement | null>(null);
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragging]);
-useHandGesture(localVideoRef, (gesture) => {
-  const emojiMap = {
-    thumbs_up: "👍",
-    heart: "❤️",
-  };
-  const emoji = emojiMap[gesture];
-  if (emoji) {
-    sendEmojiReaction(emoji); 
-  }
-});
-
-
-
-
-  const renderedVideos = useMemo(() => {
-    const requestFullscreen = (videoElement: HTMLVideoElement | null) => {
-      if (!videoElement) return;
-      if (videoElement.requestFullscreen) videoElement.requestFullscreen();
-      else if ((videoElement as any).webkitRequestFullscreen) (videoElement as any).webkitRequestFullscreen();
-      else if ((videoElement as any).mozRequestFullScreen) (videoElement as any).mozRequestFullScreen();
-      else if ((videoElement as any).msRequestFullscreen) (videoElement as any).msRequestFullscreen();
+  useHandGesture(localVideoRef, (gesture) => {
+    const emojiMap = {
+      thumbs_up: "👍",
+      heart: "❤️",
     };
-
-    return (
-      <div className="flex gap-4 flex-wrap items-center">
-        {/* Local User Video */}
-        {localStream && (
-          <div className="relative flex flex-col items-center">
-            <video
-              key="local"
-              className="w-40 h-32 border-2 border-white rounded-md"
-              ref={(video) => {
-                localVideoRef.current = video; // 👈 Add this
-                if (video && video.srcObject !== localStream) {
-                  video.srcObject = localStream;
-                  video.autoplay = true;
-                  video.muted = true;
-                }
-              }}
-            />
-            <Button
-              onClick={() => requestFullscreen(document.querySelector("video"))}
-              className="absolute top-1 right-1 bg-black bg-opacity-60 hover:bg-opacity-90 p-1 rounded-full"
-            >
-              <Maximize2 className="h-4 w-4 text-white" />
-            </Button>
-            <span className="text-xs mt-1 text-white opacity-80">You</span>
-          </div>
-        )}
-
-        {/* Peer Videos */}
-        {peerStreams.map(({ peerId, stream }, idx) => {
-          const peerUsername = usersInSpace[peerId]?.username || "Guest";
-          const videoId = `peer-video-${idx}`;
-
-          return (
-            <div key={peerId} className="relative flex flex-col items-center">
-              <video
-                id={videoId}
-                className="w-40 h-32 border-2 border-yellow-400 rounded-md"
-                ref={(video) => {
-                  if (video && video.srcObject !== stream) {
-                    video.srcObject = stream;
-                    video.autoplay = true;
-                  }
-                }}
-              />
-              <Button
-                onClick={() => requestFullscreen(document.getElementById(videoId) as HTMLVideoElement)}
-                className="absolute top-1 right-1 bg-black bg-opacity-60 hover:bg-opacity-90 p-1 rounded-full"
-              >
-                <Maximize2 className="h-4 w-4 text-white" />
-              </Button>
-              <span className="text-xs mt-1 text-white opacity-80 truncate max-w-[10rem] text-center">
-                {peerUsername}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  }, [localStream, peerStreams, usersInSpace]);
-
+    const emoji = emojiMap[gesture];
+    if (emoji) {
+      sendEmojiReaction(emoji);
+    }
+    const localVideo = localVideoRef.current;
+    if (localVideo) {
+      const rect = localVideo.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top;
+      triggerFloatingEmoji(emoji, x, y);
+    }
+  });
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -207,7 +147,9 @@ useHandGesture(localVideoRef, (gesture) => {
   if (!isConnected || !map || !currentPlayerPosition) {
     return <div className="text-white text-center mt-10">Connecting to space...</div>;
   }
-
+  const handleSendMessage = (msg: string) => {
+    sendChatMessage(msg);
+  };
   const toggleFullscreen = () => {
     const docElm = document.documentElement;
     if (!document.fullscreenElement) {
@@ -219,98 +161,19 @@ useHandGesture(localVideoRef, (gesture) => {
 
   return (
     <div className="relative h-screen w-screen bg-black text-white overflow-hidden">
-      <div className="flex items-center justify-center h-full">
-        <div
-          className="relative"
-          style={{
-            width: `${map[0].length * TILE_SIZE}px`,
-            height: `${map.length * TILE_SIZE}px`,
-            backgroundImage: "url('/maps/m4.png')",
-            backgroundSize: "cover",
-            backgroundRepeat: "no-repeat",
-            imageRendering: "pixelated",
-          }}
-        >
-          {spaceElements.map((ele, index) => (
-            <img
-              key={index}
-              src={ele.element.imageUrl || "/maps/object.png"}
-              alt="element"
-              style={{
-                position: "absolute",
-                width: TILE_SIZE * 2,
-                height: TILE_SIZE * 2,
-                left: ele.x * TILE_SIZE,
-                top: ele.y * TILE_SIZE,
-                imageRendering: "pixelated",
-                transition: "left 0.2s, top 0.2s",
-                zIndex: ele.y * 100,
-              }}
-            />
-          ))}
-
-          {Object.values(usersInSpace).map((user) => {
-            const reaction = emojiReactions[user.userId];
-            const emoji = reaction?.emoji;
-
-
-            const frame = user.frame ?? 0;
-            const direction = user.direction ?? "down";
-            const rowMap = { down: 0, left: 1, right: 2, up: 3 } as const;
-            const row = rowMap[direction];
-            const col = frame % 2;
-            return (
-              <div
-                key={user.id}
-                style={{
-                  position: "absolute",
-                  left: user.x * TILE_SIZE,
-                  top: user.y * TILE_SIZE,
-                  width: SPRITE_WIDTH,
-                  height: SPRITE_HEIGHT,
-                  overflow: "hidden",
-                  zIndex: user.y * 100 + 50,
-                  imageRendering: "pixelated",
-                  transition: "left 0.15s, top 0.15s",
-                  transform: "scale(0.125)",
-                  transformOrigin: "top left",
-                }}
-              >
-                {/* 👇 Add this inside the avatar container */}
-                {emoji && (
-                  <div
-                    key={reaction.timestamp} // 👈 force re-render on new emoji
-                    style={{
-                      position: "absolute",
-                      top: -20,
-                      left: SPRITE_WIDTH / 2,
-                      transform: "translateX(-50%)",
-
-                      fontSize: "7rem",                // ⬅️ Increased emoji size
-                      animation: "popAndFade 5s ease-out forwards", // instead of fadeOut
-
-
-                      pointerEvents: "none",
-                    }}
-                  >
-                    {emoji}
-                  </div>
-                )}
-                <div
-                  style={{
-                    width: SPRITE_WIDTH * 2,
-                    height: SPRITE_HEIGHT * 4,
-                    backgroundImage: "url('/maps/a9.png')",
-                    backgroundRepeat: "no-repeat",
-                    backgroundSize: `${SPRITE_WIDTH * 4}px ${SPRITE_HEIGHT * 4}px`,
-                    backgroundPosition: `-${col * SPRITE_WIDTH}px -${row * SPRITE_HEIGHT}px`,
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Render map & avatars via MapCanvas */}
+    <div className="flex items-center justify-center h-full">
+      <MapCanvas
+        map={map}
+        spaceElements={spaceElements}
+        usersInSpace={usersInSpace}
+        emojiReactions={emojiReactions}
+        currentPlayerPosition={currentPlayerPosition}
+        TILE_SIZE={TILE_SIZE}
+        SPRITE_WIDTH={SPRITE_WIDTH}
+        SPRITE_HEIGHT={SPRITE_HEIGHT}
+      />
+    </div>
 
       <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 z-40">
         <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-4 py-2 rounded">↑</Button>
@@ -334,13 +197,13 @@ useHandGesture(localVideoRef, (gesture) => {
               y: e.clientY - rect.top,
             };
           }
-            wasDragging.current = false; // reset on click
+          wasDragging.current = false; // reset on click
           setDragging(true);
         }}
       >
         <Button
           onClick={(e) => {
-             if (wasDragging.current) return; // ✅ Skip if drag just happened
+            if (wasDragging.current) return; // ✅ Skip if drag just happened
             const rect = (e.target as HTMLElement).getBoundingClientRect();
             setShowAvatarEmojiPicker(true);
             setAvatarEmojiPickerPosition({ top: rect.top - 350, left: rect.left - 200 });
@@ -390,9 +253,15 @@ useHandGesture(localVideoRef, (gesture) => {
 
       {isVideoOpen && (
         <div className="absolute bottom-4 left-4 flex gap-2 flex-wrap z-40">
-          {renderedVideos}
+          <VideoPanel
+            localStream={localStream}
+            peerStreams={peerStreams}
+            usersInSpace={usersInSpace}
+            localVideoRef={localVideoRef}
+          />
         </div>
       )}
+
 
       <Button
         onClick={() => setIsChatOpen(!isChatOpen)}
@@ -400,74 +269,16 @@ useHandGesture(localVideoRef, (gesture) => {
       >💬</Button>
 
       {isChatOpen && (
-        <div className="absolute right-0 top-0 h-full w-[300px] bg-gray-900 border-l border-gray-700 p-4 flex flex-col z-40">
-          <div ref={chatBoxRef} className="flex-1 overflow-y-auto bg-gray-800 rounded-lg p-3 mb-3">
-            {chatMessages.map((msg, index) => (
-              <div
-                key={index}
-                className={`mb-2 flex ${msg.userId === currentUserId ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}`}
-                >
-                  <div className="font-semibold text-xs opacity-80 mb-1">
-                    {usersInSpace[msg.userId]?.username || "Anonymous"}
-                  </div>
-                  <div>{msg.message}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              className="flex-1 px-3 py-2 rounded bg-gray-800 text-white outline-none"
-              placeholder="Say something..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && inputValue.trim()) {
-                  sendChatMessage(inputValue);
-                  setInputValue("");
-                }
-              }}
-            />
-            {/* Emoji Picker Button */}
-            <Button
-              onClick={() => setShowChatEmojiPicker((prev) => !prev)}
-              className="text-xl bg-gray-700 rounded px-2 hover:bg-gray-600"
-              title="Pick Emoji"
-            >
-              😊
-            </Button>
-
-            {/* Emoji Picker Component */}
-            {showChatEmojiPicker && (
-              <div className="absolute bottom-14 right-12 z-50">
-                <Picker
-                  data={data}
-                  onEmojiSelect={(emoji: any) => {
-                    setInputValue((prev) => prev + emoji.native);
-                    setShowChatEmojiPicker(false);
-                  }}
-                  theme="dark"
-                />
-              </div>
-            )}
-
-
-            <Button
-              onClick={() => {
-                if (inputValue.trim()) {
-                  sendChatMessage(inputValue);
-                  setInputValue("");
-                }
-              }}
-              className="bg-blue-600 px-4 py-2"
-            >Send</Button>
-          </div>
-        </div>
+        <ChatPanel
+          isOpen={true}
+          messages={chatMessages}
+          currentUserId={currentUserId!}
+          users={usersInSpace}
+          onSend={handleSendMessage}
+          onClose={() => setIsChatOpen(false)}
+        />
       )}
+
       {recentReactions.length > 0 && (
         <div className="absolute top-24 left-4 bg-black/70 backdrop-blur-md rounded-md px-4 py-2 text-white shadow z-50 max-w-[200px]">
           <div className="text-sm font-bold mb-1 text-yellow-300">Recent Reactions</div>
@@ -481,6 +292,16 @@ useHandGesture(localVideoRef, (gesture) => {
           </ul>
         </div>
       )}
+      {floatingEmojis.map(({ id, emoji, x, y }) => (
+        <FloatingEmoji
+          key={id}
+          id={id}
+          emoji={emoji}
+          x={x}
+          y={y}
+          onComplete={handleFloatingEmojiComplete}
+        />
+      ))}
 
     </div>
   );

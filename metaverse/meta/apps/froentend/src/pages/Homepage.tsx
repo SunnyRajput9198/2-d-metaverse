@@ -97,9 +97,6 @@ const HomePage: React.FC = () => {
         </p>
       </section>
 
-
-
-      {/* Features */}
       {/* Features Section */}
 <section className="px-6 sm:px-10 py-24 bg-gradient-to-b from-[#0f0f14] to-[#18181c] text-white">
  
@@ -173,10 +170,6 @@ const HomePage: React.FC = () => {
     </button>
   </div>
 </section>
-
-
-
-
       {/* Footer */}
       <footer className="text-center text-sm text-gray-500 py-6 border-t border-gray-700">
         © {new Date().getFullYear()} MetaSpace · Built by Sunny Rajput

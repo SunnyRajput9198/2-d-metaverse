@@ -2,69 +2,71 @@ import { useEffect, useRef } from "react";
 import * as handpose from "@tensorflow-models/handpose";
 import * as tf from "@tensorflow/tfjs";
 
+// ✅ Global shared model cache
+let sharedModel: handpose.HandPose | null = null;
+let modelLoadingPromise: Promise<handpose.HandPose> | null = null;
+
 export const useHandGesture = (
   videoRef: React.RefObject<HTMLVideoElement | null>,
   onGestureDetected: (gesture: "thumbs_up" | "heart") => void
 ) => {
   const lastGestureTimeRef = useRef(0);
+  const rafId = useRef<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    const detectGesture = async () => {
-      console.log("[🧠] Loading handpose model...");
-      const model = await handpose.load();
-      console.log("[✅] Model loaded!");
+    const loadModelAndStart = async () => {
+      await tf.setBackend("webgl");
+      await tf.ready();
 
-      const detectLoop = async () => {
-        if (!isMounted) return;
+      // ✅ Load the model only once globally
+      if (!sharedModel) {
+        if (!modelLoadingPromise) {
+          modelLoadingPromise = handpose.load();
+        }
+        sharedModel = await modelLoadingPromise;
+        console.log("✅ Handpose model loaded and cached");
+      }
 
+      const detect = async () => {
         const video = videoRef.current;
-        if (!video) {
-          console.log("[🚫] Video ref is null.");
-          requestAnimationFrame(detectLoop);
+        if (!video || video.readyState !== 4 || !isMounted || !sharedModel) {
+          rafId.current = requestAnimationFrame(detect);
           return;
         }
 
-        const ready = video.readyState === 4;
-        if (!ready) {
-          console.log("[⏳] Video not ready yet. Current readyState:", video.readyState);
-          requestAnimationFrame(detectLoop);
-          return;
-        }
-
-        console.log("[🎥] Running prediction...");
-        const predictions = await model.estimateHands(video);
-        console.log("[✋] Predictions:", predictions);
+        const predictions = await sharedModel.estimateHands(video, true);
 
         if (predictions.length > 0) {
           const gesture = classifyGesture(predictions[0].landmarks);
-          console.log("[👀] Detected gesture:", gesture);
-
           const now = Date.now();
+
           if (gesture && now - lastGestureTimeRef.current > 2000) {
-            console.log("[📢] Gesture triggered:", gesture);
             onGestureDetected(gesture);
             lastGestureTimeRef.current = now;
           }
-        } else {
-          console.log("[🔍] No hand detected.");
         }
 
-        requestAnimationFrame(detectLoop);
+        // Loop with delay (~10 FPS)
+        setTimeout(() => {
+          rafId.current = requestAnimationFrame(detect);
+        }, 100);
       };
 
-      detectLoop();
+      detect();
     };
 
-    detectGesture();
+    loadModelAndStart();
 
     return () => {
       isMounted = false;
+      if (rafId.current) cancelAnimationFrame(rafId.current);
     };
   }, [videoRef, onGestureDetected]);
 };
 
+// 👇 Classifier remains the same
 function classifyGesture(
   landmarks: number[][]
 ): "thumbs_up" | "heart" | null {
@@ -76,29 +78,32 @@ function classifyGesture(
     landmarks[20],
   ];
 
-  console.log("[📌] Landmark positions:");
-  console.table({ thumbTip, indexTip, middleTip, ringTip, pinkyTip });
+  const thumbUp =
+    thumbTip[1] < indexTip[1] - 30 &&
+    middleTip[1] > indexTip[1] &&
+    ringTip[1] > indexTip[1] &&
+    pinkyTip[1] > indexTip[1];
 
-  const thumbUp = thumbTip[1] < indexTip[1] - 30 &&
-                  middleTip[1] > indexTip[1] &&
-                  ringTip[1] > indexTip[1] &&
-                  pinkyTip[1] > indexTip[1];
-  if (thumbUp) {
-    console.log("[👍] Gesture matched: Thumbs Up");
-    return "thumbs_up";
-  }
+  if (thumbUp) return "thumbs_up";
 
-  const fingersTogether =
-    Math.abs(indexTip[0] - middleTip[0]) < 30 &&
-    Math.abs(middleTip[0] - ringTip[0]) < 30 &&
-    Math.abs(ringTip[0] - pinkyTip[0]) < 30;
+  const fingersCloseX =
+    Math.abs(indexTip[0] - middleTip[0]) < 20 &&
+    Math.abs(middleTip[0] - ringTip[0]) < 20 &&
+    Math.abs(ringTip[0] - pinkyTip[0]) < 20;
 
-  const heartShape = fingersTogether && indexTip[1] < thumbTip[1];
-  if (heartShape) {
-    console.log("[❤️] Gesture matched: Heart");
-    return "heart";
-  }
+  const fingersCloseY =
+    Math.abs(indexTip[1] - middleTip[1]) < 20 &&
+    Math.abs(middleTip[1] - ringTip[1]) < 20 &&
+    Math.abs(ringTip[1] - pinkyTip[1]) < 20;
 
-  console.log("[❓] No known gesture matched.");
+  const thumbUnderFingers =
+    thumbTip[1] > indexTip[1] &&
+    thumbTip[1] > middleTip[1] &&
+    thumbTip[1] > ringTip[1];
+
+  const heartShape = fingersCloseX && fingersCloseY && thumbUnderFingers;
+
+  if (heartShape) return "heart";
+
   return null;
 }

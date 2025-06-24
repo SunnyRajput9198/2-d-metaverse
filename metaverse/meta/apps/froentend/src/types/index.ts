@@ -29,7 +29,7 @@ export interface UserMetadata {
     y: number;
     avatarId?: string;
     frame?: number;
-    username?: string;
+    username: string;
     direction?: 'up' | 'down' | 'left' | 'right';
 }
 
