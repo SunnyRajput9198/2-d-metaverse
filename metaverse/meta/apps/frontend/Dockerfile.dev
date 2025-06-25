@@ -1,0 +1,43 @@
+FROM node:18-alpine
+
+# 1. Set as base working directory
+# Purpose: Sets the working directory inside the container.
+# Effect: All COPY, RUN, etc. will operate from /app inside the container.
+WORKDIR /app
+
+# 2. Copy only frontend package.json (not root-level one)
+# Path Explanation:
+# COPY <source> <destination>=./apps/frontend/package.json is source and destination is ./
+# Host: ./apps/frontend/package.json
+# Container: /app/apps/frontend/package.json
+COPY ./apps/frontend/package.json ./
+
+# 3. Set working directory to frontend app
+# Purpose: Move into the frontend app directory before installing dependencies.
+WORKDIR /app/apps/frontend
+
+# 4. Install dependencies
+RUN npm install --legacy-peer-deps
+
+# 5. Copy rest of the frontend app AFTER deps (for better caching)
+# Purpose: Now copy the rest of your frontend app (e.g., .tsx, vite.config.ts, public/, etc).
+# Why after install? So Docker doesn't re-run npm install when source code changes — saves time.
+# COPY <source> <destination>
+# You're copying everything inside your local folder apps/frontend
+# And placing it into a folder apps/frontend inside the container.
+# ✅ . and ./ are the same:
+# They both mean:
+# “The current working directory” inside the container.
+COPY ./apps/frontend ./  
+# ✅ Copy contents directly into current working dir
+
+
+# 6. Expose Vite dev server port
+EXPOSE 5173
+
+# 7. Run Vite in dev mode
+# npm run dev: Runs Vite in dev mode.
+# --host: Makes Vite listen on 0.0.0.0 so it can be accessed from outside the container.
+CMD ["npm", "run", "dev", "--", "--host"]
+
+

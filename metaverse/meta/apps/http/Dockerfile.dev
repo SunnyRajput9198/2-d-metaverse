@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy only the HTTP service's package.json (relative to context = meta/)
+COPY apps/http/package.json ./
+
+# Install deps
+RUN npm install
+
+# Copy full HTTP service
+COPY ./apps/http ./ 
+ # all code inside apps/http goes into /app
+
+ # 5. Copy shared Prisma DB package (e.g., for @prisma/client)
+COPY packages/db ../packages/db 
+ # goes to /packages/db inside container
+EXPOSE 4000
+
+CMD ["npm", "run", "dev"]

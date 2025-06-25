@@ -8,15 +8,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'), // ✅ Correct way to alias `@` to `src`
-       buffer: 'rollup-plugin-node-polyfills/polyfills/buffer-es6',
-      stream: 'rollup-plugin-node-polyfills/polyfills/stream',
+       buffer: 'buffer',
+      stream: 'stream-browserify',
     },
   },
     define: {
     global: 'window', // ✅ Add this line to fix "global is not defined"
   },
   optimizeDeps: {
-    include: ['buffer', 'process'],
+    include: ['buffer','stream-browserify', 'process'],
   },
 });
  
