@@ -1,0 +1,39 @@
+services:
+  ws:
+    build:
+      context: ../../
+      dockerfile: apps/ws/Dockerfile.dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - .:/app
+      - ../../packages/db:/packages/db
+      - /app/node_modules
+    working_dir: /app
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - db
+    environment:
+      # Make sure this matches your Prisma client and DB config
+      DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+
+
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: metaverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+
+volumes:
+  dbdata:
+   
+
+

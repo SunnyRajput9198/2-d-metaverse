@@ -1,0 +1,40 @@
+# --- Build stage ---
+FROM node:18 AS builder
+
+WORKDIR /app
+
+# Copy only package.json
+COPY apps/ws/package.json ./apps/ws/
+
+# Set working directory to the app
+WORKDIR /app/apps/ws
+
+# Install all dependencies (dev + prod) to build
+RUN npm install
+
+# Copy full source code of the WebSocket service
+COPY apps/ws ./ 
+
+# If you're using shared DB types or Prisma client, include this
+COPY packages/db ../../packages/db
+
+# Build the project (e.g., TypeScript -> JS in /dist)
+RUN npm run build
+
+# --- Production stage ---
+FROM node:18-slim
+
+WORKDIR /app
+
+# Copy only what’s needed to run
+COPY --from=builder /app/apps/ws/dist ./dist
+COPY --from=builder /app/apps/ws/package.json ./
+
+# Install only production dependencies
+RUN npm install --omit=dev
+
+# Expose WebSocket port
+EXPOSE 3001
+
+# Run the built app
+CMD ["node", "dist/index.js"]

@@ -1,0 +1,23 @@
+# --- Development Dockerfile for WebSocket service ---
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy only the WS package.json
+COPY apps/ws/package.json ./
+
+# Install deps
+WORKDIR /app/apps/ws
+
+RUN npm install
+
+# Copy WebSocket service source code
+COPY ./apps/ws ./
+ # 5. Copy shared Prisma DB package (e.g., for @prisma/client)
+COPY packages/db ../packages/db 
+
+# Expose WebSocket port (adjust if yours is different)
+EXPOSE 3001
+
+# Start dev server (adjust based on your dev script)
+CMD ["npm", "run", "dev"]
