@@ -4,7 +4,7 @@ import { spaceRouter } from "./space";
 import { adminRouter } from "./admin";
 import { SigninSchema, SignupSchema } from "../../types";
 import {hash, compare} from "../../scrypt";
-import client from "@repo/db/client";
+import client from "@repo/db";
 import jwt from "jsonwebtoken";
 import { JWT_PASSWORD } from "../../config";
 

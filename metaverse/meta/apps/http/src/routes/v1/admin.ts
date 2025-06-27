@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { adminMiddleware } from "../../middleware/admin";
 import { AddElementSchema, CreateAvatarSchema, CreateElementSchema, CreateMapSchema, UpdateElementSchema } from "../../types";
-import client from "@repo/db/client";
+import client from "@repo/db";
 export const adminRouter = Router();
 adminRouter.use(adminMiddleware)
 // it creates a new element

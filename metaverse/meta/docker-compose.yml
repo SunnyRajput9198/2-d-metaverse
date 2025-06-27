@@ -1,0 +1,71 @@
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dev-db
+    ports:
+      - "5332:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dev_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - devnet
+
+  ws:
+    build:
+      context: .
+      dockerfile: apps/ws/Dockerfile.dev
+    container_name: dev-ws
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/dev_db
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - devnet
+
+  http:
+    build:
+      context: .
+      dockerfile: apps/http/Dockerfile.dev
+    container_name: dev-http
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/dev_db
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    networks:
+      - devnet
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile.dev
+    container_name: dev-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - http
+      - ws
+    networks:
+      - devnet
+
+volumes:
+  postgres-data:
+
+networks:
+  devnet:

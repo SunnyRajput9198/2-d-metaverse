@@ -12,6 +12,7 @@ WORKDIR /app
 # Container: /app/apps/frontend/package.json
 COPY ./apps/frontend/package.json ./
 
+
 # 3. Set working directory to frontend app
 # Purpose: Move into the frontend app directory before installing dependencies.
 WORKDIR /app/apps/frontend

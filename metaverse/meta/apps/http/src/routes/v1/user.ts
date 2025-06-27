@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { UpdateMetadataSchema } from "../../types";
-import client from "@repo/db/client";
+
 import { userMiddleware } from "../../middleware/user";
+import client from "@repo/db";
 
 export const userRouter = Router();
 // it updates the metadata of the user

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import client from "@repo/db/client";
+import client from "@repo/db";
 import { userMiddleware } from "../../middleware/user";
 import { AddElementSchema, CreateElementSchema, CreateSpaceSchema, DeleteElementSchema } from "../../types";
 export const spaceRouter = Router();

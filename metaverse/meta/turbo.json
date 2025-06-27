@@ -2,11 +2,16 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
   "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
+  "build": {
+  "dependsOn": ["^build"],
+  "inputs": ["$TURBO_DEFAULT$", ".env*", "packages/db/prisma/schema.prisma"],
+  "outputs": ["dist/**", "node_modules/.prisma/**", ".next/**", "!.next/cache/**"]
+}
+,"prisma:generate": {
+  "outputs": ["node_modules/.prisma/**"]
+}
+,
+    
     "lint": {
       "dependsOn": ["^lint"]
     },

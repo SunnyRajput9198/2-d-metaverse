@@ -1,23 +1,46 @@
-# --- Development Dockerfile for WebSocket service ---
-FROM node:18-alpine
+# --------------------
+# Stage 1: Install dependencies
+# --------------------
+FROM node:20-alpine AS installer
 
-WORKDIR /app
-
-# Copy only the WS package.json
-COPY apps/ws/package.json ./
-
-# Install deps
 WORKDIR /app/apps/ws
 
-RUN npm install
+# Install Prisma CLI globally so `npx prisma` will work
+RUN npm install -g prisma@6.10.1
 
-# Copy WebSocket service source code
-COPY ./apps/ws ./
- # 5. Copy shared Prisma DB package (e.g., for @prisma/client)
-COPY packages/db ../packages/db 
+RUN corepack enable npm
+RUN apk add --no-cache openssl libc6-compat
 
-# Expose WebSocket port (adjust if yours is different)
+ENV LD_PRELOAD=/lib/libc.so.6
+
+# Copy root-level package info to install
+COPY package.json turbo.json ./
+RUN npm install --legacy-peer-deps
+
+# Copy the service code (apps/ws)
+COPY apps/ws ./
+
+# Copy the db package separately so the schema is available
+COPY packages/db /app/packages/db
+
+# Run Prisma generate with the schema from the now-copied db folder
+RUN npx prisma generate --schema=/app/packages/db/prisma/schema.prisma
+
+# --------------------
+# Stage 2: Dev Runtime
+# --------------------
+FROM node:20-alpine AS dev
+
+WORKDIR /app/apps/ws
+
+RUN corepack enable npm
+RUN apk add --no-cache openssl libc6-compat
+
+ENV LD_PRELOAD=/lib/libc.so.6
+
+# Copy everything from installer
+COPY --from=installer /app/apps/ws ./
+COPY --from=installer /app/packages/db /app/packages/db
+
 EXPOSE 3001
-
-# Start dev server (adjust based on your dev script)
 CMD ["npm", "run", "dev"]

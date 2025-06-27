@@ -1,7 +1,8 @@
 import { WebSocket } from "ws";
 import { RoomManager } from "./RoomManager";
 import { OutgoingMessage } from "./types";
-import client from "@repo/db/client"; //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
+import client from "@repo/db/"; //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
+ //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_PASSWORD } from "./config";
 
@@ -107,7 +108,7 @@ export class User {
                     // avatarType: u.avatarType, // (if you add avatars later)
                   })) ?? [],
               dimensions: `${space.width}x${space.height}`, // <<< add this line,
-              elements: elements.map((e) => ({
+              elements: elements.map(e => ({
                 id: e.id,
                 x: e.x,
                 y: e.y,

@@ -1,20 +1,45 @@
-FROM node:18-alpine
+# --------------------
+# Stage 1: Install dependencies
+# --------------------
+FROM node:20-alpine AS installer
 
-WORKDIR /app
+WORKDIR /app/apps/http
+# Install Prisma CLI globally so `npx prisma` will work
+RUN npm install -g prisma@6.10.1
 
-# Copy only the HTTP service's package.json (relative to context = meta/)
-COPY apps/http/package.json ./
+RUN corepack enable npm
+RUN apk add --no-cache openssl libc6-compat
 
-# Install deps
-RUN npm install
+ENV LD_PRELOAD=/lib/libc.so.6
 
-# Copy full HTTP service
-COPY ./apps/http ./ 
- # all code inside apps/http goes into /app
+# Copy root-level package info to install
+COPY package.json turbo.json ./
+RUN npm install --legacy-peer-deps
 
- # 5. Copy shared Prisma DB package (e.g., for @prisma/client)
-COPY packages/db ../packages/db 
- # goes to /packages/db inside container
-EXPOSE 4000
+# Copy the service code (apps/ws)
+COPY apps/http ./
 
+# Copy the db package separately so the schema is available
+COPY packages/db /app/packages/db
+
+# Run Prisma generate with the schema from the now-copied db folder
+RUN npx prisma generate --schema=/app/packages/db/prisma/schema.prisma
+
+# --------------------
+# Stage 2: Dev Runtime
+# --------------------
+FROM node:20-alpine AS dev
+
+WORKDIR /app/apps/http
+
+RUN corepack enable npm
+RUN apk add --no-cache openssl libc6-compat
+
+ENV LD_PRELOAD=/lib/libc.so.6
+
+# Copy everything from installer
+COPY --from=installer /app/apps/http ./
+COPY --from=installer /app/packages/db /app/packages/db
+
+EXPOSE 3000
 CMD ["npm", "run", "dev"]

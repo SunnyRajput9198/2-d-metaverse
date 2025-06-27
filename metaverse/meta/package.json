@@ -1,5 +1,5 @@
 {
-  "name": ".meta",
+  "name": "meta",
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -8,8 +8,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
   },
+  "dependencies": {
+    "@prisma/client": "^6.10.1"
+  },
   "devDependencies": {
     "prettier": "^3.5.3",
+    "prisma": "^6.10.1",
     "turbo": "^2.5.4",
     "typescript": "5.8.2"
   },

@@ -1,22 +1,21 @@
 services:
   ws:
+    container_name: ws
     build:
       context: ../../
       dockerfile: apps/ws/Dockerfile.dev
+      target: dev  # 👈 important: use the second stage of the Dockerfile
     ports:
-      - "3001:3001"
+      - "3001:3001"  # container port is 3000 as exposed in Dockerfile
     volumes:
-      - .:/app
-      - ../../packages/db:/packages/db
-      - /app/node_modules
-    working_dir: /app
+      - ../../:/app:cached
+      - /app/node_modules  # prevent host overrides
+    working_dir: /app/apps/ws
     command: ["npm", "run", "dev"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
     depends_on:
       - db
-    environment:
-      # Make sure this matches your Prisma client and DB config
-      DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
-
 
   db:
     image: postgres:15-alpine
@@ -31,9 +30,5 @@ services:
     volumes:
       - dbdata:/var/lib/postgresql/data
 
-
 volumes:
   dbdata:
-   
-
-
