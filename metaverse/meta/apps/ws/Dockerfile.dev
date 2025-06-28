@@ -1,37 +1,33 @@
 # --------------------
-# Stage 1: Install dependencies
+# Stage 1: Install Dependencies (from root)
 # --------------------
 FROM node:20-alpine AS installer
 
-WORKDIR /app/apps/ws
+WORKDIR /app
 
-# Install Prisma CLI globally so `npx prisma` will work
-RUN npm install -g prisma@6.10.1
-
+# Enable Corepack for npm v9+ support
 RUN corepack enable npm
+
+# Add any native deps
 RUN apk add --no-cache openssl libc6-compat
 
-ENV LD_PRELOAD=/lib/libc.so.6
+# Copy lockfile and package.json to install from root
+COPY package.json package-lock.json turbo.json ./
+COPY apps ./apps
+COPY packages ./packages
 
-# Copy root-level package info to install
-COPY package.json turbo.json ./
+# Install all monorepo deps including tsx, turbo, typescript
 RUN npm install --legacy-peer-deps
 
-# Copy the service code (apps/ws)
-COPY apps/ws ./
-
-# Copy the db package separately so the schema is available
-COPY packages/db /app/packages/db
-
-# Run Prisma generate with the schema from the now-copied db folder
-RUN npx prisma generate --schema=/app/packages/db/prisma/schema.prisma
+# Generate Prisma client
+# RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
 
 # --------------------
-# Stage 2: Dev Runtime
+# Stage 2: Dev Runtime for apps/ws
 # --------------------
 FROM node:20-alpine AS dev
 
-WORKDIR /app/apps/ws
+WORKDIR /app
 
 RUN corepack enable npm
 RUN apk add --no-cache openssl libc6-compat
@@ -39,8 +35,11 @@ RUN apk add --no-cache openssl libc6-compat
 ENV LD_PRELOAD=/lib/libc.so.6
 
 # Copy everything from installer
-COPY --from=installer /app/apps/ws ./
-COPY --from=installer /app/packages/db /app/packages/db
+COPY --from=installer /app /app
+
+WORKDIR /app/apps/ws
 
 EXPOSE 3001
+
+# Run dev using turbo (recommended), or fallback to workspace script
 CMD ["npm", "run", "dev"]

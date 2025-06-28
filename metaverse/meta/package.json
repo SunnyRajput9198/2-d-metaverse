@@ -5,17 +5,18 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "db:generate": "prisma generate --schema=./packages/db/prisma/schema.prisma",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
   },
-  "dependencies": {
-    "@prisma/client": "^6.10.1"
-  },
   "devDependencies": {
+    "@prisma/client": "^6.10.1",
+    "@types/node": "^24.0.3",
     "prettier": "^3.5.3",
     "prisma": "^6.10.1",
+    "tsx": "^4.20.3",
     "turbo": "^2.5.4",
-    "typescript": "5.8.2"
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=18"
@@ -24,5 +25,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "ws": "^8.18.2"
+  }
 }

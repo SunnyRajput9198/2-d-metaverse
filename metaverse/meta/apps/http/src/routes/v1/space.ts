@@ -1,10 +1,11 @@
 import { Router } from "express";
 import client from "@repo/db";
+import { Request, Response } from "express";
 import { userMiddleware } from "../../middleware/user";
 import { AddElementSchema, CreateElementSchema, CreateSpaceSchema, DeleteElementSchema } from "../../types";
 export const spaceRouter = Router();
 
-spaceRouter.post("/", userMiddleware, async (req, res) => {
+spaceRouter.post("/", userMiddleware, async (req: Request, res: Response) => {
     // console.log("endopibnt")
     const parsedData = CreateSpaceSchema.safeParse(req.body)
     if (!parsedData.success) {
@@ -62,7 +63,7 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
         });
 
         await client.spaceElements.createMany({
-            data: map.mapElements.map(e => ({
+            data: map.mapElements.map((e: any) => ({
                 spaceId: space.id,
                 elementId: e.elementId,
                 x: e.x!,
@@ -78,7 +79,7 @@ spaceRouter.post("/", userMiddleware, async (req, res) => {
 })
 
 
-spaceRouter.delete("/element", userMiddleware, async (req, res) => {
+spaceRouter.delete("/element", userMiddleware, async (req: Request, res: Response) => {
     // console.log("spaceElement?.space1 ")
     const parsedData = DeleteElementSchema.safeParse(req.body)
     if (!parsedData.success) {
@@ -107,7 +108,7 @@ spaceRouter.delete("/element", userMiddleware, async (req, res) => {
     res.json({message: "Element deleted"})
 })
 
-spaceRouter.delete("/:spaceId", userMiddleware, async(req, res) => {
+spaceRouter.delete("/:spaceId", userMiddleware, async(req: Request, res: Response) => {
     console.log("req.params.spaceId", req.params.spaceId)
     const space = await client.space.findUnique({
         where: {
@@ -135,7 +136,7 @@ spaceRouter.delete("/:spaceId", userMiddleware, async(req, res) => {
     res.json({message: "Space deleted"})
 })
 
-spaceRouter.get("/all", userMiddleware, async (req, res) => {
+spaceRouter.get("/all", userMiddleware, async (req: Request, res: Response) => {
     const spaces = await client.space.findMany({
         where: {
             creatorId: req.userId!
@@ -143,7 +144,7 @@ spaceRouter.get("/all", userMiddleware, async (req, res) => {
     });
 
     res.json({
-        spaces: spaces.map(s => ({
+        spaces: spaces.map((s: any) => ({
             id: s.id,
             name: s.name,
             imageUrl: s.thumbnail,
@@ -154,7 +155,7 @@ spaceRouter.get("/all", userMiddleware, async (req, res) => {
     
 })
 
-spaceRouter.post("/element", userMiddleware, async (req, res) => {
+spaceRouter.post("/element", userMiddleware, async (req: Request, res: Response) => {
     const parsedData = AddElementSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(400).json({message: "Validation failed"})
@@ -191,7 +192,7 @@ spaceRouter.post("/element", userMiddleware, async (req, res) => {
     res.json({message: "Element added"})
 })
 
-spaceRouter.get("/:spaceId",async (req, res) => {
+spaceRouter.get("/:spaceId",async (req: Request, res: Response) => {
     const space = await client.space.findUnique({
         where: {
             id: req.params.spaceId
@@ -215,7 +216,7 @@ spaceRouter.get("/:spaceId",async (req, res) => {
         "imageUrl": space.thumbnail,
         "name": space.name,
         "id": space.id,
-        elements: space.elements.map(e => ({
+        elements: space.elements.map((e: any) => ({
             id: e.id,
             element: {
                 id: e.element.id,

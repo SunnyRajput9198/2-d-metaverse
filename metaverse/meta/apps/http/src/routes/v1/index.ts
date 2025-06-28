@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Request, Response } from "express";
 import { userRouter } from "./user";
 import { spaceRouter } from "./space";
 import { adminRouter } from "./admin";
@@ -10,7 +11,7 @@ import { JWT_PASSWORD } from "../../config";
 
 export const router = Router();
 
-router.post("/signup", async (req, res) => {
+router.post("/signup", async (req:  Request, res: Response) => {
     // console.log("inside signup")
     // check the user body me pass hoga isliye req.body kiya hai
     const parsedData = SignupSchema.safeParse(req.body)
@@ -36,14 +37,14 @@ router.post("/signup", async (req, res) => {
         res.json({
             userId: user.id
         })
-    } catch(e) {
+    } catch(e: any) {
         // console.log("erroer thrown")
         // console.log(e)
         res.status(400).json({message: "User already exists"})
     }
 })
 
-router.post("/signin", async (req, res) => {
+router.post("/signin", async (req: Request, res: Response) => {
     const parsedData = SigninSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(403).json({message: "Validation failed"})
@@ -90,7 +91,7 @@ router.get("/elements", async (req, res) => {
     const elements = await client.element.findMany()
 //elements.map(e => ({ ... })): This is a standard JavaScript array method. 
 // It iterates over each element record (e) retrieved from the database. For each e, it creates a new JavaScript object.
-    res.json({elements: elements.map(e => ({
+    res.json({elements: elements.map((e: any) => ({
         id: e.id,
         imageUrl: e.imageUrl,
         width: e.width,
@@ -99,9 +100,9 @@ router.get("/elements", async (req, res) => {
     }))})
 })
 // it fetches all the avatars from the database
-router.get("/avatars", async (req, res) => {
+router.get("/avatars", async (req: Request, res: Response) => {
     const avatars = await client.avatar.findMany()
-    res.json({avatars: avatars.map(x => ({
+    res.json({avatars: avatars.map((x: any) => ({
         id: x.id,
         imageUrl: x.imageUrl,
         name: x.name

@@ -1,12 +1,13 @@
 import { Router } from "express";
+import client from "@repo/db";
+import { Request, Response } from "express";
 import { UpdateMetadataSchema } from "../../types";
 
 import { userMiddleware } from "../../middleware/user";
-import client from "@repo/db";
 
 export const userRouter = Router();
 // it updates the metadata of the user
-userRouter.post("/metadata", userMiddleware, async (req, res) => {
+userRouter.post("/metadata", userMiddleware, async (req: Request, res: Response) => {
     const parsedData = UpdateMetadataSchema.safeParse(req.body)       
     if (!parsedData.success) {
         console.log("parsed data incorrect")
@@ -30,7 +31,7 @@ userRouter.post("/metadata", userMiddleware, async (req, res) => {
 })
 // Clients would typically call this like GET /metadata/bulk?ids=[user1Id,user2Id].
 // it fetches the  metadata (like avatar information) for multiple users in bulk.
-userRouter.get("/metadata/bulk", async (req, res) => {
+userRouter.get("/metadata/bulk", async (req: Request, res: Response) => {
     // ?? "[]": This is the nullish coalescing operator.It allows you to provide a default value for a variable in case it is null or undefined.
     const userIdString = (req.query.ids ?? "[]") as string;
     const userIds = (userIdString).slice(1, userIdString?.length - 1).split(","); //This removes the opening [ and closing ] characters from the userIdString.
@@ -51,7 +52,7 @@ userRouter.get("/metadata/bulk", async (req, res) => {
     })
 
     res.json({
-        avatars: metadata.map(m => ({
+        avatars: metadata.map((m: any) => ({
             userId: m.id,
             avatarId: m.avatar?.imageUrl
         }))

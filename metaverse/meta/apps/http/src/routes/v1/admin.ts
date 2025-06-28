@@ -1,11 +1,12 @@
 import { Router } from "express";
+import { Request, Response } from "express";
 import { adminMiddleware } from "../../middleware/admin";
 import { AddElementSchema, CreateAvatarSchema, CreateElementSchema, CreateMapSchema, UpdateElementSchema } from "../../types";
 import client from "@repo/db";
 export const adminRouter = Router();
 adminRouter.use(adminMiddleware)
 // it creates a new element
-adminRouter.post("/element", async (req, res) => {
+adminRouter.post("/element", async (req :Request, res :Response) => {
     const parsedData = CreateElementSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(400).json({message: "Validation failed"})
@@ -26,7 +27,7 @@ adminRouter.post("/element", async (req, res) => {
     })
 })
 // it updates an element
-adminRouter.put("/element/:elementId", (req, res) => {
+adminRouter.put("/element/:elementId", (req: Request, res: Response) => {
     const parsedData = UpdateElementSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(400).json({message: "Validation failed"})
@@ -43,7 +44,7 @@ adminRouter.put("/element/:elementId", (req, res) => {
     res.json({message: "Element updated"})
 })
 // it creates a new avatar
-adminRouter.post("/avatar", async (req, res) => {
+adminRouter.post("/avatar", async (req: Request, res: Response) => {
     const parsedData = CreateAvatarSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(400).json({message: "Validation failed"})
@@ -60,7 +61,7 @@ adminRouter.post("/avatar", async (req, res) => {
     res.json({avatarId: avatar.id})
 })
 // it creates a new map
-adminRouter.post("/map", async (req, res) => {
+adminRouter.post("/map", async (req: Request, res: Response) => {
     const parsedData = CreateMapSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(400).json({message: "Validation failed"})
@@ -73,7 +74,7 @@ adminRouter.post("/map", async (req, res) => {
             height: parseInt(parsedData.data.dimensions.split("x")[1]),
             thumbnail: parsedData.data.thumbnail,
             mapElements: {
-                create: parsedData.data.defaultElements.map(e => ({
+                create: parsedData.data.defaultElements.map((e: any )=> ({
                     elementId: e.elementId,
                     x: e.x,
                     y: e.y

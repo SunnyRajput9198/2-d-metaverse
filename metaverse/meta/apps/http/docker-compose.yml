@@ -6,7 +6,7 @@ services:
       dockerfile: apps/http/Dockerfile.dev
       target: dev  # 👈 important: use the second stage of the Dockerfile
     ports:
-      - "4000:3000"  # container port is 3000 as exposed in Dockerfile
+      - "3000:3000"  # container port is 3000 as exposed in Dockerfile
     volumes:
       - ../../:/app:cached
       - /app/node_modules  # prevent host overrides
