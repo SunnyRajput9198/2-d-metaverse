@@ -1,37 +1,41 @@
-# --- 1. Builder stage ---
+# --------------------
+# Stage 1: Builder – Install deps & build static site
+# --------------------
 FROM node:18-alpine AS builder
 
-WORKDIR /app/apps/frontend
-
-# Copy only package.json into correct place
-COPY ./apps/frontend/package.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy rest of the frontend app
-COPY ./apps/frontend ./
-
-# Build the app
-RUN npm run build
-
-# --- 2. Production stage using `serve` ---
-# This stage serves the built app using a lightweight server.
-FROM node:18-alpine AS runner
-
-# Set working directory
 WORKDIR /app
 
-# Install static server
+RUN corepack enable
+
+# Copy monorepo root-level lockfile and frontend-specific package.json
+COPY package-lock.json ./
+COPY apps/frontend/package.json apps/frontend/
+
+# Set working directory to frontend app
+WORKDIR /app/apps/frontend
+
+# Install only frontend deps
+RUN npm install --legacy-peer-deps
+
+# Copy rest of the frontend app AFTER deps (for better layer caching)
+COPY apps/frontend ./  
+
+# Build the Vite app
+RUN npm run build
+
+# --------------------
+# Stage 2: Static file server
+# --------------------
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+# Install `serve` to serve the static files
 RUN npm install -g serve
 
-# Copy build output from builder stage
+# Copy built static files from builder
 COPY --from=builder /app/apps/frontend/dist ./dist
 
+EXPOSE 4173
 
-# Expose port
-EXPOSE 3000
-
-# Serve the app
-# This runs the static file server and serves your frontend app from dist/ on port 3000.
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "4173"]

@@ -1,42 +1,58 @@
-# ----------- 1. Build Stage -----------
-FROM node:18 AS builder
+# --------------------
+# Stage 1: Build and Prisma Client Generation
+# --------------------
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy HTTP service package.json
-COPY apps/http/package.json ./apps/http/
+# Accept DB URL at build time
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
 
-# Copy Prisma DB logic
-COPY packages/db ./packages/db
+# Enable Corepack
+RUN corepack enable npm
 
-# Move into HTTP service and install deps
+# Install native dependencies
+RUN apk add --no-cache openssl libc6-compat
+
+# Copy all monorepo files
+COPY package.json package-lock.json turbo.json ./
+COPY apps ./apps
+COPY packages ./packages
+
+# Install all dependencies
+RUN npm install --legacy-peer-deps
+
+# Generate Prisma client and run migration (for production use migrations, not dev)
+RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
+
+# Optional: if your production DB is ready for migration (use with caution)
+# RUN npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma
+
+# Build the HTTP app
 WORKDIR /app/apps/http
-RUN npm install
-
-# Copy rest of the HTTP service
-COPY apps/http ./
-
-# Optional: generate Prisma client (only if needed at runtime)
-# RUN npx prisma generate --schema=../packages/db/schema.prisma
-
-# Build the app
 RUN npm run build
 
-
-# ----------- 2. Production Stage -----------
-FROM node:18-slim
+# --------------------
+# Stage 2: Production Runtime
+# --------------------
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy built app and only needed files
+RUN corepack enable npm
+RUN apk add --no-cache openssl libc6-compat
+
+# Accept runtime DB URL
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
+# Copy only built files and runtime deps
 COPY --from=builder /app/apps/http/dist ./dist
-COPY --from=builder /app/apps/http/package.json ./
-COPY --from=builder /app/packages/db ./packages/db
+COPY --from=builder /app/apps/http/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/db/generated ./packages/db/generated
 
-# Install production dependencies
-RUN npm install --omit=dev
+EXPOSE 3000
 
-EXPOSE 4000
-
-# Run built server
 CMD ["node", "dist/index.js"]
