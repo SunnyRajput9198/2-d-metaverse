@@ -5,8 +5,12 @@ FROM node:20-alpine AS installer
 
 WORKDIR /app
 
+ARG DATABASE_URL
 # Enable Corepack for npm v9+ support
 RUN corepack enable npm
+
+# Accept DATABASE_URL as build ARG
+ENV DATABASE_URL=${DATABASE_URL}
 
 # Add any native deps
 RUN apk add --no-cache openssl libc6-compat
@@ -20,6 +24,8 @@ COPY packages ./packages
 RUN npm install --legacy-peer-deps
 
 # Generate Prisma client
+RUN npx prisma migrate dev --schema=packages/db/prisma/schema.prisma
+
 RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
 
 # --------------------

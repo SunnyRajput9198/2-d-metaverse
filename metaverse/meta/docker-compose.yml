@@ -23,7 +23,7 @@ services:
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/dev_db
+       DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
     volumes:
       - .:/app
       - /app/node_modules
@@ -36,11 +36,13 @@ services:
     build:
       context: .
       dockerfile: apps/http/Dockerfile.dev
+      args:
+        DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
     container_name: dev-http
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/dev_db
+      DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
     volumes:
       - .:/app
       - /app/node_modules

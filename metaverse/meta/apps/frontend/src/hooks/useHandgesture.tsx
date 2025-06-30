@@ -16,46 +16,62 @@ export const useHandGesture = (
   useEffect(() => {
     let isMounted = true;
 
-    const loadModelAndStart = async () => {
-      await tf.setBackend("webgl");
-      await tf.ready();
+   const loadModelAndStart = async () => {
+  const isWebGLAvailable = () => {
+    try {
+      const canvas = document.createElement("canvas");
+      return !!(
+        window.WebGLRenderingContext &&
+        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+      );
+    } catch (e) {
+      return false;
+    }
+  };
 
-      // ✅ Load the model only once globally
-      if (!sharedModel) {
-        if (!modelLoadingPromise) {
-          modelLoadingPromise = handpose.load();
-        }
-        sharedModel = await modelLoadingPromise;
-        console.log("✅ Handpose model loaded and cached");
+  if (!isWebGLAvailable()) {
+    console.warn("❌ WebGL not supported. Hand gesture recognition disabled.");
+    return;
+  }
+
+  await tf.setBackend("webgl");
+  await tf.ready();
+
+  if (!sharedModel) {
+    if (!modelLoadingPromise) {
+      modelLoadingPromise = handpose.load();
+    }
+    sharedModel = await modelLoadingPromise;
+    console.log("✅ Handpose model loaded and cached");
+  }
+
+  const detect = async () => {
+    const video = videoRef.current;
+    if (!video || video.readyState !== 4 || !isMounted || !sharedModel) {
+      rafId.current = requestAnimationFrame(detect);
+      return;
+    }
+
+    const predictions = await sharedModel.estimateHands(video, true);
+
+    if (predictions.length > 0) {
+      const gesture = classifyGesture(predictions[0].landmarks);
+      const now = Date.now();
+
+      if (gesture && now - lastGestureTimeRef.current > 2000) {
+        onGestureDetected(gesture);
+        lastGestureTimeRef.current = now;
       }
+    }
 
-      const detect = async () => {
-        const video = videoRef.current;
-        if (!video || video.readyState !== 4 || !isMounted || !sharedModel) {
-          rafId.current = requestAnimationFrame(detect);
-          return;
-        }
+    setTimeout(() => {
+      rafId.current = requestAnimationFrame(detect);
+    }, 100);
+  };
 
-        const predictions = await sharedModel.estimateHands(video, true);
+  detect();
+};
 
-        if (predictions.length > 0) {
-          const gesture = classifyGesture(predictions[0].landmarks);
-          const now = Date.now();
-
-          if (gesture && now - lastGestureTimeRef.current > 2000) {
-            onGestureDetected(gesture);
-            lastGestureTimeRef.current = now;
-          }
-        }
-
-        // Loop with delay (~10 FPS)
-        setTimeout(() => {
-          rafId.current = requestAnimationFrame(detect);
-        }, 100);
-      };
-
-      detect();
-    };
 
     loadModelAndStart();
 
