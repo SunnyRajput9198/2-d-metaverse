@@ -233,7 +233,15 @@ function useWebSocket(spaceId: string) {
 
         frameCounterRef.current = (frameCounterRef.current + 1) % 3;
         const frame = frameCounterRef.current;
-
+        sendJsonMessage({
+            type: 'movement',
+            payload: {
+                userId: userId!,
+                x: newX,
+                y: newY,
+                direction,
+            }
+        });
         setUsersInSpace(prev => {
             if (userId && prev[userId]) {
                 return {

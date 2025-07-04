@@ -153,7 +153,7 @@ export class User {
             this.spaceId
           );
           break;
-        case "move":
+        case "movement":
           const moveX = parsedData.payload.x;
           const moveY = parsedData.payload.y;
           const xDisplacement = Math.abs(this.x - moveX);

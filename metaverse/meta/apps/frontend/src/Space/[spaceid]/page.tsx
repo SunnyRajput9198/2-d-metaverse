@@ -11,6 +11,11 @@ import FloatingEmoji from "@/components/FloatingEmoji";
 import VideoPanel from "@/components/VideoPanel";
 import ChatPanel from "@/components/Chatpanel";
 import MapCanvas from "@/components/Mapcanvas";
+import { Minimap } from "@/components/minimap";
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
+
+
 
 const TILE_SIZE = 32;
 const SPRITE_WIDTH = 256;
@@ -53,11 +58,10 @@ const SpacePage: React.FC = () => {
   const [dragging, setDragging] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
   const wasDragging = useRef(false);
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
-
   const [floatingEmojis, setFloatingEmojis] = useState<
     { id: string; emoji: string; x: number; y: number }[]
   >([]);
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const triggerFloatingEmoji = (emoji: string, x: number, y: number) => {
     const id = `${Date.now()}-${Math.random()}`;
@@ -162,18 +166,40 @@ const SpacePage: React.FC = () => {
   return (
     <div className="relative h-screen w-screen bg-black text-white overflow-hidden">
       {/* Render map & avatars via MapCanvas */}
-    <div className="flex items-center justify-center h-full">
-      <MapCanvas
-        map={map}
-        spaceElements={spaceElements}
-        usersInSpace={usersInSpace}
-        emojiReactions={emojiReactions}
-        currentPlayerPosition={currentPlayerPosition}
-        TILE_SIZE={TILE_SIZE}
-        SPRITE_WIDTH={SPRITE_WIDTH}
-        SPRITE_HEIGHT={SPRITE_HEIGHT}
-      />
-    </div>
+      <div className="flex items-center justify-center h-full">
+
+        <MapCanvas
+          map={map}
+          spaceElements={spaceElements}
+          usersInSpace={usersInSpace}
+          emojiReactions={emojiReactions}
+          currentPlayerPosition={currentPlayerPosition}
+          TILE_SIZE={TILE_SIZE}
+          SPRITE_WIDTH={SPRITE_WIDTH}
+          SPRITE_HEIGHT={SPRITE_HEIGHT}
+        />
+      </div>
+      <div className="absolute top-11 right-[28rem] z-50">
+        <ResizableBox
+          width={150}
+          height={150}
+          minConstraints={[100, 100]}
+          maxConstraints={[200, 200]}
+          resizeHandles={['sw']} // south-west corner
+        >
+          <Minimap
+            users={Object.values(usersInSpace).map((u) => ({
+              id: u.id,
+              username: u.username,
+              x: u.x ?? 0,
+              y: u.y ?? 0,
+            }))}
+            mapWidth={map[0]?.length ?? 0}
+            mapHeight={map.length ?? 0}
+          />
+        </ResizableBox>
+      </div>
+
 
       <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 z-40">
         <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-4 py-2 rounded">↑</Button>
@@ -302,7 +328,6 @@ const SpacePage: React.FC = () => {
           onComplete={handleFloatingEmojiComplete}
         />
       ))}
-
     </div>
   );
 };
