@@ -14,7 +14,7 @@ import MapCanvas from "@/components/Mapcanvas";
 import { Minimap } from "@/components/minimap";
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
-
+import { motion } from "framer-motion";
 
 
 const TILE_SIZE = 32;
@@ -44,25 +44,18 @@ const SpacePage: React.FC = () => {
     stopVideo,
     localStream,
     peerStreams,
+    startScreenShare,
+    isScreenSharing
   } = useVideoCall(ws, currentUserId!);
 
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isVideoOpen, setIsVideoOpen] = useState(false);
-  // New state for avatar emoji picker position only
+  const [isVideoOpen, setIsVideoOpen] = useState(false);// New state for avatar emoji picker position only
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
-
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
   const [reactBtnPosition, setReactBtnPosition] = useState<{ top: number, left: number }>({ top: 200, left: 20 });
-  const reactBtnRef = useRef<HTMLDivElement | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const offset = useRef({ x: 0, y: 0 });
-  const wasDragging = useRef(false);
-  const [floatingEmojis, setFloatingEmojis] = useState<
-    { id: string; emoji: string; x: number; y: number }[]
-  >([]);
+  const [floatingEmojis, setFloatingEmojis] = useState<{ id: string; emoji: string; x: number; y: number }[]>([]);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
-
   const triggerFloatingEmoji = (emoji: string, x: number, y: number) => {
     const id = `${Date.now()}-${Math.random()}`;
     setFloatingEmojis((prev) => [...prev, { id, emoji, x, y }]);
@@ -90,29 +83,6 @@ const SpacePage: React.FC = () => {
     }
   }, [chatMessages]);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!dragging) return;
-      wasDragging.current = true; // ✅ Mark that a drag occurred
-
-      setReactBtnPosition({
-        top: e.clientY - offset.current.y,
-        left: e.clientX - offset.current.x,
-      });
-    };
-
-    const handleMouseUp = () => {
-      setDragging(false);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [dragging]);
   useHandGesture(localVideoRef, (gesture) => {
     const emojiMap = {
       thumbs_up: "👍",
@@ -208,28 +178,24 @@ const SpacePage: React.FC = () => {
         <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y + 1)} className="bg-blue-600 px-4 py-2 rounded">↓</Button>
       </div>
       {/* Standalone Emoji Reaction Button */}
-      <div
-        ref={reactBtnRef}
-        className="fixed z-50 cursor-move"
+
+      <motion.div
+        drag
+        dragMomentum={false}
+        dragElastic={0.2}
         style={{
+          position: "fixed",
           top: reactBtnPosition.top,
           left: reactBtnPosition.left,
+          zIndex: 50,
+          cursor: "grab",
         }}
-        onMouseDown={(e) => {
-          const rect = reactBtnRef.current?.getBoundingClientRect();
-          if (rect) {
-            offset.current = {
-              x: e.clientX - rect.left,
-              y: e.clientY - rect.top,
-            };
-          }
-          wasDragging.current = false; // reset on click
-          setDragging(true);
+        onDragEnd={(_, info) => {
+          setReactBtnPosition({ top: info.point.y, left: info.point.x });
         }}
       >
         <Button
           onClick={(e) => {
-            if (wasDragging.current) return; // ✅ Skip if drag just happened
             const rect = (e.target as HTMLElement).getBoundingClientRect();
             setShowAvatarEmojiPicker(true);
             setAvatarEmojiPickerPosition({ top: rect.top - 350, left: rect.left - 200 });
@@ -239,7 +205,8 @@ const SpacePage: React.FC = () => {
         >
           😊 React
         </Button>
-      </div>
+      </motion.div>
+
 
       {showAvatarEmojiPicker && avatarEmojiPickerPosition && (
         <div
@@ -275,19 +242,26 @@ const SpacePage: React.FC = () => {
         <Button onClick={toggleFullscreen} className="bg-gray-700 flex items-center gap-2">
           <Fullscreen className="w-4 h-4" /> Fullscreen
         </Button>
+        <Button
+          onClick={startScreenShare}
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          🖥 Share Screen
+        </Button>
       </div>
 
       {isVideoOpen && (
-        <div className="absolute bottom-4 left-4 flex gap-2 flex-wrap z-40">
+        //pointer-events-none will let children opt-in to interaction, and fixed lets them move anywhere on the screen.
+        <div className="fixed inset-0 z-50 pointer-events-none">
           <VideoPanel
             localStream={localStream}
             peerStreams={peerStreams}
             usersInSpace={usersInSpace}
             localVideoRef={localVideoRef}
+            isScreenSharing={isScreenSharing}
           />
         </div>
       )}
-
 
       <Button
         onClick={() => setIsChatOpen(!isChatOpen)}

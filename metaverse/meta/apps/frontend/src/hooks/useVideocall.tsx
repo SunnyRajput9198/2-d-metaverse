@@ -5,27 +5,39 @@ type SimplePeerInstance = InstanceType<typeof SimplePeer>;
 interface PeerStream {
   peerId: string;
   stream: MediaStream;
+  muted?: boolean;//ismuted or not
+  speaking?: boolean;//who is speaking
 }
-
-/**
- * useVideoCall hook is responsible for managing video calls between users.
- * It maintains a list of peers and their respective streams.
- * When a user joins or leaves a space, the hook is notified and it will start or stop the video accordingly.
- * The hook also handles video signaling between users.
- * @param ws the WebSocket connection to the server
- * @param userId the user's id
- * @returns an object with three properties: startVideo, stopVideo, and peerStreams
- * - startVideo is a memoized function that requests access to the user's camera and microphone and sends a start-video message to the server
- * - stopVideo is a memoized function that stops the user's camera and microphone and sends a stop-video message to the server
- * - peerStreams is an array of objects with two properties: peerId and stream
- *   - peerId is the id of the user whose stream is being displayed
- *   - stream is the MediaStream object of the user
- */
 export function useVideoCall(ws: WebSocket | null, userId: string | undefined) {
 
   const [peers, setPeers] = useState<{ [peerId: string]: SimplePeerInstance }>({});//peers is a state object in React, which is used to store SimplePeer instances. It is initialized as an empty object.
   const [peerStreams, setPeerStreams] = useState<PeerStream[]>([]);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const localStreamRef = useRef<MediaStream | null>(null);//useref is a hook that allows you to create a mutable reference that persists across re-renders, store references to DOM elements
+  function detectSpeaking(stream: MediaStream, peerId: string) {
+    const audioCtx = new AudioContext();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    source.connect(analyser);
+
+    const check = () => {
+      analyser.getByteFrequencyData(data);
+      const avg = data.reduce((sum, val) => sum + val, 0) / data.length;
+
+      const isSpeaking = avg > 30;
+      setPeerStreams((prev) =>
+        prev.map((p) =>
+          p.peerId === peerId ? { ...p, speaking: isSpeaking } : p
+        )
+      );
+
+      requestAnimationFrame(check);
+    };
+
+    check();
+  }
   //useCallback memoized function for initiating vide0 -a memoized function is a function that will only be recreated if its dependencies change
   //navigator: This is a global object in web browsers that provides information about the user agent (the browser itself) and the state of the user's system.
   // mediaDevices: This is a property of the navigator object that provides access to connected media input devices, such as cameras and microphones, as well as screen sharing capabilities. It's part of the MediaDevices API, which is a Web API (Application Programming Interface).
@@ -60,6 +72,42 @@ export function useVideoCall(ws: WebSocket | null, userId: string | undefined) {
       );
     }
   }, [ws, userId]);
+const startScreenShare = useCallback(async () => {
+  const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+  const screenTrack = screenStream.getVideoTracks()[0];
+
+  const stream = localStreamRef.current;
+  if (!stream) return;
+
+  // Replace local video track in the stored local stream
+  const [oldTrack] = stream.getVideoTracks();
+  stream.removeTrack(oldTrack);
+  stream.addTrack(screenTrack);
+  //update localstreamRef with modified stream
+ localStreamRef.current = stream;
+  // ✅ Replace the track in each peer using official method
+  Object.values(peers).forEach((peer) => {
+    peer.replaceTrack(oldTrack, screenTrack, stream);
+  });
+
+  setIsScreenSharing(true);
+
+  screenTrack.onended = async () => {
+    setIsScreenSharing(false);
+    await startVideo(); // this reinitializes localStreamRef with camera
+
+    const newCameraTrack = localStreamRef.current?.getVideoTracks()[0];
+    if (!newCameraTrack) return;
+
+    Object.values(peers).forEach((peer) => {
+      peer.replaceTrack(screenTrack, newCameraTrack, localStreamRef.current!);
+    });
+  };
+}, [peers, startVideo]);
+
+
+
+
   //initiatorId: This parameter represents the userId of the local user (the one calling createPeer).
   // receiverId: This parameter represents the userId of the remote user (the one being connected to).
   // initiator: This parameter represents whether the local user is the initiator of the connection (true) or the receiver (false).//If true: This peer will immediately generate an SDP Offer (Session Description Protocol Offer) and send it out via its 'signal' event. It takes the active role in initiating the connection.
@@ -94,7 +142,30 @@ export function useVideoCall(ws: WebSocket | null, userId: string | undefined) {
       //stream": This is the specific event that SimplePeer emits when it successfully receives a MediaStream from the remote peer.
       // This typically happens after the WebRTC connection (the underlying RTCPeerConnection) has been established and the remote peer has added its own MediaStream (e.g., from their camera and microphone) to their side of the connection.
       peer.on("stream", (stream) => {
-        setPeerStreams((prev) => [...prev, { peerId: receiverId, stream }]);
+        const audioTrack = stream.getAudioTracks()[0];
+        const isMuted = audioTrack?.enabled === false;
+
+        // Listen to mute changes
+        if (audioTrack) {
+          audioTrack.onmute = () => {
+            setPeerStreams((prev) =>
+              prev.map((ps) =>
+                ps.peerId === receiverId ? { ...ps, muted: true } : ps
+              )
+            );
+          };
+          audioTrack.onunmute = () => {
+            setPeerStreams((prev) =>
+              prev.map((ps) =>
+                ps.peerId === receiverId ? { ...ps, muted: false } : ps
+              )
+            );
+          };
+        }
+
+        setPeerStreams((prev) => [...prev, { peerId: receiverId, stream, muted: isMuted }]);
+        detectSpeaking(stream, receiverId);
+
       });
 
       return peer;
@@ -114,10 +185,10 @@ export function useVideoCall(ws: WebSocket | null, userId: string | undefined) {
         const peer = createPeer(userId!, peerId, true);
         setPeers((prev) => ({ ...prev, [peerId]: peer }));
       }
-//(prev) => ({ ...prev, [peerId]: peer }): This is a functional update to the state.
-// prev: Represents the previous state of the peers object.
-// ...prev: Spreads all the existing peer connections from the previous state into a new object.
-// [peerId]: peer: Adds the newly created peer instance to the object, using the peerId of the remote user as the key.
+      //(prev) => ({ ...prev, [peerId]: peer }): This is a functional update to the state.
+      // prev: Represents the previous state of the peers object.
+      // ...prev: Spreads all the existing peer connections from the previous state into a new object.
+      // [peerId]: peer: Adds the newly created peer instance to the object, using the peerId of the remote user as the key.
 
       //This if block is the core of the signaling mechanism for WebRTC peer connections. It handles the exchange of crucial metadata (SDP offers/answers and ICE candidates) between peers, which is necessary for SimplePeer to establish a direct connection.
       //from: The userId of the sender of this signal message. This tells us which remote peer this signal originated from.
@@ -165,6 +236,8 @@ export function useVideoCall(ws: WebSocket | null, userId: string | undefined) {
   return {
     startVideo,
     stopVideo,
+    startScreenShare,
+     isScreenSharing,
     localStream: localStreamRef.current,
     peerStreams,
   };
