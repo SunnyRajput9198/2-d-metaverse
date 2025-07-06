@@ -50,6 +50,9 @@ const SpacePage: React.FC = () => {
 
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const lastReadMessageCount = useRef<number>(0);
+
   const [isVideoOpen, setIsVideoOpen] = useState(false);// New state for avatar emoji picker position only
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
@@ -82,6 +85,22 @@ const SpacePage: React.FC = () => {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [chatMessages]);
+  //
+useEffect(() => {
+  const newMessages = chatMessages.length - lastReadMessageCount.current;
+  if (!isChatOpen && newMessages > 0) {
+    setUnreadCount(newMessages);
+  }
+}, [chatMessages, isChatOpen]);
+
+//Also reset when chat opens:
+useEffect(() => {
+  if (isChatOpen) {
+    lastReadMessageCount.current = chatMessages.length;
+    setUnreadCount(0);
+  }
+}, [isChatOpen, chatMessages]);
+
 
   useHandGesture(localVideoRef, (gesture) => {
     const emojiMap = {
@@ -253,7 +272,11 @@ const SpacePage: React.FC = () => {
       <Button
         onClick={() => setIsChatOpen(!isChatOpen)}
         className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full z-50"
-      >💬</Button>
+      >💬{unreadCount > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
+      {unreadCount}
+    </span>
+  )}</Button>
 
       {isChatOpen && (
         <ChatPanel

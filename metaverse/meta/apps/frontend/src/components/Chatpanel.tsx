@@ -51,6 +51,7 @@ interface ChatPanelProps {
   onClose: () => void;
   typingUsers: Record<string, number>; // 👈 add this
   onTyping: () => void; // 👈 add this
+
 }
 
 console.log(marked.parse(linkify("https://google.com")));
@@ -68,6 +69,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+const [searchTerm, setSearchTerm] = useState("");
+
+const filteredMessages = messages.filter((msg) =>
+  msg.message.toLowerCase().includes(searchTerm.toLowerCase())
+);
 
   useEffect(() => {
     if (chatBoxRef.current) {
@@ -79,11 +85,18 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
 
   return (
     <div className="absolute right-0 top-0 h-full w-[300px] bg-gray-900 border-l border-gray-700 p-4 flex flex-col z-40">
+      <input
+  type="text"
+  placeholder="Search messages..."
+  className="mb-3 px-3 py-2 rounded bg-gray-700 text-white w-full outline-none"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
       <div
         ref={chatBoxRef}
         className="flex-1 overflow-y-auto bg-gray-800 rounded-lg p-3 mb-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 "
       >
-        {messages.map((msg, index) => (
+        {filteredMessages.map((msg, index) => (
           <div
             key={index}
             className={`mb-2 flex ${msg.userId === currentUserId ? "justify-end" : "justify-start"}`}
