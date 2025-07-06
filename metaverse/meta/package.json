@@ -27,7 +27,12 @@
     "packages/*"
   ],
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "@types/ws": "^8.18.1",
+    "dompurify": "^3.2.6",
+    "framer-motion": "^12.23.0",
+    "marked": "^16.0.0",
+    "react-draggable": "^4.5.0",
     "ws": "^8.18.2"
   }
 }

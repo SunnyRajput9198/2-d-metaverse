@@ -14,7 +14,6 @@ import MapCanvas from "@/components/Mapcanvas";
 import { Minimap } from "@/components/minimap";
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
-import { motion } from "framer-motion";
 
 
 const TILE_SIZE = 32;
@@ -23,7 +22,6 @@ const SPRITE_HEIGHT = 320;
 
 const SpacePage: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
-
   const {
     isConnected,
     usersInSpace,
@@ -36,6 +34,8 @@ const SpacePage: React.FC = () => {
     userId: currentUserId,
     ws,
     emojiReactions,
+    typingUsers,
+  onTyping,
     sendEmojiReaction
   } = useWebSocket(spaceId ?? "");
 
@@ -53,9 +53,9 @@ const SpacePage: React.FC = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);// New state for avatar emoji picker position only
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
-  const [reactBtnPosition, setReactBtnPosition] = useState<{ top: number, left: number }>({ top: 200, left: 20 });
   const [floatingEmojis, setFloatingEmojis] = useState<{ id: string; emoji: string; x: number; y: number }[]>([]);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
+
   const triggerFloatingEmoji = (emoji: string, x: number, y: number) => {
     const id = `${Date.now()}-${Math.random()}`;
     setFloatingEmojis((prev) => [...prev, { id, emoji, x, y }]);
@@ -179,21 +179,8 @@ const SpacePage: React.FC = () => {
       </div>
       {/* Standalone Emoji Reaction Button */}
 
-      <motion.div
-        drag
-        dragMomentum={false}
-        dragElastic={0.2}
-        style={{
-          position: "fixed",
-          top: reactBtnPosition.top,
-          left: reactBtnPosition.left,
-          zIndex: 50,
-          cursor: "grab",
-        }}
-        onDragEnd={(_, info) => {
-          setReactBtnPosition({ top: info.point.y, left: info.point.x });
-        }}
-      >
+    <div
+  className="fixed z-50 bottom-11 left-[28rem]">
         <Button
           onClick={(e) => {
             const rect = (e.target as HTMLElement).getBoundingClientRect();
@@ -205,8 +192,8 @@ const SpacePage: React.FC = () => {
         >
           😊 React
         </Button>
-      </motion.div>
 
+      </div>
 
       {showAvatarEmojiPicker && avatarEmojiPickerPosition && (
         <div
@@ -274,6 +261,8 @@ const SpacePage: React.FC = () => {
           messages={chatMessages}
           currentUserId={currentUserId!}
           users={usersInSpace}
+          typingUsers={typingUsers}
+          onTyping={onTyping}
           onSend={handleSendMessage}
           onClose={() => setIsChatOpen(false)}
         />

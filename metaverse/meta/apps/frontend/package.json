@@ -17,6 +17,7 @@
     "@mediapipe/hands": "^0.4.1675469240",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
+    "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.8",
     "@tensorflow-models/handpose": "^0.1.0",
     "@tensorflow/tfjs": "^4.22.0",
@@ -27,9 +28,11 @@
     "buffer": "^5.7.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dompurify": "^3.2.6",
     "emoji-mart": "^5.6.0",
     "framer-motion": "^12.23.0",
     "lucide-react": "^0.516.0",
+    "marked": "^16.0.0",
     "process": "^0.11.10",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -39,7 +42,8 @@
     "rollup-plugin-node-polyfills": "^0.2.1",
     "simple-peer": "^9.11.1",
     "stream-browserify": "^3.0.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "tailwind-scrollbar": "^4.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

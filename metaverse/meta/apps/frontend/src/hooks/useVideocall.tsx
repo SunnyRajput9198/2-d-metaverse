@@ -231,7 +231,7 @@ const startScreenShare = useCallback(async () => {
       //Object.values(peers): This gets an array of all the SimplePeer instances currently stored in the peers object.
       Object.values(peers).forEach((peer) => peer.destroy());
     };
-  }, [ws, peers, userId, createPeer]);
+  }, [ws, userId, createPeer]);//peers rmeove kiya hai
 
   return {
     startVideo,

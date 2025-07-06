@@ -25,6 +25,8 @@ function useWebSocket(spaceId: string) {
     const [map, setMap] = useState<string[][]>();
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [emojiReactions, setEmojiReactions] = useState<Record<string, { emoji: string, timestamp: number }>>({});
+    const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
+
 
 
     const sendJsonMessage = useCallback((message: WebSocketMessage) => {
@@ -42,7 +44,7 @@ function useWebSocket(spaceId: string) {
         const payload: ChatMessageBroadcast = {
             userId,
             message,
-            timestamp: new Date().toISOString(),
+            timestamp: Date.now(),
         };
 
         sendJsonMessage({
@@ -142,7 +144,12 @@ function useWebSocket(spaceId: string) {
 
                 case 'chat-message':
                     const chatPayload = message.payload as ChatMessageBroadcast;
-                    setChatMessages(prev => [...prev, chatPayload]);
+                    const normalized: ChatMessage = {
+                        userId: chatPayload.userId,
+                        message: chatPayload.message,
+                        timestamp: typeof chatPayload.timestamp === 'string' ? Date.parse(chatPayload.timestamp) : chatPayload.timestamp,
+                    };
+                    setChatMessages(prev => [...prev, normalized]);
                     break;
 
                 case 'user-left':
@@ -189,6 +196,23 @@ function useWebSocket(spaceId: string) {
                         });
                     }, 5000);
                     break;
+                case 'typing':
+                    const typingUserId = message.payload.userId;
+                    setTypingUsers(prev => ({
+                        ...prev,
+                        [typingUserId]: Date.now()
+                    }));
+
+                    setTimeout(() => {
+                        setTypingUsers(prev => {
+                            const updated = { ...prev };
+                            if (Date.now() - (updated[typingUserId] || 0) > 3000) {
+                                delete updated[typingUserId];
+                            }
+                            return updated;
+                        });
+                    }, 3000);
+                    break;
 
 
                 default:
@@ -216,6 +240,13 @@ function useWebSocket(spaceId: string) {
 
     const frameCounterRef = useRef<number>(0);
 
+    const onTyping = useCallback(() => {
+        if (!userId) return;
+        sendJsonMessage({
+            type: 'typing',
+            payload: { userId }
+        });
+    }, [userId, sendJsonMessage]);
 
     const move = useCallback((newX: number, newY: number) => {
         const current = usersInSpace[userId || ""];
@@ -277,6 +308,8 @@ function useWebSocket(spaceId: string) {
         sendJsonMessage,
         move,
         currentPlayerPosition,
+        typingUsers,
+        onTyping,
         map,
         chatMessages,
         sendChatMessage,

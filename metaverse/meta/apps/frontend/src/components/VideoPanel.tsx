@@ -133,5 +133,4 @@ const VideoPanel: React.FC<VideoPanelProps> = ({
     </div>
   );
 };
-
 export default VideoPanel;

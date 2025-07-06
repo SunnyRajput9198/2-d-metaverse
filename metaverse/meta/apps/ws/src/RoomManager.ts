@@ -60,3 +60,6 @@ export class RoomManager {
     return undefined;
   }
 }
+// broadcastToAll(...) = send to everyone
+// broadcast(...) = send to everyone except sender
+// findUserByUserId(...) = used for direct peer-to-peer (e.g., WebRTC)

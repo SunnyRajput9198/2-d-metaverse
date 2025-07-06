@@ -2,7 +2,7 @@ import { WebSocket } from "ws";
 import { RoomManager } from "./RoomManager";
 import { OutgoingMessage } from "./types";
 import client from "@repo/db"; //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
- //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
+//isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_PASSWORD } from "./config";
 
@@ -253,6 +253,21 @@ export class User {
             this.spaceId
           );
 
+          break;
+        }
+        case "typing": {
+          if (!this.spaceId || !this.userId) return;
+
+          RoomManager.getInstance().broadcast(
+            {
+              type: "typing",
+              payload: {
+                userId: this.userId,
+              },
+            },
+            this, // exclude sender
+            this.spaceId
+          );
           break;
         }
       }
