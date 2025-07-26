@@ -251,7 +251,19 @@ function useWebSocket(spaceId: string) {
     const move = useCallback((newX: number, newY: number) => {
         const current = usersInSpace[userId || ""];
         if (!current) return;
-
+        if (
+            map && // Only check if map is loaded
+            (
+                newX < 0 ||
+                newY < 0 ||
+                newY >= map.length ||       // rows
+                newX >= map[0].length       // columns (for non-jagged map)
+            )
+        ) {
+            // Optionally: Show a warning or just return
+            // console.log('Tried to move outside map');
+            return; // CANCEL movement
+        }
         const dx = newX - current.x;
         const dy = newY - current.y;
         let direction: 'up' | 'down' | 'left' | 'right' = current.direction || 'down';
@@ -288,7 +300,7 @@ function useWebSocket(spaceId: string) {
             }
             return prev;
         });
-    }, [sendJsonMessage, userId, usersInSpace]);
+    }, [sendJsonMessage, userId, usersInSpace, map]);
 
 
 

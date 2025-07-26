@@ -121,21 +121,32 @@ useEffect(() => {
   });
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!currentPlayerPosition) return;
-      const { x, y } = currentPlayerPosition;
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!currentPlayerPosition) return;
+    const { x, y } = currentPlayerPosition;
 
-      switch (e.key.toLowerCase()) {
-        case "w": move(x, y - 1); break;
-        case "a": move(x - 1, y); break;
-        case "s": move(x, y + 1); break;
-        case "d": move(x + 1, y); break;
-      }
-    };
+    switch (e.key) {
+      case "ArrowUp":    // Up arrow
+        move(x, y - 1);
+        break;
+      case "ArrowLeft":  // Left arrow
+        move(x - 1, y);
+        break;
+      case "ArrowRight": // Right arrow
+        move(x + 1, y);
+        break;
+      case "ArrowDown":  // Down arrow
+        move(x, y + 1);
+        break;
+      default:
+        break;
+    }
+  };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPlayerPosition, move]);
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [currentPlayerPosition, move]);
+
 
   if (!isConnected || !map || !currentPlayerPosition) {
     return <div className="text-white text-center mt-10">Connecting to space...</div>;

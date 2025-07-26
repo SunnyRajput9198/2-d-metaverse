@@ -24,9 +24,9 @@ COPY packages ./packages
 RUN npm install --legacy-peer-deps
 
 # Generate Prisma client
-# RUN npx prisma migrate dev --schema=packages/db/prisma/schema.prisma
 
-# RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
+RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
+# RUN npx prisma migrate dev --schema=packages/db/prisma/schema.prismacd 
 
 # --------------------
 # Stage 2: Dev Runtime for apps/http
