@@ -6,8 +6,6 @@ import { useVideoCall } from "@/hooks/useVideocall";
 import { Fullscreen, VideoOff } from "lucide-react";
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import { useHandGesture } from "@/hooks/useHandgesture";
-import FloatingEmoji from "@/components/FloatingEmoji";
 import VideoPanel from "@/components/VideoPanel";
 import ChatPanel from "@/components/Chatpanel";
 import MapCanvas from "@/components/Mapcanvas";
@@ -56,17 +54,8 @@ const SpacePage: React.FC = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);// New state for avatar emoji picker position only
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
-  const [floatingEmojis, setFloatingEmojis] = useState<{ id: string; emoji: string; x: number; y: number }[]>([]);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  const triggerFloatingEmoji = (emoji: string, x: number, y: number) => {
-    const id = `${Date.now()}-${Math.random()}`;
-    setFloatingEmojis((prev) => [...prev, { id, emoji, x, y }]);
-  };
-
-  const handleFloatingEmojiComplete = (id: string) => {
-    setFloatingEmojis((prev) => prev.filter((e) => e.id !== id));
-  };
   const recentReactions = useMemo(() => {
     const now = Date.now();
 
@@ -100,25 +89,6 @@ useEffect(() => {
     setUnreadCount(0);
   }
 }, [isChatOpen, chatMessages]);
-
-
-  useHandGesture(localVideoRef, (gesture) => {
-    const emojiMap = {
-      thumbs_up: "👍",
-      heart: "❤️",
-    };
-    const emoji = emojiMap[gesture];
-    if (emoji) {
-      sendEmojiReaction(emoji);
-    }
-    const localVideo = localVideoRef.current;
-    if (localVideo) {
-      const rect = localVideo.getBoundingClientRect();
-      const x = rect.left + rect.width / 2;
-      const y = rect.top;
-      triggerFloatingEmoji(emoji, x, y);
-    }
-  });
 
   useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -315,16 +285,6 @@ useEffect(() => {
           </ul>
         </div>
       )}
-      {floatingEmojis.map(({ id, emoji, x, y }) => (
-        <FloatingEmoji
-          key={id}
-          id={id}
-          emoji={emoji}
-          x={x}
-          y={y}
-          onComplete={handleFloatingEmojiComplete}
-        />
-      ))}
     </div>
   );
 };

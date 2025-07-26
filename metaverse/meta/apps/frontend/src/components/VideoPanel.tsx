@@ -42,7 +42,7 @@ const VideoPanel: React.FC<VideoPanelProps> = ({
   }, []);
 
   return (
-    <div className="relative w-full h-full flex flex-col gap-4 p-4 items-start z-50">
+    <div className="relative w-full h-full flex flex-col justify-end gap-4 p-4 items-start z-50">
       {/* Local Video */}
       {localStream && (
         <motion.div

@@ -37,6 +37,7 @@ async function getAIResponse(prompt: string): Promise<string> {
 
 export class User {
   public id: string;
+  public username?: string;
   public userId?: string;
   private spaceId?: string;
   private x: number;
@@ -66,13 +67,24 @@ export class User {
             this.ws.close();
             return;
           }
-          console.log("jouin receiverdfd 2");
-          this.userId = userId;
           const space = await client.space.findFirst({
             where: {
               id: spaceId,
             },
           });
+          const dbUser = await client.user.findUnique({
+            where: { id: userId },
+          });
+          console.log("jouin receiverdfd 2");
+          this.userId = userId;
+          if (!dbUser) {
+            this.ws.close();
+            return;
+          }
+          if (dbUser) {
+            this.username = dbUser.username; // assign username fetched from DB
+          }
+
           // console.log("jouin receiverdfd 3");
           if (!space) {
             this.ws.close();
@@ -122,6 +134,7 @@ export class User {
                   ?.map((u) => ({
                     id: u.id,
                     userId: u.userId,
+                    username: u.username,
                     x: u.x,
                     y: u.y,
                     // avatarType: u.avatarType, // (if you add avatars later)
@@ -148,6 +161,7 @@ export class User {
               type: "user-joined",
               payload: {
                 userId: this.userId,
+                username: this.username,
                 x: this.x,
                 y: this.y,
               },
