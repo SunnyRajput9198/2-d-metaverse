@@ -5,6 +5,7 @@ import client from "@repo/db"; //isko tsconfig me jake base.config se match kiya
 //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_PASSWORD } from "./config";
+import { GoogleGenAI } from "@google/genai";
 
 function getRandomString(length: number) {
   const characters =
@@ -14,6 +15,24 @@ function getRandomString(length: number) {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
+}
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+
+async function getAIResponse(prompt: string): Promise<string> {
+  try {
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [{ parts: [{ text: prompt }] }],
+    });
+    return (
+      result.candidates?.[0]?.content?.parts?.[0]?.text ??
+      "No response from AI."
+    );
+  } catch (err) {
+    return `Error: ${(err as Error).message}`;
+  }
 }
 
 export class User {
@@ -140,18 +159,59 @@ export class User {
         // 👇 ADD THIS CASE
         case "chat-message":
           if (!this.spaceId || !this.userId) return;
-
+          const messageText = parsedData.payload.message.trim();
+          // First, broadcast the user's original message for all to see
           RoomManager.getInstance().broadcastToAll(
             {
               type: "chat-message",
               payload: {
                 userId: this.userId,
-                message: parsedData.payload.message,
+                message: messageText,
                 timestamp: Date.now(),
               },
             },
             this.spaceId
           );
+          // Then handle AI commands (separately)
+          if (messageText.startsWith("@ai")) {
+            const prompt = messageText.substring(3).trim();
+
+            if (prompt.length === 0) {
+              this.send({
+                type: "chat-message",
+                payload: {
+                  userId: "ai-bot",
+                  message: "You must type a prompt after @ai",
+                  timestamp: Date.now(),
+                },
+              });
+            } else {
+              try {
+                const aiResponse = await getAIResponse(prompt);
+                RoomManager.getInstance().broadcastToAll(
+                  {
+                    type: "chat-message",
+                    payload: {
+                      userId: "ai-bot",
+                      message: aiResponse,
+                      timestamp: Date.now(),
+                    },
+                  },
+                  this.spaceId
+                );
+              } catch (err) {
+                this.send({
+                  type: "chat-message",
+                  payload: {
+                    userId: "ai-bot",
+                    message:
+                      "Error fetching AI response: " + (err as Error).message,
+                    timestamp: Date.now(),
+                  },
+                });
+              }
+            }
+          }
           break;
         case "movement":
           const moveX = parsedData.payload.x;

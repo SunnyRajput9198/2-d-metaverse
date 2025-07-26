@@ -14,6 +14,7 @@
     "@emoji-mart/react": "^1.1.1",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
+    "@google/genai": "^1.11.0",
     "@mediapipe/hands": "^0.4.1675469240",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",

@@ -21,10 +21,18 @@ const renderer: RendererObject = {
     const safeHref = DOMPurify.sanitize(href);
     const safeTitle = title ? ` title="${DOMPurify.sanitize(title)}"` : "";
 
-    return `<a href="${safeHref}"${safeTitle} target="_blank" rel="noopener noreferrer" ...>${text}</a>`;
+    return `<a href="${safeHref}"${safeTitle} target="_blank" rel="noopener noreferrer">${text}</a>`;
 
   },
 };
+const handleLinkClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const el = e.target as HTMLElement;
+  if (el.tagName === "A" && el.getAttribute("href")) {
+    e.preventDefault();
+    window.open(el.getAttribute("href")!, "_blank", "noopener,noreferrer");
+  }
+};
+
 
 // Register renderer
 marked.use({ renderer });
@@ -47,7 +55,7 @@ interface ChatPanelProps {
   messages: ChatMessage[];
   currentUserId: string;
   users: Record<string, User>;
-  onSend: (msg: string) => void;
+  onSend: (msg: string, userId?: string) => void;
   onClose: () => void;
   typingUsers: Record<string, number>; // 👈 add this
   onTyping: () => void; // 👈 add this
@@ -69,11 +77,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-const filteredMessages = messages.filter((msg) =>
-  msg.message.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredMessages = messages.filter((msg) =>
+    msg.message.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     if (chatBoxRef.current) {
@@ -86,15 +94,16 @@ const filteredMessages = messages.filter((msg) =>
   return (
     <div className="absolute right-0 top-0 h-full w-[300px] bg-gray-900 border-l border-gray-700 p-4 flex flex-col z-40">
       <input
-  type="text"
-  placeholder="Search messages..."
-  className="mb-3 px-3 py-2 rounded bg-gray-700 text-white w-full outline-none"
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-/>
+        type="text"
+        placeholder="Search messages..."
+        className="mb-3 px-3 py-2 rounded bg-gray-700 text-white w-full outline-none"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <div
         ref={chatBoxRef}
         className="flex-1 overflow-y-auto bg-gray-800 rounded-lg p-3 mb-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 "
+        onClick={handleLinkClick}  // <-- Add this line here
       >
         {filteredMessages.map((msg, index) => (
           <div
@@ -130,12 +139,13 @@ const filteredMessages = messages.filter((msg) =>
         Markdown supported: <code>**bold**</code>, <code>_italic_</code>, <code>`code`</code>
       </div>
       {Object.keys(typingUsers)
-  .filter((id) => id !== currentUserId)
-  .map((id) => (
-    <div key={id} className="text-xs text-gray-400 mb-1">
-      {users[id]?.username || "Someone"} is typing...
-    </div>
-))}
+      
+        .filter((id) => id !== currentUserId)
+        .map((id) => (
+          <div key={id} className="text-xs text-gray-400 mb-1">
+            {users[id]?.username || "Someone"} is typing...
+          </div>
+        ))}
 
       <div className="flex items-center gap-2">
 
@@ -150,7 +160,7 @@ const filteredMessages = messages.filter((msg) =>
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && inputValue.trim()) {
-              onSend(inputValue);
+              onSend(inputValue, currentUserId);
               setInputValue("");
             }
           }}
@@ -180,7 +190,7 @@ const filteredMessages = messages.filter((msg) =>
         <Button
           onClick={() => {
             if (inputValue.trim()) {
-              onSend(inputValue);
+              onSend(inputValue, currentUserId);
               setInputValue("");
             }
           }}
