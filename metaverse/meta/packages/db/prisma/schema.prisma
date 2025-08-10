@@ -22,6 +22,7 @@ model User {
   role     Role
   spaces   Space[]
   avatar    Avatar? @relation(fields: [avatarId], references: [id])
+  chatMessages ChatMessage[]
 }
 
 model Space {
@@ -33,6 +34,18 @@ model Space {
   creatorId String
   creator     User    @relation(fields: [creatorId], references: [id])
   elements  spaceElements[]
+  chatMessages ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  spaceId   String
+  userId    String
+  message   String
+  timestamp DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model spaceElements {

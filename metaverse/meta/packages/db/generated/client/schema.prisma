@@ -15,24 +15,37 @@ datasource db {
 }
 
 model User {
-  id       String  @id @unique @default(cuid())
-  username String  @unique
-  password String
-  avatarId String?
-  role     Role
-  spaces   Space[]
-  avatar   Avatar? @relation(fields: [avatarId], references: [id])
+  id           String        @id @unique @default(cuid())
+  username     String        @unique
+  password     String
+  avatarId     String?
+  role         Role
+  spaces       Space[]
+  avatar       Avatar?       @relation(fields: [avatarId], references: [id])
+  chatMessages ChatMessage[]
 }
 
 model Space {
-  id        String          @id @unique @default(cuid())
-  name      String
-  width     Int
-  height    Int
-  thumbnail String?
-  creatorId String
-  creator   User            @relation(fields: [creatorId], references: [id])
-  elements  spaceElements[]
+  id           String          @id @unique @default(cuid())
+  name         String
+  width        Int
+  height       Int
+  thumbnail    String?
+  creatorId    String
+  creator      User            @relation(fields: [creatorId], references: [id])
+  elements     spaceElements[]
+  chatMessages ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  spaceId   String
+  userId    String
+  message   String
+  timestamp DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model spaceElements {

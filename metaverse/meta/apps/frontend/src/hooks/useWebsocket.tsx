@@ -42,6 +42,7 @@ function useWebSocket(spaceId: string) {
         if (!userId) return;
 
         const payload: ChatMessageBroadcast = {
+            username: username!,
             userId,
             message,
             timestamp: Date.now(),
@@ -146,11 +147,15 @@ function useWebSocket(spaceId: string) {
                     const chatPayload = message.payload as ChatMessageBroadcast;
                     const normalized: ChatMessage = {
                         userId: chatPayload.userId,
+                        username: (chatPayload as any).username || usersInSpace[chatPayload.userId]?.username || "Unknown",
                         message: chatPayload.message,
-                        timestamp: typeof chatPayload.timestamp === 'string' ? Date.parse(chatPayload.timestamp) : chatPayload.timestamp,
+                        timestamp: typeof chatPayload.timestamp === 'string'
+                            ? Date.parse(chatPayload.timestamp)
+                            : chatPayload.timestamp,
                     };
                     setChatMessages(prev => [...prev, normalized]);
                     break;
+
 
                 case 'user-left':
                     const userLeftPayload = message.payload as UserLeftPayload;
@@ -212,6 +217,18 @@ function useWebSocket(spaceId: string) {
                             return updated;
                         });
                     }, 3000);
+                    break;
+                case 'chat-history':
+                    const historyPayload = message.payload as ChatMessage[];
+                    // Normalize timestamps
+                    const normalizedHistory = historyPayload.map(msg => ({
+                        ...msg,
+                        timestamp:
+                            typeof msg.timestamp === 'string'
+                                ? Date.parse(msg.timestamp)
+                                : msg.timestamp,
+                    }));
+                    setChatMessages(normalizedHistory);
                     break;
 
 

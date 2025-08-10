@@ -137,6 +137,14 @@ exports.Prisma.SpaceScalarFieldEnum = {
   creatorId: 'creatorId'
 };
 
+exports.Prisma.ChatMessageScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  userId: 'userId',
+  message: 'message',
+  timestamp: 'timestamp'
+};
+
 exports.Prisma.SpaceElementsScalarFieldEnum = {
   id: 'id',
   elementId: 'elementId',
@@ -197,6 +205,7 @@ exports.Role = exports.$Enums.Role = {
 exports.Prisma.ModelName = {
   User: 'User',
   Space: 'Space',
+  ChatMessage: 'ChatMessage',
   spaceElements: 'spaceElements',
   Element: 'Element',
   Map: 'Map',

@@ -9,6 +9,7 @@ export interface AuthResponse {
 
 export interface ChatMessage {
   userId: string;
+  username: string;
   message: string;
   timestamp: number; // or number
 }
@@ -21,6 +22,7 @@ export interface ChatPayload {
 
 export interface ChatMessageBroadcast {
   userId: string;
+  username: string;
   message: string;
   timestamp: number;
 }
@@ -130,7 +132,8 @@ export type WebSocketMessage =
   | { type: 'user-left'; payload: UserLeftPayload }
   | { type: 'chat-message'; payload: ChatMessageBroadcast }
   | { type: "emoji-reaction"; payload: { userId: string; emoji: string ; timestamp: number } }
-  | { type: "typing"; payload: TypingPayload };
+  | { type: "typing"; payload: TypingPayload }
+  | { type: 'chat-history'; payload: ChatMessage[] };
 
   // Client to Server
 export type SendEmojiPayload = {

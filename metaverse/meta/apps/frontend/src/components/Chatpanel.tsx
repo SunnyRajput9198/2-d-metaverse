@@ -11,7 +11,9 @@ import DOMPurify from "dompurify";
 type ChatMessage = {
   userId: string;
   message: string;
+  username: string;
   timestamp: number; // UNIX epoch (ms)
+
 };
 
 const renderer: RendererObject = {
@@ -75,24 +77,64 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onTyping
 }) => {
   const chatBoxRef = useRef<HTMLDivElement>(null);
+   const inputRef = useRef<HTMLInputElement>(null);
   const [inputValue, setInputValue] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  // --- NEW: State to track if a message is currently being sent ---
+  const [isSending, setIsSending] = useState(false);
 
   const filteredMessages = messages.filter((msg) =>
     msg.message.toLowerCase().includes(searchTerm.toLowerCase())
   );
+ // --- NEW: Helper function to generate the grouped typing indicator text ---
+  const getTypingIndicatorText = () => {
+    const typingUserIds = Object.keys(typingUsers).filter(id => id !== currentUserId);
+    const numTyping = typingUserIds.length;
 
+    if (numTyping === 0) {
+      return null;
+    }
+
+    const names = typingUserIds.map(id => users[id]?.username || "Someone");
+
+    if (numTyping === 1) {
+      return `${names[0]} is typing...`;
+    }
+    if (numTyping === 2) {
+      return `${names[0]} and ${names[1]} are typing...`;
+    }
+    return "Several people are typing...";
+  };
+
+  const typingIndicator = getTypingIndicatorText();
   useEffect(() => {
+    setIsSending(false);
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [messages]);
-
+  // --- NEW: Effect to auto-focus the input when the panel opens ---
+  useEffect(() => {
+    if (isOpen) {
+      // Use a short timeout to ensure the element is rendered before focusing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+  // --- NEW: Centralized function to handle sending a message ---
+  const handleSendMessage = () => {
+    if (inputValue.trim() && !isSending) {
+      setIsSending(true);
+      onSend(inputValue, currentUserId);
+      setInputValue("");
+    }
+  };
   if (!isOpen) return null;
 
   return (
-    <div className="absolute right-0 top-0 h-full w-[300px] bg-gray-900 border-l border-gray-700 p-4 flex flex-col z-40">
+    <div className="absolute right-0 top-0 h-full w-[370px] bg-gray-900 border-l border-gray-700 p-4 flex flex-col z-40">
       <input
         type="text"
         placeholder="Search messages..."
@@ -114,7 +156,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
               className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}`}
             >
               <div className="font-semibold text-xs opacity-80 mb-1">
-                {users[msg.userId]?.username || "Anonymous"}
+                {msg.username || "Anonymous"}
               </div>
               <div
                 className="text-sm leading-snug break-words whitespace-pre-wrap"
@@ -138,20 +180,21 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       <div className="text-xs text-gray-400 mt-1">
         Markdown supported: <code>**bold**</code>, <code>_italic_</code>, <code>`code`</code>
       </div>
-      {Object.keys(typingUsers)
-      
-        .filter((id) => id !== currentUserId)
-        .map((id) => (
-          <div key={id} className="text-xs text-gray-400 mb-1">
-            {users[id]?.username || "Someone"} is typing...
-          </div>
-        ))}
+       {/* --- NEW: Render the single, grouped typing indicator --- */}
+      {typingIndicator && (
+        <div className="text-xs text-gray-400 h-4 mb-1">
+          {typingIndicator}
+        </div>
+      )}
+      {/* If no one is typing, we render an empty div to prevent layout shifts */}
+      {!typingIndicator && <div className="h-4 mb-1" />}
 
       <div className="flex items-center gap-2">
 
         <input
+          ref={inputRef}
           type="text"
-          className="flex-1 px-3 py-2 rounded bg-gray-800 text-white outline-none"
+           className={`flex-1 px-3 py-2 rounded bg-gray-800 text-white outline-none ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
           placeholder="Say something..."
           value={inputValue}
           onChange={(e) => {
@@ -159,11 +202,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             onTyping(); // 👈 notify parent
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && inputValue.trim()) {
-              onSend(inputValue, currentUserId);
-              setInputValue("");
+            // --- FIXED: Use the centralized handler ---
+            if (e.key === "Enter") {
+              handleSendMessage();
             }
           }}
+          disabled={isSending}
         />
 
         <Button
@@ -187,14 +231,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         )}
 
-        <Button
-          onClick={() => {
-            if (inputValue.trim()) {
-              onSend(inputValue, currentUserId);
-              setInputValue("");
-            }
-          }}
-          className="bg-blue-600 px-4 py-2"
+         <Button
+          // --- FIXED: Use the centralized handler ---
+          onClick={handleSendMessage}
+          className={`bg-blue-600 px-4 py-2 ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
+          // --- FIXED: Add the disabled attribute ---
+          disabled={isSending}
         >
           Send
         </Button>

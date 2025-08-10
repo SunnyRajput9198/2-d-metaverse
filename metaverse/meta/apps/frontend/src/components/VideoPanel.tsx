@@ -1,8 +1,9 @@
 import React, { useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Maximize2 } from "lucide-react";
+import { Maximize2, Mic, MicOff, Video, VideoOff } from "lucide-react";
 import type { UserMetadata } from "@/types";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 type VideoPanelProps = {
   localStream: MediaStream | null;
@@ -24,6 +25,9 @@ const VideoPanel: React.FC<VideoPanelProps> = ({
   localVideoRef,
   isScreenSharing
 }) => {
+  // --- NEW: State for local media controls ---
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
   const requestFullscreen = useCallback(async (videoElement: HTMLVideoElement | null) => {
     if (!videoElement) return;
 
@@ -40,6 +44,30 @@ const VideoPanel: React.FC<VideoPanelProps> = ({
       console.warn("Fullscreen request failed:", err);
     }
   }, []);
+  // --- NEW: Toggle microphone ---
+  const toggleMute = useCallback(() => {
+    if (!localStream) return;
+    localStream.getAudioTracks().forEach(track => {
+      track.enabled = !track.enabled;
+    });
+    setIsMuted(prev => !prev);
+  }, [localStream]);
+
+  // --- NEW: Toggle camera ---
+  const toggleCamera = useCallback(() => {
+    if (!localStream) return;
+    localStream.getVideoTracks().forEach(track => {
+      track.enabled = !track.enabled;
+    });
+    setIsCameraOff(prev => !prev);
+  }, [localStream]);
+  // Sync initial state
+  useEffect(() => {
+    if (localStream) {
+      setIsMuted(!localStream.getAudioTracks().some(t => t.enabled));
+      setIsCameraOff(!localStream.getVideoTracks().some(t => t.enabled));
+    }
+  }, [localStream]);
 
   return (
     <div className="relative w-full h-full flex flex-col justify-end gap-4 p-4 items-start z-50">
@@ -82,7 +110,16 @@ const VideoPanel: React.FC<VideoPanelProps> = ({
             </div>
           )}
 
-          <span className="text-xs mt-1 text-white opacity-80">You</span>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-xs text-white opacity-80">You</span>
+            {/* --- NEW: Local media control buttons --- */}
+            <Button onClick={toggleMute} className="bg-gray-700 hover:bg-gray-600 p-2 rounded-full h-8 w-8">
+              {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </Button>
+            <Button onClick={toggleCamera} className="bg-gray-700 hover:bg-gray-600 p-2 rounded-full h-8 w-8">
+              {isCameraOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+            </Button>
+          </div>
         </motion.div>
       )}
 
@@ -90,18 +127,21 @@ const VideoPanel: React.FC<VideoPanelProps> = ({
       {peerStreams.map(({ peerId, stream, muted, speaking }, idx) => {
         const peerUsername = usersInSpace[peerId]?.username || "Guest";
         const videoId = `peer-video-${idx}`;
-
+        const borderStyle = speaking
+          ? "border-green-400 border-4 shadow-lg shadow-green-400/50"
+          : "border-yellow-400 border-2";
         return (
           <motion.div
             key={peerId}
             drag
             dragElastic={0.2}
             dragMomentum={false}
+             animate={{ scale: speaking ? 1.02 : 1 }}
             className="relative cursor-grab pointer-events-auto"
           >
             <video
               id={videoId}
-              className="w-52 h-36 border-2 border-yellow-400 rounded-md"
+              className={`w-full h-full rounded-md object-cover transition-all duration-300 ${borderStyle}`}
               ref={(video) => {
                 if (video && video.srcObject !== stream) {
                   video.srcObject = stream;

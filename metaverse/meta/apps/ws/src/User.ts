@@ -169,17 +169,51 @@ export class User {
             this,
             this.spaceId!
           );
+          // ✅ Fetch last 50 messages for the space
+          const pastMessages = await client.chatMessage.findMany({
+            where: { spaceId: spaceId },
+            orderBy: { timestamp: "asc" }, // oldest first
+            take: 50,
+            include: { user: true },
+          });
+
+          // ✅ Send history to just this user
+          this.send({
+            type: "chat-history",
+            payload: pastMessages.map((m) => ({
+              userId: m.userId,
+              username: m.user.username,
+              message: m.message,
+              timestamp: m.timestamp.getTime(),
+            })),
+          });
+
           break;
         // 👇 ADD THIS CASE
         case "chat-message":
           if (!this.spaceId || !this.userId) return;
           const messageText = parsedData.payload.message.trim();
+          if (!messageText) return; // stop empty messages
+
+          try {
+            await client.chatMessage.create({
+              data: {
+                spaceId: this.spaceId,
+                userId: this.userId,
+                message: messageText,
+              },
+            });
+          } catch (error) {
+            console.error("Failed to save message:", error);
+            return; // don't broadcast if DB write failed
+          }
           // First, broadcast the user's original message for all to see
           RoomManager.getInstance().broadcastToAll(
             {
               type: "chat-message",
               payload: {
                 userId: this.userId,
+                username: this.username,
                 message: messageText,
                 timestamp: Date.now(),
               },

@@ -18,6 +18,8 @@
     "@mediapipe/hands": "^0.4.1675469240",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
+    "@splinetool/react-spline": "^4.1.0",
+    "@splinetool/runtime": "^1.10.44",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.8",
     "@tensorflow-models/handpose": "^0.1.0",

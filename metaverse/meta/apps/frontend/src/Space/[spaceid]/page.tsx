@@ -251,14 +251,22 @@ useEffect(() => {
       )}
 
       <Button
-        onClick={() => setIsChatOpen(!isChatOpen)}
-        className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full z-50"
-      >💬{unreadCount > 0 && (
+  onClick={() => setIsChatOpen(!isChatOpen)}
+  className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full z-50"
+>
+  {/* Replace the emoji with an <img> tag */}
+  <img 
+    src="/maps/chat.png" // Path to your image in the public folder
+    alt="Open Chat" 
+    className="w-6 h-6" // Adjust width and height as needed
+  />
+
+  {unreadCount > 0 && (
     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1 rounded-full">
       {unreadCount}
     </span>
-  )}</Button>
-
+  )}
+</Button>
       {isChatOpen && (
         <ChatPanel
           isOpen={true}
