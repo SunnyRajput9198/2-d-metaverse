@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@prisma/client": "^6.10.1",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^24.0.3",
     "prettier": "^3.5.3",
     "prisma": "^6.10.1",

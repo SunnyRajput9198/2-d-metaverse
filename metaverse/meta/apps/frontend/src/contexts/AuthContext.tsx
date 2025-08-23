@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { AuthResponse } from '../types';
 
-const BACKEND_URL = "http://localhost:3000";
-const WS_URL = "ws://localhost:3001";
+import { BACKEND_URL, WS_URL } from "../config";
 
 interface AuthContextType {
     token: string | null;
@@ -115,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
             return { success: false, error: "Invalid response from server. Token or userId missing." };
         } catch (error: any) {
-            console.error('Signin error:', error.response?.data?.message || error.message);
+            console.log('Signin error:', error.response?.data?.message || error.message);
             setToken(null);
             setUserId(null);
             setIsAuthenticated(false);
