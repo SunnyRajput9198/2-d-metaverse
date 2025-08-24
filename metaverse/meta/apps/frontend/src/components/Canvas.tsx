@@ -1,6 +1,7 @@
 import { initDraw } from "../draw/index";
 import { useEffect, useRef, useState } from "react";
 import { Game } from "../draw/Game";
+import type { Shape } from "../draw/Game";
 import {
   Circle,
   Pencil,
@@ -48,10 +49,77 @@ export function IconButton({ onClick, activated = false, icon }: IconButtonProps
   );
 }
 
-export function Canvas({ socket }: { socket: WebSocket }):React.ReactElement {
+type TopbarProps = {
+  selectedTool: Tool;
+  setSelectedTool: (s: Tool) => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onPanLeft: () => void;
+  onPanRight: () => void;
+  onPanUp: () => void;
+  onPanDown: () => void;
+  shapeForMoveIcon: Shape | null;
+};
+
+function Topbar({
+  selectedTool,
+  setSelectedTool,
+  onZoomIn,
+  onZoomOut,
+  onPanLeft,
+  onPanRight,
+  onPanUp,
+  onPanDown,
+  shapeForMoveIcon,
+}: TopbarProps): React.ReactElement {
+  const moveButtonRef = useRef<HTMLButtonElement>(null);
+
+  // When a new shapeForMoveIcon arrives, focus the Move button
+  useEffect(() => {
+    if (shapeForMoveIcon && moveButtonRef.current) {
+      moveButtonRef.current.focus();
+    }
+  }, [shapeForMoveIcon]);
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 10,
+        left: 10,
+        zIndex: 1000,
+      }}
+    >
+      <div className="flex gap-2 items-center">
+        {/* Existing tool icons */}
+        <IconButton onClick={() => setSelectedTool("pencil")} activated={selectedTool === "pencil"} icon={<Pencil />} />
+        <IconButton onClick={() => setSelectedTool("rect")} activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} />
+        <IconButton onClick={() => setSelectedTool("circle")} activated={selectedTool === "circle"} icon={<Circle />} />
+        <IconButton onClick={() => setSelectedTool("arrow")} activated={selectedTool === "arrow"} icon={<ArrowUpRight />} />
+        <IconButton onClick={() => setSelectedTool("line")} activated={selectedTool === "line"} icon={<LineChart />} />
+        <IconButton onClick={() => setSelectedTool("diamond")} activated={selectedTool === "diamond"} icon={<Gem />} />
+        <IconButton onClick={() => setSelectedTool("eraser")} activated={selectedTool === "eraser"} icon={<Eraser />} />
+        <IconButton onClick={() => setSelectedTool("text")} activated={selectedTool === "text"} icon={<Type />} />
+
+        {/* Zoom controls */}
+        <IconButton onClick={onZoomIn} icon={<ZoomIn />} />
+        <IconButton onClick={onZoomOut} icon={<ZoomOut />} />
+
+        {/* Pan controls */}
+        <IconButton onClick={onPanUp} icon={<ArrowUp />} />
+        <IconButton onClick={onPanDown} icon={<ArrowDown />} />
+        <IconButton onClick={onPanLeft} icon={<ArrowLeft />} />
+        <IconButton onClick={onPanRight} icon={<ArrowRight />} />
+      </div>
+    </div>
+  );
+}
+
+export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [game, setGame] = useState<Game>();
   const [selectedTool, setSelectedTool] = useState<Tool>("circle");
+  // State to hold the last created shape for move icon
+  const [shapeForMoveIcon, setShapeForMoveIcon] = useState<Shape | null>(null);
 
   useEffect(() => {
     game?.setTool(selectedTool);
@@ -59,13 +127,15 @@ export function Canvas({ socket }: { socket: WebSocket }):React.ReactElement {
 
   useEffect(() => {
     if (canvasRef.current) {
-      const g = new Game(canvasRef.current, socket);
+      // Pass the callback to Game constructor
+      const g = new Game(canvasRef.current, socket, (shape: Shape) => {
+        setShapeForMoveIcon(shape);
+      });
       setGame(g);
       return () => {
         g.destroy();
       };
     }
-    // Adding 'socket' ensures Game instance recreates if socket changes
   }, [socket]);
 
   const PAN_STEP = 50;
@@ -113,60 +183,8 @@ export function Canvas({ socket }: { socket: WebSocket }):React.ReactElement {
         onPanRight={onPanRight}
         onPanUp={onPanUp}
         onPanDown={onPanDown}
+        shapeForMoveIcon={shapeForMoveIcon}
       />
-    </div>
-  );
-}
-
-type TopbarProps = {
-  selectedTool: Tool;
-  setSelectedTool: (s: Tool) => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onPanLeft: () => void;
-  onPanRight: () => void;
-  onPanUp: () => void;
-  onPanDown: () => void;
-};
-
-function Topbar({
-  selectedTool,
-  setSelectedTool,
-  onZoomIn,
-  onZoomOut,
-  onPanLeft,
-  onPanRight,
-  onPanUp,
-  onPanDown,
-}: TopbarProps): React.ReactElement {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 10,
-        left: 10,
-      }}
-    >
-      <div className="flex gap-2">
-        <IconButton onClick={() => setSelectedTool("pencil")} activated={selectedTool === "pencil"} icon={<Pencil />} />
-        <IconButton onClick={() => setSelectedTool("rect")} activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} />
-        <IconButton onClick={() => setSelectedTool("circle")} activated={selectedTool === "circle"} icon={<Circle />} />
-        <IconButton onClick={() => setSelectedTool("arrow")} activated={selectedTool === "arrow"} icon={<ArrowUpRight />} />
-        <IconButton onClick={() => setSelectedTool("line")} activated={selectedTool === "line"} icon={<LineChart />} />
-        <IconButton onClick={() => setSelectedTool("diamond")} activated={selectedTool === "diamond"} icon={<Gem />} />
-        <IconButton onClick={() => setSelectedTool("eraser")} activated={selectedTool === "eraser"} icon={<Eraser />} />
-        <IconButton onClick={() => setSelectedTool("text")} activated={selectedTool === "text"} icon={<Type />} />
-
-        {/* Zoom controls */}
-        <IconButton onClick={onZoomIn} icon={<ZoomIn />} />
-        <IconButton onClick={onZoomOut} icon={<ZoomOut />} />
-
-        {/* Pan controls */}
-        <IconButton onClick={onPanUp} icon={<ArrowUp />} />
-        <IconButton onClick={onPanDown} icon={<ArrowDown />} />
-        <IconButton onClick={onPanLeft} icon={<ArrowLeft />} />
-        <IconButton onClick={onPanRight} icon={<ArrowRight />} />
-      </div>
     </div>
   );
 }
