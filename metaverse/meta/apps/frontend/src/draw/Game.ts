@@ -45,7 +45,6 @@ export class Game {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private existingShapes: Shape[] = [];
-  private roomId: string;
   private clicked = false;
   private startX = 0;
   private startY = 0;
@@ -57,13 +56,10 @@ export class Game {
   socket: WebSocket;
 
 
-  constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
+  constructor(canvas: HTMLCanvasElement, socket: WebSocket) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
-    this.roomId = roomId;
     this.socket = socket;
-
-
     this.init();
     this.initHandlers();
     this.initMouseHandlers();
@@ -83,7 +79,7 @@ export class Game {
 
 
   private async init() {
-    this.existingShapes = await getExistingShapes(this.roomId);
+    this.existingShapes = await getExistingShapes();
     this.clearCanvas();
   }
 
@@ -357,7 +353,6 @@ private mouseDownHandler = (e: MouseEvent) => {
       this.socket.send(JSON.stringify({
         type: "chat",
         message: JSON.stringify({ shape }),
-        roomId: this.roomId,
       }));
       this.clearCanvas();
       this.isAddingText = false;
@@ -394,7 +389,6 @@ private mouseDownHandler = (e: MouseEvent) => {
         this.socket.send(JSON.stringify({
           type: "chat",
           message: JSON.stringify({ shape: this.existingShapes[this.existingShapes.length - 1] }),
-          roomId: this.roomId,
         }));
       }
       this.pencilPoints = [];
@@ -406,7 +400,6 @@ private mouseDownHandler = (e: MouseEvent) => {
       this.socket.send(JSON.stringify({
         type: "chat",
         message: JSON.stringify({ shape }),
-        roomId: this.roomId,
       }));
       this.clearCanvas();
     }
@@ -449,7 +442,6 @@ private mouseDownHandler = (e: MouseEvent) => {
         this.socket.send(JSON.stringify({
           type: "chat",
           message: JSON.stringify({ shapes: this.existingShapes }),
-          roomId: this.roomId,
         }));
         break;
       }

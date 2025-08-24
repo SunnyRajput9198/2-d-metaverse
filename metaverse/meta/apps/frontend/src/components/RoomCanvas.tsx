@@ -4,7 +4,7 @@ import { initDraw } from "../draw";
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "./Canvas";
 
-export function RoomCanvas({roomId}: {roomId: string}) {
+export function RoomCanvas() {
     const [socket, setSocket] = useState<WebSocket | null>(null);
 
     useEffect(() => {
@@ -13,8 +13,7 @@ export function RoomCanvas({roomId}: {roomId: string}) {
         ws.onopen = () => {
             setSocket(ws);
             const data = JSON.stringify({
-                type: "join_room",
-                roomId
+                type: "join_room"
             });
             console.log(data);
             ws.send(data)
@@ -29,6 +28,6 @@ export function RoomCanvas({roomId}: {roomId: string}) {
     }
 
     return <div>
-        <Canvas roomId={roomId} socket={socket} />
+        <Canvas socket={socket} />
     </div>
 }

@@ -7,11 +7,9 @@ import { Circle, Pencil, RectangleHorizontalIcon, ArrowUpRight, LineChart, Gem, 
 export type Tool = "circle" | "rect" | "pencil" | "arrow" | "line" | "diamond" | "eraser"|"text";
 
 export function Canvas({
-    roomId,
     socket
 }: {
-    socket: WebSocket;
-    roomId: string;
+    socket: WebSocket
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [game, setGame] = useState<Game>();
@@ -24,7 +22,7 @@ export function Canvas({
     useEffect(() => {
 
         if (canvasRef.current) {
-            const g = new Game(canvasRef.current, roomId, socket);
+            const g = new Game(canvasRef.current, socket);
             setGame(g);
 
             return () => {
