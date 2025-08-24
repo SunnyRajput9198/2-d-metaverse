@@ -17,6 +17,7 @@ type ChatMessage = {
 };
 
 const renderer: RendererObject = {
+
   link({ href, title, text }) {
     if (!href) return text;
     console.log("Rendering link:", href); // 👈 check this runs

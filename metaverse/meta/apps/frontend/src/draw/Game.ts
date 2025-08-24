@@ -79,6 +79,9 @@ export class Game {
   private viewport = { x: 0, y: 0, scale: 1 }; // x and y are pan offsets, scale is zoom
   private panning = false;
   private lastPan = { x: 0, y: 0 };
+   private selectedShapeIndex: number | null = null;
+  private dragOffsetX = 0;
+  private dragOffsetY = 0;
 
   socket: WebSocket;
 
@@ -535,6 +538,19 @@ private clearCanvas() {
       this.isAddingText = false;
     }
   } else {
+      // Check if clicking on existing shape for moving
+      this.selectedShapeIndex = null;
+      for (let i = this.existingShapes.length - 1; i >= 0; i--) {
+        if (this.isPointNearShape(x, y, this.existingShapes[i])) {
+          this.selectedShapeIndex = i;
+          this.dragOffsetX = x;
+          this.dragOffsetY = y;
+          this.clicked = true;
+          this.clearCanvas();
+          return; // exit from mouseDownHandler, start dragging selected shape
+        }
+      }
+      // / If not clicking on a shape, start drawing a new shape
     this.clicked = true;
     this.startX = x;
     this.startY = y;
@@ -549,63 +565,120 @@ private clearCanvas() {
 
 
  private mouseUpHandler = (e: MouseEvent) => {
-  this.clicked = false;
+    if (this.selectedShapeIndex !== null) {
+      // Finish dragging, send updated shape data
+      this.socket.send(
+        JSON.stringify({
+          type: "chat",
+          message: JSON.stringify({ shape: this.existingShapes[this.selectedShapeIndex] }),
+        })
+      );
+      this.selectedShapeIndex = null;
+    } else {
+      const { x, y } = this.screenToWorld(e.clientX, e.clientY);
 
-  const { x, y } = this.screenToWorld(e.clientX, e.clientY);
+      if (this.selectedTool === "pencil") {
+        if (this.pencilPoints.length > 1) {
+          this.existingShapes.push({
+            type: "pencil",
+            points: [...this.pencilPoints],
+          });
+          this.socket.send(
+            JSON.stringify({
+              type: "chat",
+              message: JSON.stringify({
+                shape: this.existingShapes[this.existingShapes.length - 1],
+              }),
+            })
+          );
+        }
+        this.pencilPoints = [];
+        this.clearCanvas();
+      } else if (this.selectedTool !== "eraser") {
+        const shape = this.createShapeWorld(x, y);
+        if (!shape) return;
+        this.existingShapes.push(shape);
+        this.socket.send(
+          JSON.stringify({
+            type: "chat",
+            message: JSON.stringify({ shape }),
+          })
+        );
+        this.clearCanvas();
+      }
+    }
+    this.clicked = false;
+  };
 
-  if (this.selectedTool === "pencil") {
-    if (this.pencilPoints.length > 1) {
-      this.existingShapes.push({
-        type: "pencil",
-        points: [...this.pencilPoints],
-      });
-      this.socket.send(
-        JSON.stringify({
-          type: "chat",
-          message: JSON.stringify({
-            shape: this.existingShapes[this.existingShapes.length - 1],
-          }),
-        })
-      );
-    }
-    this.pencilPoints = [];
-    this.clearCanvas();
-  } else if (this.selectedTool !== "eraser") {
-    const shape = this.createShapeWorld(x, y); // new helper, see below
-    if (!shape) return;
-    this.existingShapes.push(shape);
-    this.socket.send(
-      JSON.stringify({
-        type: "chat",
-        message: JSON.stringify({ shape }),
-      })
-    );
-    this.clearCanvas();
-  }
-};
-
+private moveShapeBy(shape: Shape, dx: number, dy: number) {
+  switch (shape.type) {
+    case "rect":
+      shape.x += dx;
+      shape.y += dy;
+      break;
+    case "circle":
+      shape.centerX += dx;
+      shape.centerY += dy;
+      break;
+    case "line":
+    case "arrow":
+      shape.startX += dx;
+      shape.startY += dy;
+      shape.endX += dx;
+      shape.endY += dy;
+      break;
+    case "diamond":
+      shape.centerX += dx;
+      shape.centerY += dy;
+      break;
+    case "pencil":
+      for (const point of shape.points) {
+        point.x += dx;
+        point.y += dy;
+      }
+      break;
+    case "text":
+      shape.x += dx;
+      shape.y += dy;
+      break;
+  }
+}
 
  private mouseMoveHandler = (e: MouseEvent) => {
-  const { x, y } = this.screenToWorld(e.clientX, e.clientY);
-  if (!this.clicked) return;
+    const { x, y } = this.screenToWorld(e.clientX, e.clientY);
+    if (!this.clicked) return;
 
-  if (this.selectedTool === "pencil") {
-    this.pencilPoints.push({ x, y }); // use world
-    this.clearCanvas();
+    if (this.selectedShapeIndex !== null) {
+      // Dragging selected shape - calculate delta
+      const dx = x - this.dragOffsetX;
+      const dy = y - this.dragOffsetY;
 
-    this.ctx.strokeStyle = "rgba(255, 255, 255)";
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.pencilPoints[0].x, this.pencilPoints.y);
-    for (let i = 1; i < this.pencilPoints.length; i++) {
-      this.ctx.lineTo(this.pencilPoints[i].x, this.pencilPoints[i].y);
-    }
-    this.ctx.stroke();
-  } else if (this.selectedTool === "eraser") {
-    this.eraseAtPoint(x, y); // Use world
-  } else {
-    this.drawPreviewWorld(x, y); // see below
-  }
-};
+      const shape = this.existingShapes[this.selectedShapeIndex];
+      this.moveShapeBy(shape, dx, dy);
+
+      // Update drag offset for smooth dragging
+      this.dragOffsetX = x;
+      this.dragOffsetY = y;
+
+      this.clearCanvas();
+    } else if (this.selectedTool === "pencil") {
+      this.pencilPoints.push({ x, y });
+      this.clearCanvas();
+
+      this.ctx.strokeStyle = "rgba(255, 255, 255)";
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.pencilPoints[0].x, this.pencilPoints[0].y);
+      for (let i = 1; i < this.pencilPoints.length; i++) {
+        this.ctx.lineTo(this.pencilPoints[i].x, this.pencilPoints[i].y);
+      }
+      this.ctx.stroke();
+    } else if (this.selectedTool === "eraser") {
+      this.eraseAtPoint(x, y);
+      this.clearCanvas();
+    } else {
+      this.drawPreviewWorld(x, y);
+    }
+  };
 
 
   private eraseAtPoint(x: number, y: number) {
