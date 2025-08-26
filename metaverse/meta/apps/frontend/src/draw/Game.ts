@@ -77,39 +77,45 @@ function drawDiamond(
 export class Game {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
+  private container: HTMLElement; // NEW: Parent container for the canvas
   private existingShapes: Shape[] = [];
   private clicked = false;
   private startX = 0;
   private startY = 0;
   private selectedTool: Tool = "circle";
   private onShapeCreatedForMove?: (shape: Shape) => void;
-  private isAddingText = false;
   private pencilPoints: { x: number; y: number }[] = [];
   private viewport = { x: 0, y: 0, scale: 1 };
-  private panning = false;
-  private lastPan = { x: 0, y: 0 };
   private selectedShapeIndex: number | null = null;
   private dragOffsetX = 0;
   private dragOffsetY = 0;
   private activeResizeHandle: ResizeHandle = null;
+  private activeTextarea: HTMLTextAreaElement | null = null; // NEW: For live text editing
 
   socket: WebSocket;
 
   constructor(
     canvas: HTMLCanvasElement,
+    container: HTMLElement, // MODIFIED: Added container parameter
     socket: WebSocket,
     onShapeCreatedForMove?: (shape: Shape) => void
   ) {
     this.canvas = canvas;
+    this.container = container; // MODIFIED: Store the container
     this.ctx = canvas.getContext("2d")!;
     this.socket = socket;
     this.onShapeCreatedForMove = onShapeCreatedForMove;
     this.init();
     this.initHandlers();
-    this.initMouseHandlers();
   }
-
+  // Add a new public method to start the listeners
+  public start() {
+    this.initMouseHandlers();
+  }
   destroy() {
+    if (this.activeTextarea) {
+      this.finalizeTextEditing(); // Clean up active text area if it exists
+    }
     this.canvas.removeEventListener("mousedown", this.mouseDownHandler);
     this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
@@ -117,7 +123,9 @@ export class Game {
 
   setTool(tool: Tool) {
     this.selectedTool = tool;
-    // Deselect shape when tool changes
+    if (this.activeTextarea) {
+      this.finalizeTextEditing();
+    }
     this.selectedShapeIndex = null;
     this.clearCanvas();
   }
@@ -132,7 +140,6 @@ export class Game {
       const message = JSON.parse(event.data);
       if (message.type === "chat") {
         const parsedShape = JSON.parse(message.message);
-        // A simple way to update shapes; could be more sophisticated
         this.existingShapes = parsedShape.shapes || [parsedShape.shape];
         this.clearCanvas();
       }
@@ -184,8 +191,13 @@ export class Game {
         }
         break;
       case "text":
-        x = shape.x - 5; y = shape.y - 20;
-        width = shape.text.length * 10; height = 25;
+        // Use a more accurate bounding box for text
+        this.ctx.font = "20px sans-serif";
+        const metrics = this.ctx.measureText(shape.text);
+        x = shape.x;
+        y = shape.y - 20; // Approximation for ascent
+        width = metrics.width;
+        height = 25; // Approximation for height
         break;
     }
     return { x, y, width, height };
@@ -197,7 +209,7 @@ export class Game {
     const ctx = this.ctx;
     ctx.save();
     ctx.strokeStyle = "#56a2e8";
-    ctx.lineWidth = 1.5 / this.viewport.scale; // Keep line width constant on screen
+    ctx.lineWidth = 1.5 / this.viewport.scale;
     ctx.setLineDash([5 / this.viewport.scale, 3 / this.viewport.scale]);
 
     ctx.strokeRect(x, y, width, height);
@@ -205,10 +217,10 @@ export class Game {
     const handleScreenSize = 8;
     const handleWorldSize = handleScreenSize / this.viewport.scale;
     const corners = [
-      { cx: x, cy: y }, // top-left
-      { cx: x + width, cy: y }, // top-right
-      { cx: x, cy: y + height }, // bottom-left
-      { cx: x + width, cy: y + height }, // bottom-right
+      { cx: x, cy: y },
+      { cx: x + width, cy: y },
+      { cx: x, cy: y + height },
+      { cx: x + width, cy: y + height },
     ];
 
     ctx.setLineDash([]);
@@ -317,8 +329,8 @@ export class Game {
   worldToScreen(x: number, y: number): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
     return {
-      x: x * this.viewport.scale + this.viewport.x + rect.left,
-      y: y * this.viewport.scale + this.viewport.y + rect.top,
+      x: x * this.viewport.scale + this.viewport.x +rect.left,
+      y: y * this.viewport.scale + this.viewport.y+rect.top,
     };
   }
 
@@ -343,7 +355,6 @@ export class Game {
     return null;
   }
 
-  // --- FULLY IMPLEMENTED RESIZE LOGIC ---
   private resizeFromTopLeft(shape: Shape, dx: number, dy: number) {
     const box = this.getShapeBoundingBox(shape);
     const newWidth = box.width - dx;
@@ -465,7 +476,7 @@ export class Game {
 
   private scalePencilPoints(shape: Extract<Shape, {type: 'pencil'}>, newX: number, newY: number, newW: number, newH: number) {
     const oldBox = this.getShapeBoundingBox(shape);
-    if (oldBox.width === 0 || oldBox.height === 0) return; // Avoid division by zero
+    if (oldBox.width === 0 || oldBox.height === 0) return;
 
     shape.points.forEach(p => {
       p.x = newX + ((p.x - oldBox.x) / oldBox.width) * newW;
@@ -528,19 +539,20 @@ export class Game {
   }
 
   private isPointNearShape(x: number, y: number, shape: Shape): boolean {
-    const margin = 6 / this.viewport.scale; // Make margin screen-relative
+    const margin = 6 / this.viewport.scale;
     const box = this.getShapeBoundingBox(shape);
     if (
       x < box.x - margin || x > box.x + box.width + margin ||
       y < box.y - margin || y > box.y + box.height + margin
     ) {
-      return false; // Quick check using bounding box
+      return false;
     }
 
     switch (shape.type) {
       case "rect":
       case "diamond":
-        return true; // BBox check is enough
+      case "text":
+        return true;
       case "circle":
         const dx = x - shape.centerX;
         const dy = y - shape.centerY;
@@ -570,14 +582,26 @@ export class Game {
     return Math.sqrt(dx * dx + dy * dy) <= margin;
   }
 
-  // --- REFACTORED AND FIXED MOUSE HANDLERS ---
   private mouseDownHandler = (e: MouseEvent) => {
+  console.log("1. MOUSE DOWN HANDLER FIRED. Tool is:", this.selectedTool); // <-- ADD THIS
+  // If the click target is the textarea itself, do nothing.
+   if (this.activeTextarea) {
+    // ...and the user clicked OUTSIDE of it, finalize the text.
+    if (e.target !== this.activeTextarea) {
+      this.finalizeTextEditing();
+    }
+    // In either case, stop here. Don't let the click interact with the canvas underneath.
+    return;
+  }
     const { x, y } = this.screenToWorld(e.clientX, e.clientY);
+ if (this.selectedTool === "text") {
+    this.startTextEditing(x, y);
+    return; // IMPORTANT: This prevents the function from continuing.
+  }
     this.clicked = true;
     this.startX = x;
     this.startY = y;
 
-    // Check for resize handle first if a shape is already selected
     if (this.selectedShapeIndex !== null) {
       const selectedShape = this.existingShapes[this.selectedShapeIndex];
       this.activeResizeHandle = this.getHandleUnderPoint(x, y, selectedShape);
@@ -588,7 +612,6 @@ export class Game {
       }
     }
 
-    // Check if clicking a shape to select/move
     const shapeIndex = this.findShapeIndexAtPoint(x, y);
     if (shapeIndex !== null) {
       this.selectedShapeIndex = shapeIndex;
@@ -599,17 +622,14 @@ export class Game {
       return;
     }
     
-    // If clicking on empty space, deselect and prepare for new shape
     this.selectedShapeIndex = null;
     this.activeResizeHandle = null;
 
-    if (this.selectedTool === "pencil") {
+    // MODIFIED: Text tool logic
+  if (this.selectedTool === "pencil") {
       this.pencilPoints = [{ x, y }];
     } else if (this.selectedTool === "eraser") {
       this.eraseAtPoint(x, y);
-    } else if (this.selectedTool === "text") {
-      this.createText(x, y);
-      this.clicked = false; // Don't drag to create text
     }
     this.clearCanvas();
   };
@@ -619,14 +639,11 @@ export class Game {
     this.clicked = false;
     const { x, y } = this.screenToWorld(e.clientX, e.clientY);
 
-    // If we were resizing or dragging, the action is done. Don't deselect.
     if (this.activeResizeHandle || this.selectedShapeIndex !== null) {
       this.activeResizeHandle = null;
-      // Optionally send update to server here
       return;
     }
 
-    // Otherwise, create a new shape
     if (this.selectedTool === "pencil" && this.pencilPoints.length > 1) {
       const newShape: Shape = { type: "pencil", points: [...this.pencilPoints] };
       this.existingShapes.push(newShape);
@@ -644,7 +661,6 @@ export class Game {
   private mouseMoveHandler = (e: MouseEvent) => {
     const { x, y } = this.screenToWorld(e.clientX, e.clientY);
 
-    // Update cursor style when not clicking
     if (!this.clicked) {
       const shapeIndex = this.findShapeIndexAtPoint(x, y);
       if (shapeIndex !== null) {
@@ -660,7 +676,6 @@ export class Game {
     const dx = x - this.dragOffsetX;
     const dy = y - this.dragOffsetY;
 
-    // Handle resizing
     if (this.activeResizeHandle && this.selectedShapeIndex !== null) {
       const shape = this.existingShapes[this.selectedShapeIndex];
       switch (this.activeResizeHandle) {
@@ -675,7 +690,6 @@ export class Game {
       return;
     }
 
-    // Handle moving
     if (this.selectedShapeIndex !== null) {
       this.moveShapeBy(this.existingShapes[this.selectedShapeIndex], dx, dy);
       this.dragOffsetX = x;
@@ -684,11 +698,9 @@ export class Game {
       return;
     }
 
-    // Handle drawing new shapes
     if (this.selectedTool === "pencil") {
       this.pencilPoints.push({ x, y });
       this.clearCanvas();
-      // Draw current pencil line preview
       this.ctx.strokeStyle = "rgba(255, 255, 255)";
       this.ctx.beginPath();
       this.ctx.moveTo(this.pencilPoints[0].x, this.pencilPoints[0].y);
@@ -701,15 +713,95 @@ export class Game {
     }
   };
   
-  private createText(x: number, y: number) {
-    const inputText = prompt("Enter text to add:");
-    if (inputText && inputText.trim().length > 0) {
-        const shape: Shape = { type: "text", x, y, text: inputText.trim() };
-        this.existingShapes.push(shape);
-        // Send to socket if needed
-        this.clearCanvas();
-    }
-  }
+  // --- NEW: Live Text Editing Methods ---
+  private startTextEditing(worldX: number, worldY: number) {
+     console.log("3. START TEXT EDITING CALLED."); // <-- ADD THIS
+    console.log("Container element:", this.container); // <-- ADD THIS
+    if (this.activeTextarea) {
+        this.finalizeTextEditing();
+    }
+
+    const { x: screenX, y: screenY } = this.worldToScreen(worldX, worldY);
+    const textarea = document.createElement("textarea");
+
+    textarea.style.position = "absolute";
+    textarea.style.left = `${screenX}px`;
+    textarea.style.top = `${screenY}px`;
+      
+  // YEH LINE ADD KARNI HAI 👇
+  textarea.style.zIndex = "1001";
+  
+    textarea.style.border = "1px solid #56a2e8";
+    textarea.style.outline = "none";
+    textarea.style.padding = "4px";
+    textarea.style.margin = "0";
+    textarea.style.backgroundColor = "#222";
+    textarea.style.color = "white";
+    textarea.style.font = "20px sans-serif";
+    textarea.style.resize = "none";
+    textarea.style.overflow = "hidden";
+    textarea.style.lineHeight = "1.2";
+    textarea.style.whiteSpace = "pre";
+    textarea.rows = 1;
+
+    this.container.appendChild(textarea);
+    this.activeTextarea = textarea;
+
+    textarea.addEventListener("input", () => {
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+        textarea.style.width = "auto";
+        textarea.style.width = `${textarea.scrollWidth}px`;
+    });
+
+    textarea.focus();
+setTimeout(() => {
+  textarea.addEventListener("blur", this.finalizeTextEditing);
+}, 0); // A delay of 0 is enough to push it to the end of the event queue.
+    textarea.addEventListener("keydown", this.handleTextareaKeydown);
+  }
+
+  private finalizeTextEditing = () => {
+    if (!this.activeTextarea) return;
+
+    const text = this.activeTextarea.value;
+  const { x: worldX, y: worldY } = this.screenToWorld(
+      parseInt(this.activeTextarea.style.left, 10),
+      parseInt(this.activeTextarea.style.top, 10)
+  );
+  
+    if (text.trim()) {
+        const newShape: Shape = {
+            type: "text",
+            x: worldX,
+            y: worldY + 20, // Adjust for font baseline
+            text,
+        };
+        this.existingShapes.push(newShape);
+        this.notifyMoveIcon(newShape);
+        // You might want to send this new shape over the socket here
+    }
+
+    this.container.removeChild(this.activeTextarea);
+    this.activeTextarea.removeEventListener("blur", this.finalizeTextEditing);
+    this.activeTextarea.removeEventListener("keydown", this.handleTextareaKeydown);
+    this.activeTextarea = null;
+
+    this.clearCanvas();
+  };
+
+  private handleTextareaKeydown = (e: KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        this.finalizeTextEditing();
+    }
+    if (e.key === "Escape") {
+        if (!this.activeTextarea) return;
+        this.activeTextarea.value = ""; // Discard text
+        this.finalizeTextEditing();
+    }
+  };
+
 
   private moveShapeBy(shape: Shape, dx: number, dy: number) {
     switch (shape.type) {
@@ -732,12 +824,13 @@ export class Game {
     if (index !== null) {
       this.existingShapes.splice(index, 1);
       this.clearCanvas();
-      // Optionally send update to server
     }
   }
 
   private initMouseHandlers() {
     this.canvas.addEventListener("wheel", (e) => {
+      // NEW: Prevent zoom while editing text
+      if (this.activeTextarea) return;
       e.preventDefault();
       const zoomFactor = 1.1;
       const mouseWorld = this.screenToWorld(e.clientX, e.clientY);

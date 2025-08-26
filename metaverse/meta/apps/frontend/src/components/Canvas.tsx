@@ -116,6 +116,7 @@ function Topbar({
 
 export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+   const containerRef = useRef<HTMLDivElement>(null);
   const [game, setGame] = useState<Game>();
   const [selectedTool, setSelectedTool] = useState<Tool>("circle");
   // State to hold the last created shape for move icon
@@ -125,18 +126,27 @@ export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
     game?.setTool(selectedTool);
   }, [selectedTool, game]);
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      // Pass the callback to Game constructor
-      const g = new Game(canvasRef.current, socket, (shape: Shape) => {
-        setShapeForMoveIcon(shape);
-      });
+    useEffect(() => {
+    // Check if both refs are ready
+    if (canvasRef.current && containerRef.current) {
+      // 2. Pass the container ref to the Game constructor in the correct order
+      // The constructor expects: canvas, container, socket, callback
+      const g = new Game(
+        canvasRef.current,
+        containerRef.current, // Pass the container here
+        socket,
+        (shape: Shape) => {
+          setShapeForMoveIcon(shape);
+        }
+      );
       setGame(g);
+      g.start();
       return () => {
         g.destroy();
       };
     }
-  }, [socket]);
+  }, []);
+  
 
   const PAN_STEP = 50;
   const ZOOM_FACTOR = 1.2;
@@ -172,11 +182,15 @@ export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
   };
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden" }}>
+    <div ref= {containerRef} style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+      
       <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} style={{ display: "block" }} />
       <Topbar
         selectedTool={selectedTool}
-        setSelectedTool={setSelectedTool}
+        setSelectedTool={(tool) => {
+    console.log("TOOL SELECTED:", tool); // <-- ADD THIS LINE
+    setSelectedTool(tool);
+  }}
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
         onPanLeft={onPanLeft}
