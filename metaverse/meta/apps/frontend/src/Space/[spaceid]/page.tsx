@@ -4,13 +4,10 @@ import useWebSocket from "@/hooks/useWebsocket";
 import { Button } from "@/components/ui/button";
 import { useVideoCall } from "@/hooks/useVideocall";
 import { Fullscreen, VideoOff } from "lucide-react";
-import Picker from '@emoji-mart/react';
-import data from '@emoji-mart/data';
 import VideoPanel from "@/components/VideoPanel";
 import ChatPanel from "@/components/Chatpanel";
 import MapCanvas from "@/components/Mapcanvas";
-import { Minimap } from "@/components/minimap";
-import { ResizableBox } from 'react-resizable';
+import { Canvas } from "@/components/Canvas";
 import 'react-resizable/css/styles.css';
 
 
@@ -25,7 +22,6 @@ const SpacePage: React.FC = () => {
     usersInSpace,
     map,
     spaceElements,
-    move,
     currentPlayerPosition,
     chatMessages,
     sendChatMessage,
@@ -33,8 +29,7 @@ const SpacePage: React.FC = () => {
     ws,
     emojiReactions,
     typingUsers,
-  onTyping,
-    sendEmojiReaction
+  onTyping
   } = useWebSocket(spaceId ?? "");
 
   const {
@@ -52,9 +47,8 @@ const SpacePage: React.FC = () => {
   const lastReadMessageCount = useRef<number>(0);
 
   const [isVideoOpen, setIsVideoOpen] = useState(false);// New state for avatar emoji picker position only
-  const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
-  const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const [showCanvas, setShowCanvas] = useState(false);
 
   const recentReactions = useMemo(() => {
     const now = Date.now();
@@ -90,32 +84,8 @@ useEffect(() => {
   }
 }, [isChatOpen, chatMessages]);
 
-  useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!currentPlayerPosition) return;
-    const { x, y } = currentPlayerPosition;
 
-    switch (e.key) {
-      case "ArrowUp":    // Up arrow
-        move(x, y - 1);
-        break;
-      case "ArrowLeft":  // Left arrow
-        move(x - 1, y);
-        break;
-      case "ArrowRight": // Right arrow
-        move(x + 1, y);
-        break;
-      case "ArrowDown":  // Down arrow
-        move(x, y + 1);
-        break;
-      default:
-        break;
-    }
-  };
 
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [currentPlayerPosition, move]);
 
 
   if (!isConnected || !map || !currentPlayerPosition) {
@@ -149,73 +119,14 @@ useEffect(() => {
           SPRITE_HEIGHT={SPRITE_HEIGHT}
         />
       </div>
-      <div className="absolute top-11 right-[28rem] z-50">
-        <ResizableBox
-          width={150}
-          height={150}
-          minConstraints={[100, 100]}
-          maxConstraints={[200, 200]}
-          resizeHandles={['sw']} // south-west corner
-        >
-          <Minimap
-            users={Object.values(usersInSpace).map((u) => ({
-              id: u.id,
-              username: u.username,
-              x: u.x ?? 0,
-              y: u.y ?? 0,
-            }))}
-            mapWidth={map[0]?.length ?? 0}
-            mapHeight={map.length ?? 0}
-          />
-        </ResizableBox>
-      </div>
-
-
-      <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 z-40">
-        <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y - 1)} className="bg-blue-600 px-4 py-2 rounded">↑</Button>
-        <Button onClick={() => move(currentPlayerPosition.x - 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">←</Button>
-        <Button onClick={() => move(currentPlayerPosition.x + 1, currentPlayerPosition.y)} className="bg-blue-600 px-4 py-2 rounded">→</Button>
-        <Button onClick={() => move(currentPlayerPosition.x, currentPlayerPosition.y + 1)} className="bg-blue-600 px-4 py-2 rounded">↓</Button>
-      </div>
       {/* Standalone Emoji Reaction Button */}
 
     <div
   className="fixed z-50 bottom-11 left-[28rem]">
-        <Button
-          onClick={(e) => {
-            const rect = (e.target as HTMLElement).getBoundingClientRect();
-            setShowAvatarEmojiPicker(true);
-            setAvatarEmojiPickerPosition({ top: rect.top - 350, left: rect.left - 200 });
-          }}
-          className="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded text-black text-lg"
-          title="React with Emoji"
-        >
-          😊 React
-        </Button>
 
       </div>
 
-      {showAvatarEmojiPicker && avatarEmojiPickerPosition && (
-        <div
-          className="absolute z-50"
-          style={{
-            top: avatarEmojiPickerPosition.top,
-            left: avatarEmojiPickerPosition.left,
-            position: "fixed",
-          }}
-        >
-          <Picker
-            data={data}
-            onEmojiSelect={(emoji: any) => {
-              sendEmojiReaction(emoji.native);
-              setShowAvatarEmojiPicker(false);
-            }}
-            theme="dark"
-          />
-        </div>
-      )}
-
-
+     
 
       <div className="absolute top-4 left-4 flex gap-2 z-40">
         {!isVideoOpen && (
@@ -236,6 +147,18 @@ useEffect(() => {
           🖥 Share Screen
         </Button>
       </div>
+  <button
+        onClick={() => setShowCanvas((prev) => !prev)}
+        className="fixed top-20 left-4 z-50 bg-blue-600 px-4 py-2 rounded"
+      >
+        {showCanvas ? "Close Drawing Canvas" : "Open Drawing Canvas"}
+      </button>
+
+      {showCanvas && (
+        <div className="absolute inset-0 z-30">
+          <Canvas spaceId={spaceId ?? ""} />
+        </div>
+      )}
 
       {isVideoOpen && (
         //pointer-events-none will let children opt-in to interaction, and fixed lets them move anywhere on the screen.

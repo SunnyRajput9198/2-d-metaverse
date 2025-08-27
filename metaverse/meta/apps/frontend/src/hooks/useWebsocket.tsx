@@ -11,7 +11,8 @@ import type {
     UserLeftPayload,
     MovementRejectedPayload,
     ChatMessageBroadcast,
-    ChatMessage
+    ChatMessage,
+    Shape
 } from '../types';
 
 function useWebSocket(spaceId: string) {
@@ -26,6 +27,8 @@ function useWebSocket(spaceId: string) {
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [emojiReactions, setEmojiReactions] = useState<Record<string, { emoji: string, timestamp: number }>>({});
     const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
+    const [shapes, setShapes] = useState<Shape[]>([]);
+
 
 
 
@@ -230,6 +233,13 @@ function useWebSocket(spaceId: string) {
                     }));
                     setChatMessages(normalizedHistory);
                     break;
+                case "shape-update":
+                    const newShape = message.payload as Shape;
+                    setShapes(prevShapes => {
+                        // Optional: avoid duplicates by some id if you have shape ids
+                        return [...prevShapes, newShape];
+                    });
+                    break;
 
 
                 default:
@@ -340,6 +350,7 @@ function useWebSocket(spaceId: string) {
         typingUsers,
         onTyping,
         map,
+        shapes,
         chatMessages,
         sendChatMessage,
         userId,

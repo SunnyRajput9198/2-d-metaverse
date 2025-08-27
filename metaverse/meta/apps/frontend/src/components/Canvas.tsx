@@ -1,7 +1,7 @@
-import { initDraw } from "../draw/index";
 import { useEffect, useRef, useState } from "react";
 import { Game } from "../draw/Game";
-import type { Shape } from "../draw/Game";
+import type { Shape } from "../types";
+import useWebSocket from "@/hooks/useWebsocket";
 import {
   Circle,
   Pencil,
@@ -114,21 +114,38 @@ function Topbar({
   );
 }
 
-export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
+export function Canvas({ spaceId }: { spaceId: string }): React.ReactElement {
+  const { ws: socket, shapes } = useWebSocket(spaceId)
   const canvasRef = useRef<HTMLCanvasElement>(null);
-   const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [game, setGame] = useState<Game>();
   const [selectedTool, setSelectedTool] = useState<Tool>("circle");
   // State to hold the last created shape for move icon
   const [shapeForMoveIcon, setShapeForMoveIcon] = useState<Shape | null>(null);
+  useEffect(() => {
+    if (!socket) return; // wait for socket
+
+    if (canvasRef.current && containerRef.current) {
+      const g = new Game(canvasRef.current, containerRef.current, socket, (shape) => {
+        setShapeForMoveIcon(shape);
+      });
+      setGame(g);
+      g.start();
+
+      return () => g.destroy();
+    }
+  }, [socket]);
 
   useEffect(() => {
-    game?.setTool(selectedTool);
-  }, [selectedTool, game]);
+    if (game && shapes) {
+      game.setShapes(shapes);
+    }
+  }, [game, shapes]);
 
-    useEffect(() => {
+  useEffect(() => {
     // Check if both refs are ready
     if (canvasRef.current && containerRef.current) {
+      if(!socket) return;
       // 2. Pass the container ref to the Game constructor in the correct order
       // The constructor expects: canvas, container, socket, callback
       const g = new Game(
@@ -146,7 +163,7 @@ export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
       };
     }
   }, []);
-  
+
 
   const PAN_STEP = 50;
   const ZOOM_FACTOR = 1.2;
@@ -182,15 +199,15 @@ export function Canvas({ socket }: { socket: WebSocket }): React.ReactElement {
   };
 
   return (
-    <div ref= {containerRef} style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
-      
+    <div ref={containerRef} style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
+
       <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight} style={{ display: "block" }} />
       <Topbar
         selectedTool={selectedTool}
         setSelectedTool={(tool) => {
-    console.log("TOOL SELECTED:", tool); // <-- ADD THIS LINE
-    setSelectedTool(tool);
-  }}
+          console.log("TOOL SELECTED:", tool); // <-- ADD THIS LINE
+          setSelectedTool(tool);
+        }}
         onZoomIn={onZoomIn}
         onZoomOut={onZoomOut}
         onPanLeft={onPanLeft}

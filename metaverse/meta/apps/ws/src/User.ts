@@ -378,6 +378,17 @@ export class User {
           );
           break;
         }
+        case "shape-update":
+          if (!this.spaceId) return;
+          RoomManager.getInstance().broadcast(
+            {
+              type: "shape-update",
+              payload: parsedData.payload,
+            },
+            this, // exclude sender
+            this.spaceId
+          );
+          break;
       }
     });
   }

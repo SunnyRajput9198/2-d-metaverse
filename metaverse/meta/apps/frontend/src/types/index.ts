@@ -19,6 +19,14 @@ export interface TypingPayload {
 export interface ChatPayload {
   message: string;
 }
+export type Shape =
+  | { type: "rect"; x: number; y: number; width: number; height: number }
+  | { type: "circle"; centerX: number; centerY: number; radius: number }
+  | { type: "pencil"; points: { x: number; y: number }[] }
+  | { type: "arrow"; startX: number; startY: number; endX: number; endY: number }
+  | { type: "line"; startX: number; startY: number; endX: number; endY: number }
+  | { type: "diamond"; centerX: number; centerY: number; width: number; height: number }
+  | { type: "text"; x: number; y: number; text: string };
 
 export interface ChatMessageBroadcast {
   userId: string;
@@ -133,7 +141,8 @@ export type WebSocketMessage =
   | { type: 'chat-message'; payload: ChatMessageBroadcast }
   | { type: "emoji-reaction"; payload: { userId: string; emoji: string ; timestamp: number } }
   | { type: "typing"; payload: TypingPayload }
-  | { type: 'chat-history'; payload: ChatMessage[] };
+  | { type: 'chat-history'; payload: ChatMessage[] }
+  | { type: "shape-update"; payload: Shape };
 
   // Client to Server
 export type SendEmojiPayload = {
