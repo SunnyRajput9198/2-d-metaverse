@@ -122,14 +122,6 @@ export class Game {
   }
 
   private initHandlers() {
-    this.socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === "shape-update") {
-        const newShape: Shape = message.payload;
-        this.existingShapes.push(newShape);
-        this.clearCanvas();
-      }
-    };
   }
 
   getViewportScale() {
@@ -249,10 +241,11 @@ export class Game {
 
     switch (this.selectedTool) {
       case "rect":
-        return { type: "rect", x: this.startX, y: this.startY, width, height };
+        return {id: crypto.randomUUID(), type: "rect", x: this.startX, y: this.startY, width, height };
       case "circle":
         const radius = Math.sqrt(width * width + height * height);
         return {
+        id: crypto.randomUUID(),
           type: "circle",
           radius,
           centerX: this.startX,
@@ -260,6 +253,7 @@ export class Game {
         };
       case "line":
         return {
+          id: crypto.randomUUID(),
           type: "line",
           startX: this.startX,
           startY: this.startY,
@@ -268,6 +262,7 @@ export class Game {
         };
       case "arrow":
         return {
+          id: crypto.randomUUID(),
           type: "arrow",
           startX: this.startX,
           startY: this.startY,
@@ -276,6 +271,7 @@ export class Game {
         };
       case "diamond":
         return {
+          id  : crypto.randomUUID(),
           type: "diamond",
           centerX: this.startX + width / 2,
           centerY: this.startY + height / 2,
@@ -752,6 +748,7 @@ export class Game {
 
     if (this.selectedTool === "pencil" && this.pencilPoints.length > 1) {
       const newShape: Shape = {
+        id: crypto.randomUUID(),
         type: "pencil",
         points: [...this.pencilPoints],
       };
@@ -915,13 +912,23 @@ export class Game {
 
     if (text.trim()) {
       const newShape: Shape = {
+        id:crypto.randomUUID(),
         type: "text",
         x: worldX,
         y: worldY + 20, // Adjust for font baseline
         text,
       };
-      this.existingShapes.push(newShape);
-      this.notifyMoveIcon(newShape);
+       // ✅ ADD THIS BLOCK TO SEND THE TEXT SHAPE
+       this.existingShapes.push(newShape);
+       this.notifyMoveIcon(newShape);
+    if (this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(
+        JSON.stringify({
+          type: "shape-update",
+          payload: newShape,
+        })
+      );
+    }
       // You might want to send this new shape over the socket here
     }
 
@@ -979,8 +986,17 @@ export class Game {
   private eraseAtPoint(x: number, y: number) {
     const index = this.findShapeIndexAtPoint(x, y);
     if (index !== null) {
-      this.existingShapes.splice(index, 1);
-      this.clearCanvas();
+      const shapeToDelete = this.existingShapes[index]; // Get the shape
+    
+    // ✅ Send a delete message to the server
+    if (this.socket.readyState === WebSocket.OPEN) {
+        this.socket.send(JSON.stringify({
+            type: "shape-delete",
+            payload: { id: shapeToDelete.id } // Send the ID of the shape
+        }));
+    }
+      // this.existingShapes.splice(index, 1);
+      // this.clearCanvas();
     }
   }
 

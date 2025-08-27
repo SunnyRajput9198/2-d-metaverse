@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Space = $Result.DefaultSelection<Prisma.$SpacePayload>
 /**
+ * Model CanvasShape
+ * 
+ */
+export type CanvasShape = $Result.DefaultSelection<Prisma.$CanvasShapePayload>
+/**
  * Model ChatMessage
  * 
  */
@@ -215,6 +220,16 @@ export class PrismaClient<
     * ```
     */
   get space(): Prisma.SpaceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.canvasShape`: Exposes CRUD operations for the **CanvasShape** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CanvasShapes
+    * const canvasShapes = await prisma.canvasShape.findMany()
+    * ```
+    */
+  get canvasShape(): Prisma.CanvasShapeDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.chatMessage`: Exposes CRUD operations for the **ChatMessage** model.
@@ -717,6 +732,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Space: 'Space',
+    CanvasShape: 'CanvasShape',
     ChatMessage: 'ChatMessage',
     spaceElements: 'spaceElements',
     Element: 'Element',
@@ -741,7 +757,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "space" | "chatMessage" | "spaceElements" | "element" | "map" | "mapElements" | "avatar"
+      modelProps: "user" | "space" | "canvasShape" | "chatMessage" | "spaceElements" | "element" | "map" | "mapElements" | "avatar"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -890,6 +906,80 @@ export namespace Prisma {
           count: {
             args: Prisma.SpaceCountArgs<ExtArgs>
             result: $Utils.Optional<SpaceCountAggregateOutputType> | number
+          }
+        }
+      }
+      CanvasShape: {
+        payload: Prisma.$CanvasShapePayload<ExtArgs>
+        fields: Prisma.CanvasShapeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CanvasShapeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CanvasShapeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>
+          }
+          findFirst: {
+            args: Prisma.CanvasShapeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CanvasShapeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>
+          }
+          findMany: {
+            args: Prisma.CanvasShapeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>[]
+          }
+          create: {
+            args: Prisma.CanvasShapeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>
+          }
+          createMany: {
+            args: Prisma.CanvasShapeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CanvasShapeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>[]
+          }
+          delete: {
+            args: Prisma.CanvasShapeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>
+          }
+          update: {
+            args: Prisma.CanvasShapeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>
+          }
+          deleteMany: {
+            args: Prisma.CanvasShapeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CanvasShapeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CanvasShapeUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>[]
+          }
+          upsert: {
+            args: Prisma.CanvasShapeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CanvasShapePayload>
+          }
+          aggregate: {
+            args: Prisma.CanvasShapeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCanvasShape>
+          }
+          groupBy: {
+            args: Prisma.CanvasShapeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CanvasShapeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CanvasShapeCountArgs<ExtArgs>
+            result: $Utils.Optional<CanvasShapeCountAggregateOutputType> | number
           }
         }
       }
@@ -1423,6 +1513,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     user?: UserOmit
     space?: SpaceOmit
+    canvasShape?: CanvasShapeOmit
     chatMessage?: ChatMessageOmit
     spaceElements?: spaceElementsOmit
     element?: ElementOmit
@@ -1563,11 +1654,13 @@ export namespace Prisma {
    */
 
   export type SpaceCountOutputType = {
+    canvasShape: number
     elements: number
     chatMessages: number
   }
 
   export type SpaceCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    canvasShape?: boolean | SpaceCountOutputTypeCountCanvasShapeArgs
     elements?: boolean | SpaceCountOutputTypeCountElementsArgs
     chatMessages?: boolean | SpaceCountOutputTypeCountChatMessagesArgs
   }
@@ -1581,6 +1674,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the SpaceCountOutputType
      */
     select?: SpaceCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * SpaceCountOutputType without action
+   */
+  export type SpaceCountOutputTypeCountCanvasShapeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CanvasShapeWhereInput
   }
 
   /**
@@ -3050,6 +3150,7 @@ export namespace Prisma {
     thumbnail?: boolean
     creatorId?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    canvasShape?: boolean | Space$canvasShapeArgs<ExtArgs>
     elements?: boolean | Space$elementsArgs<ExtArgs>
     chatMessages?: boolean | Space$chatMessagesArgs<ExtArgs>
     _count?: boolean | SpaceCountOutputTypeDefaultArgs<ExtArgs>
@@ -3087,6 +3188,7 @@ export namespace Prisma {
   export type SpaceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "width" | "height" | "thumbnail" | "creatorId", ExtArgs["result"]["space"]>
   export type SpaceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    canvasShape?: boolean | Space$canvasShapeArgs<ExtArgs>
     elements?: boolean | Space$elementsArgs<ExtArgs>
     chatMessages?: boolean | Space$chatMessagesArgs<ExtArgs>
     _count?: boolean | SpaceCountOutputTypeDefaultArgs<ExtArgs>
@@ -3102,6 +3204,7 @@ export namespace Prisma {
     name: "Space"
     objects: {
       creator: Prisma.$UserPayload<ExtArgs>
+      canvasShape: Prisma.$CanvasShapePayload<ExtArgs>[]
       elements: Prisma.$spaceElementsPayload<ExtArgs>[]
       chatMessages: Prisma.$ChatMessagePayload<ExtArgs>[]
     }
@@ -3507,6 +3610,7 @@ export namespace Prisma {
   export interface Prisma__SpaceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    canvasShape<T extends Space$canvasShapeArgs<ExtArgs> = {}>(args?: Subset<T, Space$canvasShapeArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     elements<T extends Space$elementsArgs<ExtArgs> = {}>(args?: Subset<T, Space$elementsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$spaceElementsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chatMessages<T extends Space$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, Space$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -3940,6 +4044,30 @@ export namespace Prisma {
   }
 
   /**
+   * Space.canvasShape
+   */
+  export type Space$canvasShapeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    where?: CanvasShapeWhereInput
+    orderBy?: CanvasShapeOrderByWithRelationInput | CanvasShapeOrderByWithRelationInput[]
+    cursor?: CanvasShapeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CanvasShapeScalarFieldEnum | CanvasShapeScalarFieldEnum[]
+  }
+
+  /**
    * Space.elements
    */
   export type Space$elementsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4003,6 +4131,1034 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SpaceInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CanvasShape
+   */
+
+  export type AggregateCanvasShape = {
+    _count: CanvasShapeCountAggregateOutputType | null
+    _min: CanvasShapeMinAggregateOutputType | null
+    _max: CanvasShapeMaxAggregateOutputType | null
+  }
+
+  export type CanvasShapeMinAggregateOutputType = {
+    id: string | null
+    spaceId: string | null
+  }
+
+  export type CanvasShapeMaxAggregateOutputType = {
+    id: string | null
+    spaceId: string | null
+  }
+
+  export type CanvasShapeCountAggregateOutputType = {
+    id: number
+    spaceId: number
+    shapeData: number
+    _all: number
+  }
+
+
+  export type CanvasShapeMinAggregateInputType = {
+    id?: true
+    spaceId?: true
+  }
+
+  export type CanvasShapeMaxAggregateInputType = {
+    id?: true
+    spaceId?: true
+  }
+
+  export type CanvasShapeCountAggregateInputType = {
+    id?: true
+    spaceId?: true
+    shapeData?: true
+    _all?: true
+  }
+
+  export type CanvasShapeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CanvasShape to aggregate.
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CanvasShapes to fetch.
+     */
+    orderBy?: CanvasShapeOrderByWithRelationInput | CanvasShapeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CanvasShapeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CanvasShapes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CanvasShapes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CanvasShapes
+    **/
+    _count?: true | CanvasShapeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CanvasShapeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CanvasShapeMaxAggregateInputType
+  }
+
+  export type GetCanvasShapeAggregateType<T extends CanvasShapeAggregateArgs> = {
+        [P in keyof T & keyof AggregateCanvasShape]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCanvasShape[P]>
+      : GetScalarType<T[P], AggregateCanvasShape[P]>
+  }
+
+
+
+
+  export type CanvasShapeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CanvasShapeWhereInput
+    orderBy?: CanvasShapeOrderByWithAggregationInput | CanvasShapeOrderByWithAggregationInput[]
+    by: CanvasShapeScalarFieldEnum[] | CanvasShapeScalarFieldEnum
+    having?: CanvasShapeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CanvasShapeCountAggregateInputType | true
+    _min?: CanvasShapeMinAggregateInputType
+    _max?: CanvasShapeMaxAggregateInputType
+  }
+
+  export type CanvasShapeGroupByOutputType = {
+    id: string
+    spaceId: string
+    shapeData: JsonValue
+    _count: CanvasShapeCountAggregateOutputType | null
+    _min: CanvasShapeMinAggregateOutputType | null
+    _max: CanvasShapeMaxAggregateOutputType | null
+  }
+
+  type GetCanvasShapeGroupByPayload<T extends CanvasShapeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CanvasShapeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CanvasShapeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CanvasShapeGroupByOutputType[P]>
+            : GetScalarType<T[P], CanvasShapeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CanvasShapeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    spaceId?: boolean
+    shapeData?: boolean
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["canvasShape"]>
+
+  export type CanvasShapeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    spaceId?: boolean
+    shapeData?: boolean
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["canvasShape"]>
+
+  export type CanvasShapeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    spaceId?: boolean
+    shapeData?: boolean
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["canvasShape"]>
+
+  export type CanvasShapeSelectScalar = {
+    id?: boolean
+    spaceId?: boolean
+    shapeData?: boolean
+  }
+
+  export type CanvasShapeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "spaceId" | "shapeData", ExtArgs["result"]["canvasShape"]>
+  export type CanvasShapeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+  }
+  export type CanvasShapeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+  }
+  export type CanvasShapeIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    space?: boolean | SpaceDefaultArgs<ExtArgs>
+  }
+
+  export type $CanvasShapePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CanvasShape"
+    objects: {
+      space: Prisma.$SpacePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      spaceId: string
+      shapeData: Prisma.JsonValue
+    }, ExtArgs["result"]["canvasShape"]>
+    composites: {}
+  }
+
+  type CanvasShapeGetPayload<S extends boolean | null | undefined | CanvasShapeDefaultArgs> = $Result.GetResult<Prisma.$CanvasShapePayload, S>
+
+  type CanvasShapeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CanvasShapeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CanvasShapeCountAggregateInputType | true
+    }
+
+  export interface CanvasShapeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CanvasShape'], meta: { name: 'CanvasShape' } }
+    /**
+     * Find zero or one CanvasShape that matches the filter.
+     * @param {CanvasShapeFindUniqueArgs} args - Arguments to find a CanvasShape
+     * @example
+     * // Get one CanvasShape
+     * const canvasShape = await prisma.canvasShape.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CanvasShapeFindUniqueArgs>(args: SelectSubset<T, CanvasShapeFindUniqueArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CanvasShape that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CanvasShapeFindUniqueOrThrowArgs} args - Arguments to find a CanvasShape
+     * @example
+     * // Get one CanvasShape
+     * const canvasShape = await prisma.canvasShape.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CanvasShapeFindUniqueOrThrowArgs>(args: SelectSubset<T, CanvasShapeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CanvasShape that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeFindFirstArgs} args - Arguments to find a CanvasShape
+     * @example
+     * // Get one CanvasShape
+     * const canvasShape = await prisma.canvasShape.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CanvasShapeFindFirstArgs>(args?: SelectSubset<T, CanvasShapeFindFirstArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CanvasShape that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeFindFirstOrThrowArgs} args - Arguments to find a CanvasShape
+     * @example
+     * // Get one CanvasShape
+     * const canvasShape = await prisma.canvasShape.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CanvasShapeFindFirstOrThrowArgs>(args?: SelectSubset<T, CanvasShapeFindFirstOrThrowArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CanvasShapes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CanvasShapes
+     * const canvasShapes = await prisma.canvasShape.findMany()
+     * 
+     * // Get first 10 CanvasShapes
+     * const canvasShapes = await prisma.canvasShape.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const canvasShapeWithIdOnly = await prisma.canvasShape.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CanvasShapeFindManyArgs>(args?: SelectSubset<T, CanvasShapeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CanvasShape.
+     * @param {CanvasShapeCreateArgs} args - Arguments to create a CanvasShape.
+     * @example
+     * // Create one CanvasShape
+     * const CanvasShape = await prisma.canvasShape.create({
+     *   data: {
+     *     // ... data to create a CanvasShape
+     *   }
+     * })
+     * 
+     */
+    create<T extends CanvasShapeCreateArgs>(args: SelectSubset<T, CanvasShapeCreateArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CanvasShapes.
+     * @param {CanvasShapeCreateManyArgs} args - Arguments to create many CanvasShapes.
+     * @example
+     * // Create many CanvasShapes
+     * const canvasShape = await prisma.canvasShape.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CanvasShapeCreateManyArgs>(args?: SelectSubset<T, CanvasShapeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CanvasShapes and returns the data saved in the database.
+     * @param {CanvasShapeCreateManyAndReturnArgs} args - Arguments to create many CanvasShapes.
+     * @example
+     * // Create many CanvasShapes
+     * const canvasShape = await prisma.canvasShape.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CanvasShapes and only return the `id`
+     * const canvasShapeWithIdOnly = await prisma.canvasShape.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CanvasShapeCreateManyAndReturnArgs>(args?: SelectSubset<T, CanvasShapeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CanvasShape.
+     * @param {CanvasShapeDeleteArgs} args - Arguments to delete one CanvasShape.
+     * @example
+     * // Delete one CanvasShape
+     * const CanvasShape = await prisma.canvasShape.delete({
+     *   where: {
+     *     // ... filter to delete one CanvasShape
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CanvasShapeDeleteArgs>(args: SelectSubset<T, CanvasShapeDeleteArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CanvasShape.
+     * @param {CanvasShapeUpdateArgs} args - Arguments to update one CanvasShape.
+     * @example
+     * // Update one CanvasShape
+     * const canvasShape = await prisma.canvasShape.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CanvasShapeUpdateArgs>(args: SelectSubset<T, CanvasShapeUpdateArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CanvasShapes.
+     * @param {CanvasShapeDeleteManyArgs} args - Arguments to filter CanvasShapes to delete.
+     * @example
+     * // Delete a few CanvasShapes
+     * const { count } = await prisma.canvasShape.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CanvasShapeDeleteManyArgs>(args?: SelectSubset<T, CanvasShapeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CanvasShapes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CanvasShapes
+     * const canvasShape = await prisma.canvasShape.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CanvasShapeUpdateManyArgs>(args: SelectSubset<T, CanvasShapeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CanvasShapes and returns the data updated in the database.
+     * @param {CanvasShapeUpdateManyAndReturnArgs} args - Arguments to update many CanvasShapes.
+     * @example
+     * // Update many CanvasShapes
+     * const canvasShape = await prisma.canvasShape.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CanvasShapes and only return the `id`
+     * const canvasShapeWithIdOnly = await prisma.canvasShape.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CanvasShapeUpdateManyAndReturnArgs>(args: SelectSubset<T, CanvasShapeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CanvasShape.
+     * @param {CanvasShapeUpsertArgs} args - Arguments to update or create a CanvasShape.
+     * @example
+     * // Update or create a CanvasShape
+     * const canvasShape = await prisma.canvasShape.upsert({
+     *   create: {
+     *     // ... data to create a CanvasShape
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CanvasShape we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CanvasShapeUpsertArgs>(args: SelectSubset<T, CanvasShapeUpsertArgs<ExtArgs>>): Prisma__CanvasShapeClient<$Result.GetResult<Prisma.$CanvasShapePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CanvasShapes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeCountArgs} args - Arguments to filter CanvasShapes to count.
+     * @example
+     * // Count the number of CanvasShapes
+     * const count = await prisma.canvasShape.count({
+     *   where: {
+     *     // ... the filter for the CanvasShapes we want to count
+     *   }
+     * })
+    **/
+    count<T extends CanvasShapeCountArgs>(
+      args?: Subset<T, CanvasShapeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CanvasShapeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CanvasShape.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CanvasShapeAggregateArgs>(args: Subset<T, CanvasShapeAggregateArgs>): Prisma.PrismaPromise<GetCanvasShapeAggregateType<T>>
+
+    /**
+     * Group by CanvasShape.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CanvasShapeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CanvasShapeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CanvasShapeGroupByArgs['orderBy'] }
+        : { orderBy?: CanvasShapeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CanvasShapeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCanvasShapeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CanvasShape model
+   */
+  readonly fields: CanvasShapeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CanvasShape.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CanvasShapeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    space<T extends SpaceDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SpaceDefaultArgs<ExtArgs>>): Prisma__SpaceClient<$Result.GetResult<Prisma.$SpacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CanvasShape model
+   */
+  interface CanvasShapeFieldRefs {
+    readonly id: FieldRef<"CanvasShape", 'String'>
+    readonly spaceId: FieldRef<"CanvasShape", 'String'>
+    readonly shapeData: FieldRef<"CanvasShape", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CanvasShape findUnique
+   */
+  export type CanvasShapeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * Filter, which CanvasShape to fetch.
+     */
+    where: CanvasShapeWhereUniqueInput
+  }
+
+  /**
+   * CanvasShape findUniqueOrThrow
+   */
+  export type CanvasShapeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * Filter, which CanvasShape to fetch.
+     */
+    where: CanvasShapeWhereUniqueInput
+  }
+
+  /**
+   * CanvasShape findFirst
+   */
+  export type CanvasShapeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * Filter, which CanvasShape to fetch.
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CanvasShapes to fetch.
+     */
+    orderBy?: CanvasShapeOrderByWithRelationInput | CanvasShapeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CanvasShapes.
+     */
+    cursor?: CanvasShapeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CanvasShapes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CanvasShapes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CanvasShapes.
+     */
+    distinct?: CanvasShapeScalarFieldEnum | CanvasShapeScalarFieldEnum[]
+  }
+
+  /**
+   * CanvasShape findFirstOrThrow
+   */
+  export type CanvasShapeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * Filter, which CanvasShape to fetch.
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CanvasShapes to fetch.
+     */
+    orderBy?: CanvasShapeOrderByWithRelationInput | CanvasShapeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CanvasShapes.
+     */
+    cursor?: CanvasShapeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CanvasShapes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CanvasShapes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CanvasShapes.
+     */
+    distinct?: CanvasShapeScalarFieldEnum | CanvasShapeScalarFieldEnum[]
+  }
+
+  /**
+   * CanvasShape findMany
+   */
+  export type CanvasShapeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * Filter, which CanvasShapes to fetch.
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CanvasShapes to fetch.
+     */
+    orderBy?: CanvasShapeOrderByWithRelationInput | CanvasShapeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CanvasShapes.
+     */
+    cursor?: CanvasShapeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CanvasShapes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CanvasShapes.
+     */
+    skip?: number
+    distinct?: CanvasShapeScalarFieldEnum | CanvasShapeScalarFieldEnum[]
+  }
+
+  /**
+   * CanvasShape create
+   */
+  export type CanvasShapeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CanvasShape.
+     */
+    data: XOR<CanvasShapeCreateInput, CanvasShapeUncheckedCreateInput>
+  }
+
+  /**
+   * CanvasShape createMany
+   */
+  export type CanvasShapeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CanvasShapes.
+     */
+    data: CanvasShapeCreateManyInput | CanvasShapeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CanvasShape createManyAndReturn
+   */
+  export type CanvasShapeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * The data used to create many CanvasShapes.
+     */
+    data: CanvasShapeCreateManyInput | CanvasShapeCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CanvasShape update
+   */
+  export type CanvasShapeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CanvasShape.
+     */
+    data: XOR<CanvasShapeUpdateInput, CanvasShapeUncheckedUpdateInput>
+    /**
+     * Choose, which CanvasShape to update.
+     */
+    where: CanvasShapeWhereUniqueInput
+  }
+
+  /**
+   * CanvasShape updateMany
+   */
+  export type CanvasShapeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CanvasShapes.
+     */
+    data: XOR<CanvasShapeUpdateManyMutationInput, CanvasShapeUncheckedUpdateManyInput>
+    /**
+     * Filter which CanvasShapes to update
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * Limit how many CanvasShapes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CanvasShape updateManyAndReturn
+   */
+  export type CanvasShapeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * The data used to update CanvasShapes.
+     */
+    data: XOR<CanvasShapeUpdateManyMutationInput, CanvasShapeUncheckedUpdateManyInput>
+    /**
+     * Filter which CanvasShapes to update
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * Limit how many CanvasShapes to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CanvasShape upsert
+   */
+  export type CanvasShapeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CanvasShape to update in case it exists.
+     */
+    where: CanvasShapeWhereUniqueInput
+    /**
+     * In case the CanvasShape found by the `where` argument doesn't exist, create a new CanvasShape with this data.
+     */
+    create: XOR<CanvasShapeCreateInput, CanvasShapeUncheckedCreateInput>
+    /**
+     * In case the CanvasShape was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CanvasShapeUpdateInput, CanvasShapeUncheckedUpdateInput>
+  }
+
+  /**
+   * CanvasShape delete
+   */
+  export type CanvasShapeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
+    /**
+     * Filter which CanvasShape to delete.
+     */
+    where: CanvasShapeWhereUniqueInput
+  }
+
+  /**
+   * CanvasShape deleteMany
+   */
+  export type CanvasShapeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CanvasShapes to delete
+     */
+    where?: CanvasShapeWhereInput
+    /**
+     * Limit how many CanvasShapes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CanvasShape without action
+   */
+  export type CanvasShapeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CanvasShape
+     */
+    select?: CanvasShapeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CanvasShape
+     */
+    omit?: CanvasShapeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CanvasShapeInclude<ExtArgs> | null
   }
 
 
@@ -10605,6 +11761,15 @@ export namespace Prisma {
   export type SpaceScalarFieldEnum = (typeof SpaceScalarFieldEnum)[keyof typeof SpaceScalarFieldEnum]
 
 
+  export const CanvasShapeScalarFieldEnum: {
+    id: 'id',
+    spaceId: 'spaceId',
+    shapeData: 'shapeData'
+  };
+
+  export type CanvasShapeScalarFieldEnum = (typeof CanvasShapeScalarFieldEnum)[keyof typeof CanvasShapeScalarFieldEnum]
+
+
   export const ChatMessageScalarFieldEnum: {
     id: 'id',
     spaceId: 'spaceId',
@@ -10677,6 +11842,13 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
   export const QueryMode: {
     default: 'default',
     insensitive: 'insensitive'
@@ -10691,6 +11863,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -10737,6 +11918,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -10850,6 +12045,7 @@ export namespace Prisma {
     thumbnail?: StringNullableFilter<"Space"> | string | null
     creatorId?: StringFilter<"Space"> | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    canvasShape?: CanvasShapeListRelationFilter
     elements?: SpaceElementsListRelationFilter
     chatMessages?: ChatMessageListRelationFilter
   }
@@ -10862,6 +12058,7 @@ export namespace Prisma {
     thumbnail?: SortOrderInput | SortOrder
     creatorId?: SortOrder
     creator?: UserOrderByWithRelationInput
+    canvasShape?: CanvasShapeOrderByRelationAggregateInput
     elements?: spaceElementsOrderByRelationAggregateInput
     chatMessages?: ChatMessageOrderByRelationAggregateInput
   }
@@ -10877,6 +12074,7 @@ export namespace Prisma {
     thumbnail?: StringNullableFilter<"Space"> | string | null
     creatorId?: StringFilter<"Space"> | string
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    canvasShape?: CanvasShapeListRelationFilter
     elements?: SpaceElementsListRelationFilter
     chatMessages?: ChatMessageListRelationFilter
   }, "id" | "id">
@@ -10905,6 +12103,51 @@ export namespace Prisma {
     height?: IntWithAggregatesFilter<"Space"> | number
     thumbnail?: StringNullableWithAggregatesFilter<"Space"> | string | null
     creatorId?: StringWithAggregatesFilter<"Space"> | string
+  }
+
+  export type CanvasShapeWhereInput = {
+    AND?: CanvasShapeWhereInput | CanvasShapeWhereInput[]
+    OR?: CanvasShapeWhereInput[]
+    NOT?: CanvasShapeWhereInput | CanvasShapeWhereInput[]
+    id?: StringFilter<"CanvasShape"> | string
+    spaceId?: StringFilter<"CanvasShape"> | string
+    shapeData?: JsonFilter<"CanvasShape">
+    space?: XOR<SpaceScalarRelationFilter, SpaceWhereInput>
+  }
+
+  export type CanvasShapeOrderByWithRelationInput = {
+    id?: SortOrder
+    spaceId?: SortOrder
+    shapeData?: SortOrder
+    space?: SpaceOrderByWithRelationInput
+  }
+
+  export type CanvasShapeWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CanvasShapeWhereInput | CanvasShapeWhereInput[]
+    OR?: CanvasShapeWhereInput[]
+    NOT?: CanvasShapeWhereInput | CanvasShapeWhereInput[]
+    spaceId?: StringFilter<"CanvasShape"> | string
+    shapeData?: JsonFilter<"CanvasShape">
+    space?: XOR<SpaceScalarRelationFilter, SpaceWhereInput>
+  }, "id">
+
+  export type CanvasShapeOrderByWithAggregationInput = {
+    id?: SortOrder
+    spaceId?: SortOrder
+    shapeData?: SortOrder
+    _count?: CanvasShapeCountOrderByAggregateInput
+    _max?: CanvasShapeMaxOrderByAggregateInput
+    _min?: CanvasShapeMinOrderByAggregateInput
+  }
+
+  export type CanvasShapeScalarWhereWithAggregatesInput = {
+    AND?: CanvasShapeScalarWhereWithAggregatesInput | CanvasShapeScalarWhereWithAggregatesInput[]
+    OR?: CanvasShapeScalarWhereWithAggregatesInput[]
+    NOT?: CanvasShapeScalarWhereWithAggregatesInput | CanvasShapeScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CanvasShape"> | string
+    spaceId?: StringWithAggregatesFilter<"CanvasShape"> | string
+    shapeData?: JsonWithAggregatesFilter<"CanvasShape">
   }
 
   export type ChatMessageWhereInput = {
@@ -11317,6 +12560,7 @@ export namespace Prisma {
     height: number
     thumbnail?: string | null
     creator: UserCreateNestedOneWithoutSpacesInput
+    canvasShape?: CanvasShapeCreateNestedManyWithoutSpaceInput
     elements?: spaceElementsCreateNestedManyWithoutSpaceInput
     chatMessages?: ChatMessageCreateNestedManyWithoutSpaceInput
   }
@@ -11328,6 +12572,7 @@ export namespace Prisma {
     height: number
     thumbnail?: string | null
     creatorId: string
+    canvasShape?: CanvasShapeUncheckedCreateNestedManyWithoutSpaceInput
     elements?: spaceElementsUncheckedCreateNestedManyWithoutSpaceInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSpaceInput
   }
@@ -11339,6 +12584,7 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creator?: UserUpdateOneRequiredWithoutSpacesNestedInput
+    canvasShape?: CanvasShapeUpdateManyWithoutSpaceNestedInput
     elements?: spaceElementsUpdateManyWithoutSpaceNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutSpaceNestedInput
   }
@@ -11350,6 +12596,7 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
+    canvasShape?: CanvasShapeUncheckedUpdateManyWithoutSpaceNestedInput
     elements?: spaceElementsUncheckedUpdateManyWithoutSpaceNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutSpaceNestedInput
   }
@@ -11378,6 +12625,47 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type CanvasShapeCreateInput = {
+    id?: string
+    shapeData: JsonNullValueInput | InputJsonValue
+    space: SpaceCreateNestedOneWithoutCanvasShapeInput
+  }
+
+  export type CanvasShapeUncheckedCreateInput = {
+    id?: string
+    spaceId: string
+    shapeData: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
+    space?: SpaceUpdateOneRequiredWithoutCanvasShapeNestedInput
+  }
+
+  export type CanvasShapeUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeCreateManyInput = {
+    id?: string
+    spaceId: string
+    shapeData: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    spaceId?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
   }
 
   export type ChatMessageCreateInput = {
@@ -11865,10 +13153,20 @@ export namespace Prisma {
     isNot?: UserWhereInput
   }
 
+  export type CanvasShapeListRelationFilter = {
+    every?: CanvasShapeWhereInput
+    some?: CanvasShapeWhereInput
+    none?: CanvasShapeWhereInput
+  }
+
   export type SpaceElementsListRelationFilter = {
     every?: spaceElementsWhereInput
     some?: spaceElementsWhereInput
     none?: spaceElementsWhereInput
+  }
+
+  export type CanvasShapeOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type spaceElementsOrderByRelationAggregateInput = {
@@ -11927,6 +13225,76 @@ export namespace Prisma {
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
   }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type SpaceScalarRelationFilter = {
+    is?: SpaceWhereInput
+    isNot?: SpaceWhereInput
+  }
+
+  export type CanvasShapeCountOrderByAggregateInput = {
+    id?: SortOrder
+    spaceId?: SortOrder
+    shapeData?: SortOrder
+  }
+
+  export type CanvasShapeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    spaceId?: SortOrder
+  }
+
+  export type CanvasShapeMinOrderByAggregateInput = {
+    id?: SortOrder
+    spaceId?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
 
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -11937,11 +13305,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string
-  }
-
-  export type SpaceScalarRelationFilter = {
-    is?: SpaceWhereInput
-    isNot?: SpaceWhereInput
   }
 
   export type ChatMessageCountOrderByAggregateInput = {
@@ -12324,6 +13687,13 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type CanvasShapeCreateNestedManyWithoutSpaceInput = {
+    create?: XOR<CanvasShapeCreateWithoutSpaceInput, CanvasShapeUncheckedCreateWithoutSpaceInput> | CanvasShapeCreateWithoutSpaceInput[] | CanvasShapeUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: CanvasShapeCreateOrConnectWithoutSpaceInput | CanvasShapeCreateOrConnectWithoutSpaceInput[]
+    createMany?: CanvasShapeCreateManySpaceInputEnvelope
+    connect?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+  }
+
   export type spaceElementsCreateNestedManyWithoutSpaceInput = {
     create?: XOR<spaceElementsCreateWithoutSpaceInput, spaceElementsUncheckedCreateWithoutSpaceInput> | spaceElementsCreateWithoutSpaceInput[] | spaceElementsUncheckedCreateWithoutSpaceInput[]
     connectOrCreate?: spaceElementsCreateOrConnectWithoutSpaceInput | spaceElementsCreateOrConnectWithoutSpaceInput[]
@@ -12336,6 +13706,13 @@ export namespace Prisma {
     connectOrCreate?: ChatMessageCreateOrConnectWithoutSpaceInput | ChatMessageCreateOrConnectWithoutSpaceInput[]
     createMany?: ChatMessageCreateManySpaceInputEnvelope
     connect?: ChatMessageWhereUniqueInput | ChatMessageWhereUniqueInput[]
+  }
+
+  export type CanvasShapeUncheckedCreateNestedManyWithoutSpaceInput = {
+    create?: XOR<CanvasShapeCreateWithoutSpaceInput, CanvasShapeUncheckedCreateWithoutSpaceInput> | CanvasShapeCreateWithoutSpaceInput[] | CanvasShapeUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: CanvasShapeCreateOrConnectWithoutSpaceInput | CanvasShapeCreateOrConnectWithoutSpaceInput[]
+    createMany?: CanvasShapeCreateManySpaceInputEnvelope
+    connect?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
   }
 
   export type spaceElementsUncheckedCreateNestedManyWithoutSpaceInput = {
@@ -12368,6 +13745,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSpacesInput, UserUpdateWithoutSpacesInput>, UserUncheckedUpdateWithoutSpacesInput>
   }
 
+  export type CanvasShapeUpdateManyWithoutSpaceNestedInput = {
+    create?: XOR<CanvasShapeCreateWithoutSpaceInput, CanvasShapeUncheckedCreateWithoutSpaceInput> | CanvasShapeCreateWithoutSpaceInput[] | CanvasShapeUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: CanvasShapeCreateOrConnectWithoutSpaceInput | CanvasShapeCreateOrConnectWithoutSpaceInput[]
+    upsert?: CanvasShapeUpsertWithWhereUniqueWithoutSpaceInput | CanvasShapeUpsertWithWhereUniqueWithoutSpaceInput[]
+    createMany?: CanvasShapeCreateManySpaceInputEnvelope
+    set?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    disconnect?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    delete?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    connect?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    update?: CanvasShapeUpdateWithWhereUniqueWithoutSpaceInput | CanvasShapeUpdateWithWhereUniqueWithoutSpaceInput[]
+    updateMany?: CanvasShapeUpdateManyWithWhereWithoutSpaceInput | CanvasShapeUpdateManyWithWhereWithoutSpaceInput[]
+    deleteMany?: CanvasShapeScalarWhereInput | CanvasShapeScalarWhereInput[]
+  }
+
   export type spaceElementsUpdateManyWithoutSpaceNestedInput = {
     create?: XOR<spaceElementsCreateWithoutSpaceInput, spaceElementsUncheckedCreateWithoutSpaceInput> | spaceElementsCreateWithoutSpaceInput[] | spaceElementsUncheckedCreateWithoutSpaceInput[]
     connectOrCreate?: spaceElementsCreateOrConnectWithoutSpaceInput | spaceElementsCreateOrConnectWithoutSpaceInput[]
@@ -12396,6 +13787,20 @@ export namespace Prisma {
     deleteMany?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
   }
 
+  export type CanvasShapeUncheckedUpdateManyWithoutSpaceNestedInput = {
+    create?: XOR<CanvasShapeCreateWithoutSpaceInput, CanvasShapeUncheckedCreateWithoutSpaceInput> | CanvasShapeCreateWithoutSpaceInput[] | CanvasShapeUncheckedCreateWithoutSpaceInput[]
+    connectOrCreate?: CanvasShapeCreateOrConnectWithoutSpaceInput | CanvasShapeCreateOrConnectWithoutSpaceInput[]
+    upsert?: CanvasShapeUpsertWithWhereUniqueWithoutSpaceInput | CanvasShapeUpsertWithWhereUniqueWithoutSpaceInput[]
+    createMany?: CanvasShapeCreateManySpaceInputEnvelope
+    set?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    disconnect?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    delete?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    connect?: CanvasShapeWhereUniqueInput | CanvasShapeWhereUniqueInput[]
+    update?: CanvasShapeUpdateWithWhereUniqueWithoutSpaceInput | CanvasShapeUpdateWithWhereUniqueWithoutSpaceInput[]
+    updateMany?: CanvasShapeUpdateManyWithWhereWithoutSpaceInput | CanvasShapeUpdateManyWithWhereWithoutSpaceInput[]
+    deleteMany?: CanvasShapeScalarWhereInput | CanvasShapeScalarWhereInput[]
+  }
+
   export type spaceElementsUncheckedUpdateManyWithoutSpaceNestedInput = {
     create?: XOR<spaceElementsCreateWithoutSpaceInput, spaceElementsUncheckedCreateWithoutSpaceInput> | spaceElementsCreateWithoutSpaceInput[] | spaceElementsUncheckedCreateWithoutSpaceInput[]
     connectOrCreate?: spaceElementsCreateOrConnectWithoutSpaceInput | spaceElementsCreateOrConnectWithoutSpaceInput[]
@@ -12422,6 +13827,20 @@ export namespace Prisma {
     update?: ChatMessageUpdateWithWhereUniqueWithoutSpaceInput | ChatMessageUpdateWithWhereUniqueWithoutSpaceInput[]
     updateMany?: ChatMessageUpdateManyWithWhereWithoutSpaceInput | ChatMessageUpdateManyWithWhereWithoutSpaceInput[]
     deleteMany?: ChatMessageScalarWhereInput | ChatMessageScalarWhereInput[]
+  }
+
+  export type SpaceCreateNestedOneWithoutCanvasShapeInput = {
+    create?: XOR<SpaceCreateWithoutCanvasShapeInput, SpaceUncheckedCreateWithoutCanvasShapeInput>
+    connectOrCreate?: SpaceCreateOrConnectWithoutCanvasShapeInput
+    connect?: SpaceWhereUniqueInput
+  }
+
+  export type SpaceUpdateOneRequiredWithoutCanvasShapeNestedInput = {
+    create?: XOR<SpaceCreateWithoutCanvasShapeInput, SpaceUncheckedCreateWithoutCanvasShapeInput>
+    connectOrCreate?: SpaceCreateOrConnectWithoutCanvasShapeInput
+    upsert?: SpaceUpsertWithoutCanvasShapeInput
+    connect?: SpaceWhereUniqueInput
+    update?: XOR<XOR<SpaceUpdateToOneWithWhereWithoutCanvasShapeInput, SpaceUpdateWithoutCanvasShapeInput>, SpaceUncheckedUpdateWithoutCanvasShapeInput>
   }
 
   export type SpaceCreateNestedOneWithoutChatMessagesInput = {
@@ -12819,6 +14238,29 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
   }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -12891,6 +14333,7 @@ export namespace Prisma {
     width: number
     height: number
     thumbnail?: string | null
+    canvasShape?: CanvasShapeCreateNestedManyWithoutSpaceInput
     elements?: spaceElementsCreateNestedManyWithoutSpaceInput
     chatMessages?: ChatMessageCreateNestedManyWithoutSpaceInput
   }
@@ -12901,6 +14344,7 @@ export namespace Prisma {
     width: number
     height: number
     thumbnail?: string | null
+    canvasShape?: CanvasShapeUncheckedCreateNestedManyWithoutSpaceInput
     elements?: spaceElementsUncheckedCreateNestedManyWithoutSpaceInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSpaceInput
   }
@@ -13057,6 +14501,26 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutSpacesInput, UserUncheckedCreateWithoutSpacesInput>
   }
 
+  export type CanvasShapeCreateWithoutSpaceInput = {
+    id?: string
+    shapeData: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeUncheckedCreateWithoutSpaceInput = {
+    id?: string
+    shapeData: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeCreateOrConnectWithoutSpaceInput = {
+    where: CanvasShapeWhereUniqueInput
+    create: XOR<CanvasShapeCreateWithoutSpaceInput, CanvasShapeUncheckedCreateWithoutSpaceInput>
+  }
+
+  export type CanvasShapeCreateManySpaceInputEnvelope = {
+    data: CanvasShapeCreateManySpaceInput | CanvasShapeCreateManySpaceInput[]
+    skipDuplicates?: boolean
+  }
+
   export type spaceElementsCreateWithoutSpaceInput = {
     id?: string
     x: number
@@ -13134,6 +14598,31 @@ export namespace Prisma {
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutUserNestedInput
   }
 
+  export type CanvasShapeUpsertWithWhereUniqueWithoutSpaceInput = {
+    where: CanvasShapeWhereUniqueInput
+    update: XOR<CanvasShapeUpdateWithoutSpaceInput, CanvasShapeUncheckedUpdateWithoutSpaceInput>
+    create: XOR<CanvasShapeCreateWithoutSpaceInput, CanvasShapeUncheckedCreateWithoutSpaceInput>
+  }
+
+  export type CanvasShapeUpdateWithWhereUniqueWithoutSpaceInput = {
+    where: CanvasShapeWhereUniqueInput
+    data: XOR<CanvasShapeUpdateWithoutSpaceInput, CanvasShapeUncheckedUpdateWithoutSpaceInput>
+  }
+
+  export type CanvasShapeUpdateManyWithWhereWithoutSpaceInput = {
+    where: CanvasShapeScalarWhereInput
+    data: XOR<CanvasShapeUpdateManyMutationInput, CanvasShapeUncheckedUpdateManyWithoutSpaceInput>
+  }
+
+  export type CanvasShapeScalarWhereInput = {
+    AND?: CanvasShapeScalarWhereInput | CanvasShapeScalarWhereInput[]
+    OR?: CanvasShapeScalarWhereInput[]
+    NOT?: CanvasShapeScalarWhereInput | CanvasShapeScalarWhereInput[]
+    id?: StringFilter<"CanvasShape"> | string
+    spaceId?: StringFilter<"CanvasShape"> | string
+    shapeData?: JsonFilter<"CanvasShape">
+  }
+
   export type spaceElementsUpsertWithWhereUniqueWithoutSpaceInput = {
     where: spaceElementsWhereUniqueInput
     update: XOR<spaceElementsUpdateWithoutSpaceInput, spaceElementsUncheckedUpdateWithoutSpaceInput>
@@ -13177,6 +14666,66 @@ export namespace Prisma {
     data: XOR<ChatMessageUpdateManyMutationInput, ChatMessageUncheckedUpdateManyWithoutSpaceInput>
   }
 
+  export type SpaceCreateWithoutCanvasShapeInput = {
+    id?: string
+    name: string
+    width: number
+    height: number
+    thumbnail?: string | null
+    creator: UserCreateNestedOneWithoutSpacesInput
+    elements?: spaceElementsCreateNestedManyWithoutSpaceInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutSpaceInput
+  }
+
+  export type SpaceUncheckedCreateWithoutCanvasShapeInput = {
+    id?: string
+    name: string
+    width: number
+    height: number
+    thumbnail?: string | null
+    creatorId: string
+    elements?: spaceElementsUncheckedCreateNestedManyWithoutSpaceInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSpaceInput
+  }
+
+  export type SpaceCreateOrConnectWithoutCanvasShapeInput = {
+    where: SpaceWhereUniqueInput
+    create: XOR<SpaceCreateWithoutCanvasShapeInput, SpaceUncheckedCreateWithoutCanvasShapeInput>
+  }
+
+  export type SpaceUpsertWithoutCanvasShapeInput = {
+    update: XOR<SpaceUpdateWithoutCanvasShapeInput, SpaceUncheckedUpdateWithoutCanvasShapeInput>
+    create: XOR<SpaceCreateWithoutCanvasShapeInput, SpaceUncheckedCreateWithoutCanvasShapeInput>
+    where?: SpaceWhereInput
+  }
+
+  export type SpaceUpdateToOneWithWhereWithoutCanvasShapeInput = {
+    where?: SpaceWhereInput
+    data: XOR<SpaceUpdateWithoutCanvasShapeInput, SpaceUncheckedUpdateWithoutCanvasShapeInput>
+  }
+
+  export type SpaceUpdateWithoutCanvasShapeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    width?: IntFieldUpdateOperationsInput | number
+    height?: IntFieldUpdateOperationsInput | number
+    thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
+    creator?: UserUpdateOneRequiredWithoutSpacesNestedInput
+    elements?: spaceElementsUpdateManyWithoutSpaceNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutSpaceNestedInput
+  }
+
+  export type SpaceUncheckedUpdateWithoutCanvasShapeInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    width?: IntFieldUpdateOperationsInput | number
+    height?: IntFieldUpdateOperationsInput | number
+    thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
+    creatorId?: StringFieldUpdateOperationsInput | string
+    elements?: spaceElementsUncheckedUpdateManyWithoutSpaceNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutSpaceNestedInput
+  }
+
   export type SpaceCreateWithoutChatMessagesInput = {
     id?: string
     name: string
@@ -13184,6 +14733,7 @@ export namespace Prisma {
     height: number
     thumbnail?: string | null
     creator: UserCreateNestedOneWithoutSpacesInput
+    canvasShape?: CanvasShapeCreateNestedManyWithoutSpaceInput
     elements?: spaceElementsCreateNestedManyWithoutSpaceInput
   }
 
@@ -13194,6 +14744,7 @@ export namespace Prisma {
     height: number
     thumbnail?: string | null
     creatorId: string
+    canvasShape?: CanvasShapeUncheckedCreateNestedManyWithoutSpaceInput
     elements?: spaceElementsUncheckedCreateNestedManyWithoutSpaceInput
   }
 
@@ -13243,6 +14794,7 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creator?: UserUpdateOneRequiredWithoutSpacesNestedInput
+    canvasShape?: CanvasShapeUpdateManyWithoutSpaceNestedInput
     elements?: spaceElementsUpdateManyWithoutSpaceNestedInput
   }
 
@@ -13253,6 +14805,7 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
+    canvasShape?: CanvasShapeUncheckedUpdateManyWithoutSpaceNestedInput
     elements?: spaceElementsUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
@@ -13292,6 +14845,7 @@ export namespace Prisma {
     height: number
     thumbnail?: string | null
     creator: UserCreateNestedOneWithoutSpacesInput
+    canvasShape?: CanvasShapeCreateNestedManyWithoutSpaceInput
     chatMessages?: ChatMessageCreateNestedManyWithoutSpaceInput
   }
 
@@ -13302,6 +14856,7 @@ export namespace Prisma {
     height: number
     thumbnail?: string | null
     creatorId: string
+    canvasShape?: CanvasShapeUncheckedCreateNestedManyWithoutSpaceInput
     chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutSpaceInput
   }
 
@@ -13351,6 +14906,7 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creator?: UserUpdateOneRequiredWithoutSpacesNestedInput
+    canvasShape?: CanvasShapeUpdateManyWithoutSpaceNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutSpaceNestedInput
   }
 
@@ -13361,6 +14917,7 @@ export namespace Prisma {
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
     creatorId?: StringFieldUpdateOperationsInput | string
+    canvasShape?: CanvasShapeUncheckedUpdateManyWithoutSpaceNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutSpaceNestedInput
   }
 
@@ -13700,6 +15257,7 @@ export namespace Prisma {
     width?: IntFieldUpdateOperationsInput | number
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasShape?: CanvasShapeUpdateManyWithoutSpaceNestedInput
     elements?: spaceElementsUpdateManyWithoutSpaceNestedInput
     chatMessages?: ChatMessageUpdateManyWithoutSpaceNestedInput
   }
@@ -13710,6 +15268,7 @@ export namespace Prisma {
     width?: IntFieldUpdateOperationsInput | number
     height?: IntFieldUpdateOperationsInput | number
     thumbnail?: NullableStringFieldUpdateOperationsInput | string | null
+    canvasShape?: CanvasShapeUncheckedUpdateManyWithoutSpaceNestedInput
     elements?: spaceElementsUncheckedUpdateManyWithoutSpaceNestedInput
     chatMessages?: ChatMessageUncheckedUpdateManyWithoutSpaceNestedInput
   }
@@ -13743,6 +15302,11 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CanvasShapeCreateManySpaceInput = {
+    id?: string
+    shapeData: JsonNullValueInput | InputJsonValue
+  }
+
   export type spaceElementsCreateManySpaceInput = {
     id?: string
     elementId: string
@@ -13755,6 +15319,21 @@ export namespace Prisma {
     userId: string
     message: string
     timestamp?: Date | string
+  }
+
+  export type CanvasShapeUpdateWithoutSpaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeUncheckedUpdateWithoutSpaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
+  }
+
+  export type CanvasShapeUncheckedUpdateManyWithoutSpaceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shapeData?: JsonNullValueInput | InputJsonValue
   }
 
   export type spaceElementsUpdateWithoutSpaceInput = {

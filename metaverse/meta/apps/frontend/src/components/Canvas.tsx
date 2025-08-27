@@ -141,29 +141,12 @@ export function Canvas({ spaceId }: { spaceId: string }): React.ReactElement {
       game.setShapes(shapes);
     }
   }, [game, shapes]);
-
+  // ✅ ADD THIS USEEFFECT TO SYNC THE SELECTED TOOL
   useEffect(() => {
-    // Check if both refs are ready
-    if (canvasRef.current && containerRef.current) {
-      if(!socket) return;
-      // 2. Pass the container ref to the Game constructor in the correct order
-      // The constructor expects: canvas, container, socket, callback
-      const g = new Game(
-        canvasRef.current,
-        containerRef.current, // Pass the container here
-        socket,
-        (shape: Shape) => {
-          setShapeForMoveIcon(shape);
-        }
-      );
-      setGame(g);
-      g.start();
-      return () => {
-        g.destroy();
-      };
+    if (game) {
+        game.setTool(selectedTool);
     }
-  }, []);
-
+  }, [game, selectedTool]);
 
   const PAN_STEP = 50;
   const ZOOM_FACTOR = 1.2;

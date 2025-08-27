@@ -137,6 +137,12 @@ exports.Prisma.SpaceScalarFieldEnum = {
   creatorId: 'creatorId'
 };
 
+exports.Prisma.CanvasShapeScalarFieldEnum = {
+  id: 'id',
+  spaceId: 'spaceId',
+  shapeData: 'shapeData'
+};
+
 exports.Prisma.ChatMessageScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
@@ -188,6 +194,10 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -197,6 +207,12 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
 exports.Role = exports.$Enums.Role = {
   Admin: 'Admin',
   User: 'User'
@@ -205,6 +221,7 @@ exports.Role = exports.$Enums.Role = {
 exports.Prisma.ModelName = {
   User: 'User',
   Space: 'Space',
+  CanvasShape: 'CanvasShape',
   ChatMessage: 'ChatMessage',
   spaceElements: 'spaceElements',
   Element: 'Element',

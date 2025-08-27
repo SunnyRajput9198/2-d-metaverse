@@ -122,6 +122,7 @@ function useWebSocket(spaceId: string) {
                     setMapDimensions({ width: parseInt(widthStr), height: parseInt(heightStr) });
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map);
+                    setShapes(spaceJoinedPayload.shapes || []); // Load shapes from payload
                     break;
 
                 case 'user-joined':
@@ -234,14 +235,28 @@ function useWebSocket(spaceId: string) {
                     setChatMessages(normalizedHistory);
                     break;
                 case "shape-update":
-                    const newShape = message.payload as Shape;
-                    setShapes(prevShapes => {
-                        // Optional: avoid duplicates by some id if you have shape ids
-                        return [...prevShapes, newShape];
-                    });
-                    break;
+                const updatedShape = message.payload as Shape;
+                setShapes(prevShapes => {
+                    const index = prevShapes.findIndex(s => s.id === updatedShape.id);
+                    if (index !== -1) {
+                        // If shape exists, replace it (for move/resize)
+                        const newShapes = [...prevShapes];
+                        newShapes[index] = updatedShape;
+                        return newShapes;
+                    } else {
+                        // If shape is new, add it
+                        return [...prevShapes, updatedShape];
+                    }
+                });
+                break;
 
-
+            // vvv ADD THIS ENTIRE CASE BLOCK vvv
+            case "shape-delete":
+                const { id: idToDelete } = message.payload;
+                setShapes(prevShapes => 
+                    prevShapes.filter(shape => shape.id !== idToDelete)
+                );
+                break;
                 default:
                     console.log('Unhandled WS message type:', message.type, message);
             }

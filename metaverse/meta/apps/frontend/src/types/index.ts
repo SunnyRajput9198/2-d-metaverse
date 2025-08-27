@@ -20,13 +20,13 @@ export interface ChatPayload {
   message: string;
 }
 export type Shape =
-  | { type: "rect"; x: number; y: number; width: number; height: number }
-  | { type: "circle"; centerX: number; centerY: number; radius: number }
-  | { type: "pencil"; points: { x: number; y: number }[] }
-  | { type: "arrow"; startX: number; startY: number; endX: number; endY: number }
-  | { type: "line"; startX: number; startY: number; endX: number; endY: number }
-  | { type: "diamond"; centerX: number; centerY: number; width: number; height: number }
-  | { type: "text"; x: number; y: number; text: string };
+  | {id:string; type: "rect"; x: number; y: number; width: number; height: number }
+  | {id:string; type: "circle"; centerX: number; centerY: number; radius: number }
+  | {id:string; type: "pencil"; points: { x: number; y: number }[] }
+  | {id:string; type: "arrow"; startX: number; startY: number; endX: number; endY: number }
+  | {id:string; type: "line"; startX: number; startY: number; endX: number; endY: number }
+  | {id:string; type: "diamond"; centerX: number; centerY: number; width: number; height: number }
+  | {id:string; type: "text"; x: number; y: number; text: string };
 
 export interface ChatMessageBroadcast {
   userId: string;
@@ -100,6 +100,7 @@ export interface MovePayload {
 export interface SpaceJoinedPayload {
     users: UserMetadata[];
     elements: SpaceElementInstance[];
+    shapes?: Shape[];
     dimensions: string; // e.g., "100x200"
     spawn: { x: number; y: number };
     map: string[][]
@@ -142,7 +143,8 @@ export type WebSocketMessage =
   | { type: "emoji-reaction"; payload: { userId: string; emoji: string ; timestamp: number } }
   | { type: "typing"; payload: TypingPayload }
   | { type: 'chat-history'; payload: ChatMessage[] }
-  | { type: "shape-update"; payload: Shape };
+  | { type: "shape-update"; payload: Shape }
+  | { type: "shape-delete"; payload: { id: string } }; // ✅ ADD THIS LINE
 
   // Client to Server
 export type SendEmojiPayload = {
