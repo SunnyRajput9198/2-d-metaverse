@@ -38,6 +38,7 @@ type Props = {
 };
 
 const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiReactions }) => {
+  const rowMap = { down: 0, left: 1, right: 2, up: 3 } as const;
 
   return (
     <div
@@ -54,7 +55,7 @@ const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiRea
       {spaceElements.map((ele, index) => (
         <img
           key={index}
-          src={ele.element.imageUrl || "/maps/a3.png"}
+          src={ele.element.imageUrl || "/maps/object.png"}
           alt="element"
           style={{
             position: "absolute",
@@ -72,6 +73,12 @@ const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiRea
       {Object.values(usersInSpace).map((user) => {
         const reaction = emojiReactions[user.userId];
         const emoji = reaction?.emoji;
+
+        const frame = user.frame ?? 0;
+        const direction = (user.direction ?? "down") as Direction;
+        const row = rowMap[direction];
+        const col = frame % 2;
+
         return (
           <div
             key={user.id}
@@ -105,6 +112,16 @@ const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiRea
                 {emoji}
               </div>
             )}
+            <div
+              style={{
+                width: SPRITE_WIDTH * 2,
+                height: SPRITE_HEIGHT * 4,
+                backgroundImage: "url('/maps/a9.png')",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: `${SPRITE_WIDTH * 4}px ${SPRITE_HEIGHT * 4}px`,
+                backgroundPosition: `-${col * SPRITE_WIDTH}px -${row * SPRITE_HEIGHT}px`,
+              }}
+            />
           </div>
         );
       })}
