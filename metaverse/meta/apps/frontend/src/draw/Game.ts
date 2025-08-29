@@ -1,6 +1,5 @@
 import type { Tool } from "@/components/Canvas";
 import type { Shape } from "../types";
-import useWebSocket from "@/hooks/useWebsocket";
 type ResizeHandle =
   | "top-left"
   | "top-right"

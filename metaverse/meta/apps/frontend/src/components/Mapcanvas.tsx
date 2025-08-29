@@ -45,7 +45,7 @@ const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiRea
       style={{
         width: `${map[0].length * TILE_SIZE}px`,
         height: `${map.length * TILE_SIZE}px`,
-        backgroundImage: "url('/homepage/canva.png')",
+        backgroundImage: "url('/maps/m4.png')",
         backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         imageRendering: "pixelated",
@@ -54,7 +54,7 @@ const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiRea
       {spaceElements.map((ele, index) => (
         <img
           key={index}
-          src={ele.element.imageUrl || "/maps/object.png"}
+          src={ele.element.imageUrl || "/maps/a3.png"}
           alt="element"
           style={{
             position: "absolute",

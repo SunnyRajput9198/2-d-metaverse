@@ -79,9 +79,9 @@ const DashboardPage: React.FC = () => {
         }
     };
     return (
-        <div className="min-h-screen bg-[#282d4e] font-sans text-gray-900">
+        <div className="min-h-screen bg-gradient-to-b from-[#0b0b10] via-[#121212] to-[#1a1a1f] font-sans text-gray-900">
             {/* New Single Header - combines all top elements */}
-            <header className="fixed bg-[#333a64] top-0 left-0 right-0 h-20 shadow-md z-50 flex items-center justify-between px-6">
+            <header className="fixed bg-gradient-to-b from-[#0b0b10] via-[#121212] to-[#1a1a1f] top-0 left-0 right-0 h-20 shadow-md z-50 flex items-center justify-between px-6">
                 {/* Left Side: Logo and Title */}
                 <div className="flex items-center gap-4">
                     <div className="h-10 w-10 bg-blue-500 rounded-full flex items-center justify-center">
@@ -163,17 +163,17 @@ const DashboardPage: React.FC = () => {
                     {spaces.length === 0 ? (
                         <p className="text-gray-400">No spaces created yet. Create one above!</p>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-16">
                             {spaces.map((space) => (
                                 <Card
                                     key={space.id}
-                                    className="bg-[#232347] shadow-md rounded-xl transition-transform hover:scale-[1.02]"
+                                    className="bg-gradient-to-r from-[#6B7280]/100 to-[#8B5CF6]/90 border border-from-[#6B7280] to-[#8B5CF6] shadow-indigo-900/70 Title: text-white/95 shadow-md rounded-xl transition-transform hover:scale-[1.02]"
                                 >
-                                    <CardContent className="p-4 flex flex-col gap-3">
+                                    <CardContent className="p-4 flex flex-col gap-5">
                                         <img
                                             src={space.imageUrl}
                                             alt={space.name}
-                                            className="w-full h-36 object-cover rounded-md"
+                                            className="w-full h-full object-cover rounded-md"
                                             onError={(e) => {
                                                 e.currentTarget.src = 'https://placehold.co/400x200/cccccc/FFFFFF?text=No+Image';
                                             }}
