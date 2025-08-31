@@ -13,8 +13,7 @@ import { Minimap } from "@/components/minimap";
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import { Canvas } from "@/components/Canvas";
-
-
+import ExcalidrawWrapper from "@/components/Excelidrawwrapper";
 const TILE_SIZE = 32;
 const SPRITE_WIDTH = 256;
 const SPRITE_HEIGHT = 320;
@@ -303,9 +302,7 @@ useEffect(() => {
 
       {/* Canvas (covers screen when active) */}
       {showCanvas && (
-        <div className="absolute inset-0 z-40 bg-black">
-          <Canvas spaceId={spaceId ?? ""} />
-        </div>
+       <ExcalidrawWrapper onClose={() => setShowCanvas(false)} />
       )}
 
       {/* Video Panel (always on top when active) */}

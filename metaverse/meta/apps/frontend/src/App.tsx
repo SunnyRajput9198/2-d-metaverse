@@ -8,7 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import SpacePage from './Space/[spaceid]/page';
 import HomePage from './pages/Homepage'; // ✅ New homepage
 import FeaturesPage from './pages/featurepage';
-
+// import ExcalidrawWrapper from './components/Excelidrawwrapper'; // Import the new component
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
@@ -62,6 +62,12 @@ const App: React.FC = () => {
             <FeaturesPage />
           </PrivateRoute>
         } />
+          {/* This is the new route for the Excalidraw whiteboard */}
+        {/* <Route path="/whiteboard" element={
+          <PrivateRoute>
+            <ExcalidrawWrapper />
+          </PrivateRoute>
+        } /> */}
       
 <Route path="*" element={<Navigate to="/" />} /> {/* Optional catch-all */}
 
