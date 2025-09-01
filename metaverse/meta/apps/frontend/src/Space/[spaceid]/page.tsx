@@ -302,7 +302,7 @@ useEffect(() => {
 
       {/* Canvas (covers screen when active) */}
       {showCanvas && (
-       <ExcalidrawWrapper onClose={() => setShowCanvas(false)} />
+       <ExcalidrawWrapper onClose={() => setShowCanvas(false)} spaceId={spaceId!}/>
       )}
 
       {/* Video Panel (always on top when active) */}

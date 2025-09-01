@@ -11,9 +11,9 @@ import type {
     UserLeftPayload,
     MovementRejectedPayload,
     ChatMessageBroadcast,
-    ChatMessage,
-    Shape
+    ChatMessage
 } from '../types';
+import type { ExcalidrawElement } from '../types/Excelidraw';
 
 function useWebSocket(spaceId: string) {
     const { token, WS_URL, userId, username, avatarId } = useAuth();
@@ -27,7 +27,7 @@ function useWebSocket(spaceId: string) {
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [emojiReactions, setEmojiReactions] = useState<Record<string, { emoji: string, timestamp: number }>>({});
     const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
-    const [shapes, setShapes] = useState<Shape[]>([]);
+    const [excalidrawElements, setExcalidrawElements] = useState<readonly ExcalidrawElement[]>([]);
 
 
 
@@ -56,6 +56,12 @@ function useWebSocket(spaceId: string) {
             payload,
         });
     }, [sendJsonMessage, userId]);
+    const sendCanvasUpdate = useCallback((elements: readonly ExcalidrawElement[]) => {
+        sendJsonMessage({
+            type: 'shape-update', // We use your existing message type
+               payload: { elements: [...elements] }, 
+        });
+    }, [sendJsonMessage]);
 
     const sendEmojiReaction = useCallback((emoji: string) => {
         if (!userId) return;
@@ -122,7 +128,7 @@ function useWebSocket(spaceId: string) {
                     setMapDimensions({ width: parseInt(widthStr), height: parseInt(heightStr) });
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map);
-                    setShapes(spaceJoinedPayload.shapes || []); // Load shapes from payload
+                    setExcalidrawElements(spaceJoinedPayload.shapes || []); // Load shapes from payload
                     break;
 
                 case 'user-joined':
@@ -235,28 +241,13 @@ function useWebSocket(spaceId: string) {
                     setChatMessages(normalizedHistory);
                     break;
                 case "shape-update":
-                const updatedShape = message.payload as Shape;
-                setShapes(prevShapes => {
-                    const index = prevShapes.findIndex(s => s.id === updatedShape.id);
-                    if (index !== -1) {
-                        // If shape exists, replace it (for move/resize)
-                        const newShapes = [...prevShapes];
-                        newShapes[index] = updatedShape;
-                        return newShapes;
-                    } else {
-                        // If shape is new, add it
-                        return [...prevShapes, updatedShape];
-                    }
-                });
-                break;
+                    // The payload now contains the full scene sent by another user.
+                    const { elements } = message.payload as { elements: ExcalidrawElement[] };
 
-            // vvv ADD THIS ENTIRE CASE BLOCK vvv
-            case "shape-delete":
-                const { id: idToDelete } = message.payload;
-                setShapes(prevShapes => 
-                    prevShapes.filter(shape => shape.id !== idToDelete)
-                );
-                break;
+                    // We only need this one line to update our canvas with what they see.
+                    setExcalidrawElements(elements);
+
+                    break;
                 default:
                     console.log('Unhandled WS message type:', message.type, message);
             }
@@ -365,10 +356,11 @@ function useWebSocket(spaceId: string) {
         typingUsers,
         onTyping,
         map,
-        shapes,
+        excalidrawElements,
         chatMessages,
         sendChatMessage,
         userId,
+        sendCanvasUpdate,
         emojiReactions,
         sendEmojiReaction,
         ws: wsRef.current

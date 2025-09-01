@@ -137,10 +137,10 @@ exports.Prisma.SpaceScalarFieldEnum = {
   creatorId: 'creatorId'
 };
 
-exports.Prisma.CanvasShapeScalarFieldEnum = {
+exports.Prisma.CanvasStateScalarFieldEnum = {
   id: 'id',
   spaceId: 'spaceId',
-  shapeData: 'shapeData'
+  elements: 'elements'
 };
 
 exports.Prisma.ChatMessageScalarFieldEnum = {
@@ -221,7 +221,7 @@ exports.Role = exports.$Enums.Role = {
 exports.Prisma.ModelName = {
   User: 'User',
   Space: 'Space',
-  CanvasShape: 'CanvasShape',
+  CanvasState: 'CanvasState',
   ChatMessage: 'ChatMessage',
   spaceElements: 'spaceElements',
   Element: 'Element',

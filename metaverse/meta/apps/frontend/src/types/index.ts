@@ -1,4 +1,6 @@
 // src/types/index.ts
+// Add this at the top of src/types/index.ts
+import type { ExcalidrawElement } from './Excelidraw'; // Or the correct path to your custom type
 
 export interface AuthResponse {
     token: string;
@@ -143,7 +145,7 @@ export type WebSocketMessage =
   | { type: "emoji-reaction"; payload: { userId: string; emoji: string ; timestamp: number } }
   | { type: "typing"; payload: TypingPayload }
   | { type: 'chat-history'; payload: ChatMessage[] }
-  | { type: "shape-update"; payload: Shape }
+  | { type: "shape-update"; payload:{ elements: ExcalidrawElement[] } }
   | { type: "shape-delete"; payload: { id: string } }; // ✅ ADD THIS LINE
 
   // Client to Server

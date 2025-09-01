@@ -33,18 +33,16 @@ model Space {
   thumbnail    String?
   creatorId    String
   creator      User            @relation(fields: [creatorId], references: [id])
-  canvasShape  CanvasShape[]
+  canvasShape  CanvasState[]
   elements     spaceElements[]
   chatMessages ChatMessage[]
 }
 
-model CanvasShape {
-  id        String @id @default(cuid())
-  spaceId   String
-  shapeData Json // This will store the shape object
-  space     Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-
-  @@index([spaceId]) // Improves query performance
+model CanvasState {
+  id       String @id @default(cuid())
+  spaceId  String @unique
+  elements Json // This will store the entire Excalidraw scene
+  space    Space  @relation(fields: [spaceId], references: [id])
 }
 
 model ChatMessage {
