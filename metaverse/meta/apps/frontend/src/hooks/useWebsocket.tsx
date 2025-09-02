@@ -128,7 +128,7 @@ function useWebSocket(spaceId: string) {
                     setMapDimensions({ width: parseInt(widthStr), height: parseInt(heightStr) });
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map);
-                    setExcalidrawElements(spaceJoinedPayload.excelidrawElemenets || []); // Load shapes from payload
+                    setExcalidrawElements(spaceJoinedPayload.excalidrawElemenets || []); // Load shapes from payload
                     break;
 
                 case 'user-joined':

@@ -385,35 +385,85 @@ export class User {
           break;
         }
 
+        // Also update your shape-update case to be more robust:
+
         case "shape-update":
           if (!this.spaceId) return;
-          const { elements } = parsedData.payload;
 
-          // This single command handles everything. No try/catch is needed.
-          await client.canvasState.upsert({
-            where: {
-              spaceId: this.spaceId, // Find the record by its unique spaceId
-            },
-            update: {
-              elements: elements, // If found, update its elements
-            },
-            create: {
-              spaceId: this.spaceId, // If not found, create it with these values
-              elements: elements,
-            },
-          });
-            console.log("3. BROADCASTING update to other users in room:", this.spaceId);
-          // Broadcast to other users (this part is unchanged)
-          RoomManager.getInstance().broadcast(
-            {
-              type: "shape-update",
-              payload: {
-                elements: elements,
-              },
-            },
-            this, // exclude sender
-            this.spaceId
+          const { elements } = parsedData.payload;
+          console.log(
+            "📝 RECEIVED shape-update from client:",
+            this.userId,
+            "elements count:",
+            elements?.length
           );
+
+          // Validate elements array
+          if (!Array.isArray(elements)) {
+            console.error("❌ Invalid elements received:", typeof elements);
+            return;
+          }
+
+          try {
+            // Ensure elements are properly serialized for database storage
+            const elementsToStore = elements.map((el) => ({
+              ...el,
+              // Ensure all required fields are present
+              id: el.id || `element_${Date.now()}_${Math.random()}`,
+              versionNonce: el.versionNonce || Date.now(),
+              updated: el.updated || Date.now(),
+            }));
+
+            // Save to database with better error handling
+            const savedState = await client.canvasState.upsert({
+              where: {
+                spaceId: this.spaceId,
+              },
+              update: {
+                elements: elementsToStore, // Prisma will handle JSON serialization
+              },
+              create: {
+                spaceId: this.spaceId,
+                elements: elementsToStore,
+              },
+            });
+
+            console.log(
+              "💾 SAVED to database for space:",
+              this.spaceId,
+              "- Elements:",
+              elementsToStore.length
+            );
+
+            // Broadcast to other users (excluding sender to prevent loops)
+            RoomManager.getInstance().broadcast(
+              {
+                type: "shape-update",
+                payload: {
+                  elements: elementsToStore,
+                  fromUserId: this.userId,
+                  timestamp: Date.now(),
+                },
+              },
+              this, // exclude sender - prevents circular updates
+              this.spaceId
+            );
+            console.log(
+              "📡 BROADCASTED update to other users in room:",
+              this.spaceId
+            );
+          } catch (error) {
+            console.error("❌ Error handling shape-update:", error);
+            // Send error back to client
+            this.send({
+              type: "shape-update-error",
+              payload: {
+                error: "Failed to save canvas state",
+                message: error.message,
+                timestamp: Date.now(),
+              },
+            });
+          }
           break;
       }
     });
