@@ -102,7 +102,7 @@ export interface MovePayload {
 export interface SpaceJoinedPayload {
     users: UserMetadata[];
     elements: SpaceElementInstance[];
-    shapes?: Shape[];
+    excelidrawElemenets: ExcalidrawElement[];
     dimensions: string; // e.g., "100x200"
     spawn: { x: number; y: number };
     map: string[][]

@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Zap, Shield, Heart, Map, Mic } from 'lucide-react';
+import { motion } from "framer-motion";
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -96,79 +97,74 @@ const HomePage: React.FC = () => {
         </p>
       </section>
 
-<section className="px-8 sm:px-16 py-28  text-white">
-  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-12">
-    {[
-      {
-        icon: <Zap className="w-8 h-8 text-yellow-400 transition-transform group-hover:scale-110" />,
-        title: "Real-Time Movement",
-        desc: "Navigate your avatar with smooth animations across custom maps in real time.",
-        gradient: "from-yellow-400 to-orange-500",
-      },
-      {
-        icon: <MessageSquare className="w-8 h-8 text-blue-400 transition-transform group-hover:scale-110" />,
-        title: "Chat & Emojis",
-        desc: "Message others publicly or privately, complete with rich emoji reactions.",
-        gradient: "from-blue-400 to-cyan-500",
-      },
-      {
-        icon: <Mic className="w-8 h-8 text-green-400 transition-transform group-hover:scale-110" />,
-        title: "Spatial Video Chat",
-        desc: "Auto-connect with nearby users via video or audio in proximity zones.",
-        gradient: "from-green-400 to-emerald-500",
-      },
-      {
-        icon: <Map className="w-8 h-8 text-purple-400 transition-transform group-hover:scale-110" />,
-        title: "Custom Spaces",
-        desc: "Design your own rooms with interactive layouts and visuals.",
-        gradient: "from-purple-400 to-violet-500",
-      },
-      {
-        icon: <Shield className="w-8 h-8 text-red-400 transition-transform group-hover:scale-110" />,
-        title: "Secure & Private",
-        desc: "Encrypted auth and communication to protect your sessions.",
-        gradient: "from-red-400 to-pink-500",
-      },
-      {
-        icon: <Heart className="w-8 h-8 text-pink-400 transition-transform group-hover:scale-110" />,
-        title: "Open Source & Free",
-        desc: "100% free and open source — built for developers, communities, and the future.",
-        gradient: "from-pink-400 to-rose-500",
-      },
-    ].map((feature) => (
+{/* Cards Grid */}
+<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-12">
+  {[
+    {
+      icon: <Zap className="w-8 h-8 text-yellow-400 transition-transform group-hover:scale-110" />,
+      title: "Real-Time Movement",
+      desc: "Navigate your avatar with smooth animations across custom maps in real time.",
+      gradient: "from-yellow-400 to-orange-500",
+    },
+    {
+      icon: <MessageSquare className="w-8 h-8 text-blue-400 transition-transform group-hover:scale-110" />,
+      title: "Chat & Emojis",
+      desc: "Message others publicly or privately, complete with rich emoji reactions.",
+      gradient: "from-blue-400 to-cyan-500",
+    },
+    {
+      icon: <Mic className="w-8 h-8 text-green-400 transition-transform group-hover:scale-110" />,
+      title: "Spatial Video Chat",
+      desc: "Auto-connect with nearby users via video or audio in proximity zones.",
+      gradient: "from-green-400 to-emerald-500",
+    },
+    {
+      icon: <Map className="w-8 h-8 text-purple-400 transition-transform group-hover:scale-110" />,
+      title: "Custom Spaces",
+      desc: "Design your own rooms with interactive layouts and visuals.",
+      gradient: "from-purple-400 to-violet-500",
+    },
+    {
+      icon: <Shield className="w-8 h-8 text-red-400 transition-transform group-hover:scale-110" />,
+      title: "Secure & Private",
+      desc: "Encrypted auth and communication to protect your sessions.",
+      gradient: "from-red-400 to-pink-500",
+    },
+    {
+      icon: <Heart className="w-8 h-8 text-pink-400 transition-transform group-hover:scale-110" />,
+      title: "Open Source & Free",
+      desc: "100% free and open source — built for developers, communities, and the future.",
+      gradient: "from-pink-400 to-rose-500",
+    },
+  ].map((feature) => (
+    <motion.div
+      key={feature.title}
+   whileHover={{ y: -10, scale: 1.05 }}
+transition={{ duration: 0.4, ease: "easeOut" }}
+      className="group relative overflow-hidden p-10 rounded-4xl border border-white/20 bg-[#1f1f2d] hover:border-white/40 transition-all duration-500 shadow-lg hover:shadow-2xl cursor-pointer"
+    >
+      {/* Glow ring */}
       <div
-        key={feature.title}
-        className={`group relative overflow-hidden p-10 rounded-4xl border border-white/20 bg-[#1f1f2d] hover:border-white/40 transition-all duration-500 shadow-lg hover:shadow-2xl cursor-pointer`}
+        className={`absolute -inset-1 bg-gradient-to-br ${feature.gradient} opacity-25 blur-3xl rounded-4xl group-hover:opacity-40 transition duration-700`}
+      />
+
+      {/* Icon circle */}
+      <div
+        className={`relative z-10 w-16 h-16 mb-7 flex items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-xl group-hover:scale-110 transition-transform`}
       >
-        {/* Glow ring */}
-        <div
-          className={`absolute -inset-1 bg-gradient-to-br ${feature.gradient} opacity-25 blur-3xl rounded-4xl group-hover:opacity-40 transition duration-700`}
-        />
-
-        {/* Icon circle */}
-        <div
-          className={`relative z-10 w-16 h-16 mb-7 flex items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} shadow-xl group-hover:scale-110 transition-transform`}
-        >
-          {feature.icon}
-        </div>
-
-        {/* Title & Description */}
-        <h3 className="text-2xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 group-hover:from-pink-400 group-hover:to-purple-600 transition-colors duration-500">
-          {feature.title}
-        </h3>
-        <p className="text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-400 tracking-wide">
-          {feature.desc}
-        </p>
+        {feature.icon}
       </div>
-    ))}
-  </div>
-  {/* CTA */}
-  <div className="text-center mt-24">
-    <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-12 py-5 rounded-2xl hover:from-purple-700 hover:to-pink-700 transition-transform duration-300 hover:scale-110 font-bold text-xl shadow-lg hover:shadow-2xl">
-      Explore All Features
-    </button>
-  </div>
-</section>
+
+      {/* Title & Description */}
+      <h3 className="relative z-10 text-2xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 group-hover:from-pink-400 group-hover:to-purple-600 transition-colors duration-500">
+        {feature.title}
+      </h3>
+      <p className="relative z-10 text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-400 tracking-wide">
+        {feature.desc}
+      </p>
+    </motion.div>
+  ))}
+</div>
       {/* Footer */}
       <footer className="text-center text-sm text-gray-500 py-6 border-t border-gray-700">
         © {new Date().getFullYear()} MetaSpace · Built by Sunny Rajput

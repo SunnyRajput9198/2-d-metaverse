@@ -158,7 +158,7 @@ export class User {
               })),
 
               map: mapGrid, // <<< Add this!
-              shapes: canvasState?.elements ?? [],
+              excalidrawElements: canvasState?.elements ?? [],
             },
           });
           console.log("jouin receiverdf 5");
@@ -402,6 +402,7 @@ export class User {
               elements: elements,
             },
           });
+            console.log("3. BROADCASTING update to other users in room:", this.spaceId);
           // Broadcast to other users (this part is unchanged)
           RoomManager.getInstance().broadcast(
             {

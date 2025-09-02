@@ -128,7 +128,7 @@ function useWebSocket(spaceId: string) {
                     setMapDimensions({ width: parseInt(widthStr), height: parseInt(heightStr) });
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map);
-                    setExcalidrawElements(spaceJoinedPayload.shapes || []); // Load shapes from payload
+                    setExcalidrawElements(spaceJoinedPayload.excelidrawElemenets || []); // Load shapes from payload
                     break;
 
                 case 'user-joined':
@@ -245,6 +245,7 @@ function useWebSocket(spaceId: string) {
                     const { elements } = message.payload as { elements: ExcalidrawElement[] };
 
                     // We only need this one line to update our canvas with what they see.
+                      console.log("5. RECEIVED update on Frontend and updating state:", elements);
                     setExcalidrawElements(elements);
 
                     break;
