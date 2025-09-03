@@ -19,7 +19,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./metaverse/meta
-          file: ./apps/http/Dockerfile.dev
+          file: ./metaverse/meta/apps/http/Dockerfile.dev
           build-args: DATABASE_URL=${{ secrets.DATABASE_URL }}
           push: true
           tags: sunnyrajput9198/meta-http:${{ github.sha }}
