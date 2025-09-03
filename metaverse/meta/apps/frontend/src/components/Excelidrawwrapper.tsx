@@ -29,6 +29,27 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({ onClose, spaceId 
   const isUpdatingFromRemote = useRef(false);
   const lastRemoteElements = useRef<readonly ExcalidrawElement[]>([]);
 
+  // ADD THE LOADING CHECK HERE - RIGHT AT THE START OF RETURN
+  if (!excalidrawElements) {
+    return (
+      <div style={{ 
+        position: "fixed", 
+        top: 0, 
+        left: 0, 
+        width: "100%", 
+        height: "100%", 
+        zIndex: 1000,
+        backgroundColor: "#1e1e1e",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "white"
+      }}>
+        <div>Loading canvas...</div>
+      </div>
+    );
+  }
+
   // Helper function to compare elements more efficiently
   const elementsAreEqual = useCallback((
     elements1: readonly ExcalidrawElement[], 
@@ -137,6 +158,7 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({ onClose, spaceId 
         Close Canvas
       </button>
       <Excalidraw
+      // @ts-ignore
         excalidrawAPI={handleExcalidrawAPI}
         initialData={{ 
           elements: excalidrawElements || [],
