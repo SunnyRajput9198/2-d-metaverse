@@ -18,8 +18,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: ./metaverse/meta/apps/frontend/Dockerfile.dev
+          context: ./metaverse/meta
+          file: ./apps/frontend/Dockerfile.dev
           build-args: DATABASE_URL=${{ secrets.DATABASE_URL }}
           push: true
           tags: sunnyrajput9198/meta-frontend:${{ github.sha }}
