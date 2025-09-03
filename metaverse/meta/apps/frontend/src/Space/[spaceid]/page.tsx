@@ -12,8 +12,8 @@ import MapCanvas from "@/components/Mapcanvas";
 import { Minimap } from "@/components/minimap";
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
-import { Canvas } from "@/components/Canvas";
 import ExcalidrawWrapper from "@/components/Excelidrawwrapper";
+
 const TILE_SIZE = 32;
 const SPRITE_WIDTH = 256;
 const SPRITE_HEIGHT = 320;
@@ -33,7 +33,7 @@ const SpacePage: React.FC = () => {
     ws,
     emojiReactions,
     typingUsers,
-  onTyping,
+    onTyping,
     sendEmojiReaction
   } = useWebSocket(spaceId ?? "");
 
@@ -51,7 +51,7 @@ const SpacePage: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const lastReadMessageCount = useRef<number>(0);
 
-  const [isVideoOpen, setIsVideoOpen] = useState(false);// New state for avatar emoji picker position only
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -61,7 +61,7 @@ const SpacePage: React.FC = () => {
     const now = Date.now();
 
     return Object.entries(emojiReactions)
-      .filter(([_, { timestamp }]) => now - timestamp < 8000) // keep reactions within 8 seconds
+      .filter(([_, { timestamp }]) => now - timestamp < 8000)
       .map(([userId, { emoji }]) => {
         const username = usersInSpace[userId]?.username || "Guest";
         return { userId, emoji, username };
@@ -69,62 +69,61 @@ const SpacePage: React.FC = () => {
       .sort((a, b) => (emojiReactions[b.userId].timestamp - emojiReactions[a.userId].timestamp));
   }, [emojiReactions, usersInSpace]);
 
-
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [chatMessages]);
-  //
-useEffect(() => {
-  const newMessages = chatMessages.length - lastReadMessageCount.current;
-  if (!isChatOpen && newMessages > 0) {
-    setUnreadCount(newMessages);
-  }
-}, [chatMessages, isChatOpen]);
-
-//Also reset when chat opens:
-useEffect(() => {
-  if (isChatOpen) {
-    lastReadMessageCount.current = chatMessages.length;
-    setUnreadCount(0);
-  }
-}, [isChatOpen, chatMessages]);
 
   useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!currentPlayerPosition || showCanvas) return; // Ignore keydown if canvas is shown
-    const { x, y } = currentPlayerPosition;
-
-    switch (e.key) {
-      case "ArrowUp":    // Up arrow
-        move(x, y - 1);
-        break;
-      case "ArrowLeft":  // Left arrow
-        move(x - 1, y);
-        break;
-      case "ArrowRight": // Right arrow
-        move(x + 1, y);
-        break;
-      case "ArrowDown":  // Down arrow
-        move(x, y + 1);
-        break;
-      default:
-        break;
+    const newMessages = chatMessages.length - lastReadMessageCount.current;
+    if (!isChatOpen && newMessages > 0) {
+      setUnreadCount(newMessages);
     }
-  };
+  }, [chatMessages, isChatOpen]);
 
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [currentPlayerPosition, move, showCanvas]); // Added showCanvas to dependencies
+  useEffect(() => {
+    if (isChatOpen) {
+      lastReadMessageCount.current = chatMessages.length;
+      setUnreadCount(0);
+    }
+  }, [isChatOpen, chatMessages]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!currentPlayerPosition || showCanvas) return;
+      const { x, y } = currentPlayerPosition;
+
+      switch (e.key) {
+        case "ArrowUp":
+          move(x, y - 1);
+          break;
+        case "ArrowLeft":
+          move(x - 1, y);
+          break;
+        case "ArrowRight":
+          move(x + 1, y);
+          break;
+        case "ArrowDown":
+          move(x, y + 1);
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPlayerPosition, move, showCanvas]);
 
   if (!isConnected || !map || !currentPlayerPosition) {
     return <div className="text-white text-center mt-10">Connecting to space...</div>;
   }
+
   const handleSendMessage = (msg: string) => {
     sendChatMessage(msg);
   };
+
   const toggleFullscreen = () => {
     const docElm = document.documentElement;
     if (!document.fullscreenElement) {
@@ -160,7 +159,7 @@ useEffect(() => {
               height={150}
               minConstraints={[100, 100]}
               maxConstraints={[200, 200]}
-              resizeHandles={['sw']} // south-west corner
+              resizeHandles={['sw']}
             >
               <Minimap
                 users={Object.values(usersInSpace).map((u) => ({
@@ -262,23 +261,18 @@ useEffect(() => {
               </ul>
             </div>
           )}
-        </>
-      )}
 
-      {/* Persistent Controls Area */}
-      <div className="absolute top-4 left-4 flex gap-2 z-50">
-        {!isVideoOpen && (
-          <Button onClick={() => { startVideo(); setIsVideoOpen(true); }} className="bg-green-600">🎥 Start Video</Button>
-        )}
-        {isVideoOpen && (
-          <Button onClick={() => { stopVideo(); setIsVideoOpen(false); }} className="bg-red-600 flex items-center gap-2">
-            <VideoOff className="w-4 h-4" /> Stop Video
-          </Button>
-        )}
-        
-        {/* These buttons are hidden when canvas is active */}
-        {!showCanvas && (
-          <>
+          {/* Normal Controls Area (when canvas is closed) */}
+          <div className="absolute top-4 left-4 flex gap-2 z-50">
+            {!isVideoOpen && (
+              <Button onClick={() => { startVideo(); setIsVideoOpen(true); }} className="bg-green-600">🎥 Start Video</Button>
+            )}
+            {isVideoOpen && (
+              <Button onClick={() => { stopVideo(); setIsVideoOpen(false); }} className="bg-red-600 flex items-center gap-2">
+                <VideoOff className="w-4 h-4" /> Stop Video
+              </Button>
+            )}
+            
             <Button onClick={toggleFullscreen} className="bg-gray-700 flex items-center gap-2">
               <Fullscreen className="w-4 h-4" /> Fullscreen
             </Button>
@@ -288,26 +282,54 @@ useEffect(() => {
             >
               🖥 Share Screen
             </Button>
-          </>
-        )}
-      </div>
-      
-      {/* Canvas Button (always visible) */}
-      <Button
-        onClick={() => setShowCanvas((prev) => !prev)}
-        className="fixed top-20 left-4 z-50 bg-blue-600 px-4 py-2 rounded"
-      >
-        {showCanvas ? "Close Drawing Canvas" : "Open Drawing Canvas"}
-      </Button>
+          </div>
+          
+          {/* Canvas Button (when canvas is closed) */}
+          <Button
+            onClick={() => setShowCanvas(true)}
+            className="fixed top-20 left-4 z-50 bg-blue-600 px-4 py-2 rounded"
+          >
+            Open Drawing Canvas
+          </Button>
+        </>
+      )}
+
+      {/* Canvas Controls (when canvas is open) - Only Video and Screen Share */}
+      {showCanvas && (
+        <div className="fixed top-4 left-4 z-[1002] flex gap-2">
+          {!isVideoOpen ? (
+            <Button 
+              onClick={() => { startVideo(); setIsVideoOpen(true); }} 
+              className="bg-green-600 hover:bg-green-700"
+            >
+              🎥 Start Video
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => { stopVideo(); setIsVideoOpen(false); }} 
+              className="bg-red-600 hover:bg-red-700 flex items-center gap-2"
+            >
+              <VideoOff className="w-4 h-4" /> Stop Video
+            </Button>
+          )}
+          
+          <Button
+            onClick={startScreenShare}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            🖥 Share Screen
+          </Button>
+        </div>
+      )}
 
       {/* Canvas (covers screen when active) */}
       {showCanvas && (
-       <ExcalidrawWrapper onClose={() => setShowCanvas(false)} spaceId={spaceId!}/>
+        <ExcalidrawWrapper onClose={() => setShowCanvas(false)} spaceId={spaceId!}/>
       )}
 
       {/* Video Panel (always on top when active) */}
       {isVideoOpen && (
-        <div className="fixed inset-0 z-50 pointer-events-none">
+        <div className="fixed inset-0 z-[1001] pointer-events-none">
           <VideoPanel
             localStream={localStream}
             peerStreams={peerStreams}
