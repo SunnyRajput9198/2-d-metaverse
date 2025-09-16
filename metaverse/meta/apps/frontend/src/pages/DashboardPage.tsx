@@ -167,7 +167,7 @@ const DashboardPage: React.FC = () => {
                             {spaces.map((space) => (
                                 <Card
                                     key={space.id}
-                                    className="bg-gradient-to-r from-[#6B7280]/100 to-[#8B5CF6]/90 border border-from-[#6B7280] to-[#8B5CF6] shadow-indigo-900/70 Title: text-white/95 shadow-md rounded-xl transition-transform hover:scale-[1.02]"
+                                    className="bg-gray-400 border border-from-[#6B7280] to-[#8B5CF6] shadow-indigo-900/70 Title: text-white/95 shadow-md rounded-xl transition-transform hover:scale-[1.02]"
                                 >
                                     <CardContent className="p-4 flex flex-col gap-5">
                                         <img
@@ -188,7 +188,7 @@ const DashboardPage: React.FC = () => {
                                         <div className="flex justify-between mt-2">
                                             <Button
                                                 onClick={() => navigate(`/space/${space.id}`)}
-                                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
+                                                className="bg-[#24cfa6] hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
                                             >
                                                 Join
                                             </Button>

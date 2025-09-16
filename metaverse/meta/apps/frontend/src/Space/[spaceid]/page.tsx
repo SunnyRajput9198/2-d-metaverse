@@ -47,7 +47,7 @@ const SpacePage: React.FC = () => {
   } = useVideoCall(ws, currentUserId!);
 
   const chatBoxRef = useRef<HTMLDivElement>(null);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastReadMessageCount = useRef<number>(0);
 
@@ -134,7 +134,7 @@ const SpacePage: React.FC = () => {
   };
 
   return (
-    <div className="relative h-screen w-screen bg-black text-white overflow-hidden">
+    <div className="relative h-screen w-screen bg-[#0c0c0c] text-white overflow-hidden">
       {/* All elements that should disappear when the canvas is open */}
       {!showCanvas && (
         <>

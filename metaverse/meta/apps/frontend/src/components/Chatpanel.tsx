@@ -135,28 +135,28 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="absolute right-0 top-0 h-full w-[370px] bg-gray-900 border-l border-gray-700 p-4 flex flex-col z-40">
+    <div className="absolute right-0 top-0 h-full w-[370px] bg-[#24cfa6] border-l border-gray-700 p-4 flex flex-col z-40">
       <input
         type="text"
         placeholder="Search messages..."
-        className="mb-3 px-3 py-2 rounded bg-gray-700 text-white w-full outline-none"
+        className="mb-3 px-3 py-2 rounded bg-black text-white w-full outline-none"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       <div
         ref={chatBoxRef}
-        className="flex-1 overflow-y-auto bg-gray-800 rounded-lg p-3 mb-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 "
+        className="flex-1 overflow-y-auto bg-black rounded-lg p-3 mb-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 "
         onClick={handleLinkClick}  // <-- Add this line here
       >
         {filteredMessages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 flex ${msg.userId === currentUserId ? "justify-end" : "justify-start"}`}
+            className={`mb-1 flex ${msg.userId === currentUserId ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-700 text-white"}`}
+              className={`max-w-[70%] px-3 py-2 rounded-xl text-sm ${msg.userId === currentUserId ? "bg-gray-200 text-black" :"bg-gray-200 text-black"}`}
             >
-              <div className="font-semibold text-xs opacity-80 mb-1">
+              <div className="font-semibold text-xs opacity-80 ">
                 {msg.username || "Anonymous"}
               </div>
               <div
@@ -166,7 +166,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
                 }}
               />
 
-              <div className="text-xs opacity-60 mt-1 text-right">
+              <div className="text-xs opacity-60 text-right">
                 {new Date(msg.timestamp).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit'
@@ -178,7 +178,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         ))}
       </div>
 
-      <div className="text-xs text-gray-400 mt-1">
+      <div className="text-xs text-black mt-1">
         Markdown supported: <code>**bold**</code>, <code>_italic_</code>, <code>`code`</code>
       </div>
        {/* --- NEW: Render the single, grouped typing indicator --- */}
@@ -195,7 +195,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         <input
           ref={inputRef}
           type="text"
-           className={`flex-1 px-3 py-2 rounded bg-gray-800 text-white outline-none ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
+           className={`flex-1 px-3 py-2 rounded bg-black text-white outline-none ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
           placeholder="Say something..."
           value={inputValue}
           onChange={(e) => {
