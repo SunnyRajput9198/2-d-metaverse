@@ -34,7 +34,9 @@ const SpacePage: React.FC = () => {
     emojiReactions,
     typingUsers,
     onTyping,
-    sendEmojiReaction
+    sendEmojiReaction,
+    excalidrawElements,
+    sendCanvasUpdate
   } = useWebSocket(spaceId ?? "");
 
   const {
@@ -221,9 +223,9 @@ const SpacePage: React.FC = () => {
             onClick={() => setIsChatOpen(!isChatOpen)}
             className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full z-50"
           >
-            <img 
-              src="/maps/chat.png" 
-              alt="Open Chat" 
+            <img
+              src="/maps/chat.png"
+              alt="Open Chat"
               className="w-6 h-6"
             />
             {unreadCount > 0 && (
@@ -272,7 +274,7 @@ const SpacePage: React.FC = () => {
                 <VideoOff className="w-4 h-4" /> Stop Video
               </Button>
             )}
-            
+
             <Button onClick={toggleFullscreen} className="bg-gray-700 flex items-center gap-2">
               <Fullscreen className="w-4 h-4" /> Fullscreen
             </Button>
@@ -283,7 +285,7 @@ const SpacePage: React.FC = () => {
               🖥 Share Screen
             </Button>
           </div>
-          
+
           {/* Canvas Button (when canvas is closed) */}
           <Button
             onClick={() => setShowCanvas(true)}
@@ -298,21 +300,21 @@ const SpacePage: React.FC = () => {
       {showCanvas && (
         <div className="fixed top-4 left-4 z-[1002] flex gap-2">
           {!isVideoOpen ? (
-            <Button 
-              onClick={() => { startVideo(); setIsVideoOpen(true); }} 
+            <Button
+              onClick={() => { startVideo(); setIsVideoOpen(true); }}
               className="bg-green-600 hover:bg-green-700"
             >
               🎥 Start Video
             </Button>
           ) : (
-            <Button 
-              onClick={() => { stopVideo(); setIsVideoOpen(false); }} 
+            <Button
+              onClick={() => { stopVideo(); setIsVideoOpen(false); }}
               className="bg-red-600 hover:bg-red-700 flex items-center gap-2"
             >
               <VideoOff className="w-4 h-4" /> Stop Video
             </Button>
           )}
-          
+
           <Button
             onClick={startScreenShare}
             className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -324,7 +326,11 @@ const SpacePage: React.FC = () => {
 
       {/* Canvas (covers screen when active) */}
       {showCanvas && (
-        <ExcalidrawWrapper onClose={() => setShowCanvas(false)} spaceId={spaceId!}/>
+        <ExcalidrawWrapper
+          onClose={() => setShowCanvas(false)}
+          excalidrawElements={excalidrawElements}
+          sendCanvasUpdate={sendCanvasUpdate}
+        />
       )}
 
       {/* Video Panel (always on top when active) */}

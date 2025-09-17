@@ -44,7 +44,7 @@ export const Minimap: React.FC<Props> = ({ users, mapWidth, mapHeight }) => {
               }}
             >
               {/* Username label */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 text-[10px] text-black bg-white/80 px-1 rounded shadow z-10 whitespace-nowrap">
+              <div key={user.id} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 text-[10px] text-black bg-white/80 px-1 rounded shadow z-10 whitespace-nowrap">
                 {user.username}
               </div>
               {/* Dot */}
