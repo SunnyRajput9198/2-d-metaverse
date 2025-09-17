@@ -20,6 +20,23 @@ const DashboardPage: React.FC = () => {
     const [newSpaceDimensions, setNewSpaceDimensions] = useState<string>('20x20');
     const [showForm, setShowForm] = useState(false);
 
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+    const [isHovered, setIsHovered] = useState<string | null>(null)
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, spaceId: string) => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        const x = e.clientX - rect.left
+        const y = e.clientY - rect.top
+        setMousePosition({ x, y })
+    }
+
+    const handleMouseEnter = (spaceId: string) => {
+        setIsHovered(spaceId)
+    }
+
+    const handleMouseLeave = () => {
+        setIsHovered(null)
+    }
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -165,49 +182,77 @@ const DashboardPage: React.FC = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-16">
                             {spaces.map((space) => (
-                                <Card
+                                <div
                                     key={space.id}
-                                    className="bg-gray-400 border border-from-[#6B7280] to-[#8B5CF6] shadow-indigo-900/70 Title: text-white/95 shadow-md rounded-xl transition-transform hover:scale-[1.02]"
+                                    className="relative"
+                                    onMouseMove={(e) => handleMouseMove(e, space.id)}
+                                    onMouseEnter={() => handleMouseEnter(space.id)}
+                                    onMouseLeave={handleMouseLeave}
+                                    style={{
+                                        transform: isHovered === space.id ? "none" : "none",
+                                        transition: "transform 0.1s ease-out",
+                                    }}
                                 >
-                                    <CardContent className="p-4 flex flex-col gap-5">
-                                        <img
-                                            src={space.imageUrl}
-                                            alt={space.name}
-                                            className="w-full h-full object-cover rounded-md"
-                                            onError={(e) => {
-                                                e.currentTarget.src = 'https://placehold.co/400x200/cccccc/FFFFFF?text=No+Image';
-                                            }}
-                                        />
+                                    <Card
+                                        className="bg-gradient-to-b from-[#0b0b10] via-[#121212] to-[#1a1a1f] border-2 border-[#24cfa6] shadow-indigo-900/70 text-white/95 shadow-md rounded-xl transition-all duration-200 hover:shadow-xl relative overflow-hidden"
+                                        style={{
+                                            transform:
+                                                isHovered === space.id
+                                                    ? `perspective(1000px) rotateX(${((mousePosition.y - 150) / 150) * -8}deg) rotateY(${((mousePosition.x - 150) / 150) * 8}deg) scale3d(1.02, 1.02, 1.02)`
+                                                    : "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)",
+                                            transition: isHovered === space.id ? "transform 0.1s ease-out" : "transform 0.3s ease-out",
+                                        }}
+                                    >
+                                        {isHovered === space.id && (
+                                            <div
+                                                className="absolute pointer-events-none z-10"
+                                                style={{
+                                                    left: mousePosition.x - 15,
+                                                    top: mousePosition.y - 15,
+                                                    width: "220px",
+                                                    height: "180px",
+                                                    background:
+                                                        "radial-gradient(rgba(35, 196, 92, 0.6) 0%, rgba(36, 207, 166, 0.3), transparent ,transparent)",
+                                                    borderRadius: "50%",
+                                                    transition: "all 0.1s ease-out",
+                                                }}
+                                            />
+                                        )}
+                                        <CardContent className="p-4 flex flex-col gap-5 relative z-20">
+                                            <img
+                                                src={"/maps/space.png"}
+                                                alt={space.name}
+                                                className="w-full h-full object-cover rounded-md"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = "https://placehold.co/400x200/cccccc/FFFFFF?text=No+Image"
+                                                }}
+                                            />
+                                            <div className="flex flex-col gap-1">
+                                                <h3 className="text-lg font-semibold text-white truncate">{space.name}</h3>
+                                            </div>
+                                            <div className="flex justify-between mt-2">
+                                                <Button
+                                                    onClick={() => navigate(`/space/${space.id}`)}
+                                                    className="bg-[#24cfa6] hover:bg-emerald-700 text-gray-900 text-sm font-semibold px-5 py-2 shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
+                                                >
+                                                    Join
+                                                </Button>
 
-                                        <div className="flex flex-col gap-1">
-                                            <h3 className="text-lg font-semibold text-white truncate">
-                                                {space.name}
-                                            </h3>
-                                        </div>
-
-                                        <div className="flex justify-between mt-2">
-                                            <Button
-                                                onClick={() => navigate(`/space/${space.id}`)}
-                                                className="bg-[#24cfa6] hover:bg-emerald-700 text-white text-sm font-semibold px-5 py-2 shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
-                                            >
-                                                Join
-                                            </Button>
-
-                                            <Button
-                                                onClick={() => handleDeleteSpace(space.id)}
-                                                className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2  shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
-                                            >
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                                <Button
+                                                    onClick={() => handleDeleteSpace(space.id)}
+                                                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-5 py-2 shadow-md hover:shadow-lg transition duration-200 flex items-center gap-2"
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             ))}
                         </div>
                     )}
                 </section>
             </main>
-
         </div>
     );
 
