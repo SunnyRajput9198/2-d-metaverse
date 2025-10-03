@@ -7,8 +7,6 @@
   ],
     "compilerOptions": {
     "baseUrl": ".",
-     "react": ["./node_modules/react"],
-      "react-dom": ["./node_modules/react-dom"],
     "paths": {
       "@/*": ["./src/*"]
     },
