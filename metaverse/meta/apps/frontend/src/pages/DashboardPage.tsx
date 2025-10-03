@@ -23,7 +23,7 @@ const DashboardPage: React.FC = () => {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isHovered, setIsHovered] = useState<string | null>(null)
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, spaceId: string) => {
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, _spaceId: string) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
         const y = e.clientY - rect.top

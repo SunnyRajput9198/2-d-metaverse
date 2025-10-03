@@ -59,7 +59,7 @@ interface ChatPanelProps {
   currentUserId: string;
   users: Record<string, User>;
   onSend: (msg: string, userId?: string) => void;
-  onClose: () => void;
+  _onClose: () => void;
   typingUsers: Record<string, number>; // 👈 add this
   onTyping: () => void; // 👈 add this
 
@@ -73,7 +73,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   currentUserId,
   users,
   onSend,
-  onClose,
+  _onClose,
   typingUsers,
   onTyping
 }) => {
