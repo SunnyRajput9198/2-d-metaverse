@@ -245,7 +245,7 @@ const SpacePage: React.FC = () => {
               typingUsers={typingUsers}
               onTyping={onTyping}
               onSend={handleSendMessage}
-              onClose={() => setIsChatOpen(false)}
+              _onClose={() => setIsChatOpen(false)}
             />
           )}
 
