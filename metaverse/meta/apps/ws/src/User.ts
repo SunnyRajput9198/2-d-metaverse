@@ -5,8 +5,7 @@ import client from "@repo/db"; //isko tsconfig me jake base.config se match kiya
 //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { JWT_PASSWORD } from "./config";
-import { GoogleGenAI } from "@google/genai";
-import { Shape } from "./types";
+import * as GenAI from "@google/generative-ai";
 import dotenv from 'dotenv';
 dotenv.config();
 function getRandomString(length: number) {
@@ -18,34 +17,29 @@ function getRandomString(length: number) {
   }
   return result;
 }
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
 async function getAIResponse(prompt: string): Promise<string> {
   try {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error("GEMINI_API_KEY environment variable is not set");
     }
-    
+
     console.log("Making API call to Gemini with prompt:", prompt.substring(0, 50) + "...");
-    
-    const result = await ai.models.generateContent({
-      model: "gemini-1.5-flash", // Updated model name
-      contents: [{ parts: [{ text: prompt }] }],
+
+    const result = await GenAI.text.generate({
+      model: "gemini-1.5-flash",
+      prompt: prompt,
     });
-    
+
     console.log("Gemini API response received successfully");
-    
-    return (
-      result.candidates?.[0]?.content?.parts?.[0]?.text ??
-      "No response from AI."
-    );
+
+    // Adjust according to actual response structure
+    return result?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response from AI.";
   } catch (err) {
     console.error("Gemini API Error:", err);
     return `Error: ${(err as Error).message}`;
   }
 }
+
 export class User {
   public id: string;
   public username?: string;
