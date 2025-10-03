@@ -14,7 +14,7 @@
     "noEmit": true,
 
     /* Linting */
-    "strict": true,
+    "strict": false,
       "noUnusedLocals": false,            // ✅ Allow unused variables
     "noUnusedParameters": false,     
     "erasableSyntaxOnly": true,

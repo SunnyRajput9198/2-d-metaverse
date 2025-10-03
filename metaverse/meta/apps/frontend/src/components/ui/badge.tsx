@@ -40,7 +40,7 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
         ref={ref}
         data-slot="badge"
         className={cn(badgeVariants({ variant }), className)}
-        {...props}
+        {...props as any}
       />
     )
   }

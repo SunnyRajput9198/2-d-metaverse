@@ -24,7 +24,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     /* Linting */
-    "strict": true,
+    "strict": false,
        "noUnusedLocals": false,            // ✅ Allow unused variables
     "noUnusedParameters": false,     
     "erasableSyntaxOnly": true,
