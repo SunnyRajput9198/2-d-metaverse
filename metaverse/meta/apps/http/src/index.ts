@@ -4,7 +4,14 @@ import client from "@repo/db";
 
 const cors = require('cors');
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://your-vercel-app.vercel.app', // Replace with your actual Vercel URL
+    process.env.FRONTEND_URL // Add this to your backend env vars
+  ],
+  credentials: true
+}));
 app.use(express.json());//to parse body
 app.use("/api/v1",router);
 
