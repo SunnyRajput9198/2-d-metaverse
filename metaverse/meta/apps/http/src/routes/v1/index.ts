@@ -7,7 +7,7 @@ import { SigninSchema, SignupSchema } from "../../types";
 import {hash, compare} from "../../scrypt";
 import client from "@repo/db";
 import jwt from "jsonwebtoken";
-import { JWT_PASSWORD } from "../../config";
+const JWT_PASSWORD = process.env.JWT_PASSWORD || "123kasdk123";
 
 export const router = Router();
 

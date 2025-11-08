@@ -289,7 +289,7 @@ const SpacePage: React.FC = () => {
           {/* Canvas Button (when canvas is closed) */}
           <Button
             onClick={() => setShowCanvas(true)}
-            className="fixed top-20 left-4 z-50 bg-blue-600 px-4 py-2 rounded"
+            className="fixed top-20 left-38 z-50 bg-blue-600 px-4 py-2 rounded"
           >
             Open Drawing Canvas
           </Button>

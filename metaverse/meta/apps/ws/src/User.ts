@@ -4,10 +4,10 @@ import { OutgoingMessage } from "./types";
 import client from "@repo/db"; //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
 //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { JWT_PASSWORD } from "./config";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
 dotenv.config();
+const JWT_PASSWORD = process.env.JWT_PASSWORD || "123kasdk123";
 function getRandomString(length: number) {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -20,7 +20,7 @@ function getRandomString(length: number) {
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
 async function getAIResponse(prompt: string): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const result = await model.generateContent(prompt);
     // The structure might differ based on the SDK version
    const text = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text;

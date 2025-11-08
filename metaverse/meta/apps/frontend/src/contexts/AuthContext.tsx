@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 
 import type { AuthResponse } from '../types';
 
-import { BACKEND_URL, WS_URL } from "../config";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3001";
 
 interface AuthContextType {
     token: string | null;
