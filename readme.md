@@ -1,9 +1,6 @@
 # 🪐 2D Metaverse Platform
 
 > 🌍 **A browser-based 2D metaverse enabling real-time collaboration, video calls, and AI-driven interactions.**
-
-![Metaspace Banner](./assets/banner.png)
-
 ---
 
 ## 🧩 Problem & Vision
@@ -82,7 +79,7 @@ Traditional video calls feel static and disconnected.
 ```bash
 # Clone the repository
 git clone https://github.com/SunnyRajput9198/2-d-metaverse.git
-cd 2-d-metaverse
+cd metaverse/meta
 
 # Install dependencies
 npm install
