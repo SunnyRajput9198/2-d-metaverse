@@ -1,28 +1,46 @@
 # 🪐 2D Metaverse Platform
 
-A **browser-based 2D Metaverse** enabling real-time collaboration and interaction with:
+> 🌍 **A browser-based 2D metaverse enabling real-time collaboration, video calls, and AI-driven interactions.**
 
-🖥️ WebRTC-powered video conferencing  
-💬 Live chat system  
-📝 Interactive Excalidraw whiteboard  
-🤖 AI-driven conversational agents powered by Gemini AI  
-🎭 Dynamic avatar reactions  
-🔗 Secure multi-tenant architecture with PostgreSQL persistence  
-⚡ Low-latency WebSocket & HTTP backend for high availability  
-
-Built using **Next.js, Node.js, WebSockets, PostgreSQL, and Docker**, this platform ensures scalable, fault-tolerant, and cross-platform performance.
+![Metaspace Banner](./assets/banner.png)
 
 ---
 
-## 🚀 Features
+## 🧩 Problem & Vision
 
-- 🎥 Real-time **video calls**, **chat messaging**, and **screen sharing**
-- ✏️ Interactive **whiteboard** for collaborative drawing and planning
-- 🤖 AI-enhanced avatars that **react and converse** with users
-- 🗄️ Persistent data storage with **PostgreSQL**
-- 🐳 Scalable microservices deployed using **Docker Compose**
-- ⚡ **Low-latency communication** using WebSocket and HTTP protocols
-- 🧩 Multi-tenant, secure architecture for multiple spaces/users
+Traditional video calls feel static and disconnected.  
+**Metaspace** reimagines remote interaction by merging **2D spatial collaboration**, **AI-driven avatars**, and **real-time communication** — making online meetings as engaging as physical ones.
+
+---
+
+## ✨ Features
+
+- 🎥 **Real-time video calls**, chat messaging, and screen sharing  
+- ✏️ **Collaborative whiteboard** (Excalidraw) for visual brainstorming  
+- 🤖 **AI-enhanced avatars** with conversational and reactive behavior (Gemini API)  
+- ⚡ **Low-latency WebSocket** communication for real-time presence (<100ms)  
+- 🗄️ **PostgreSQL** persistence for spaces, chat, and avatars  
+- 🐳 **Dockerized microservices** with CI/CD-ready architecture  
+- 🔐 **Secure multi-tenant** setup — isolated spaces and roles  
+- 📡 **LiveKit SFU** integration for scalable video conferencing  
+
+---
+
+## 🧠 Tech Stack
+
+![Next.js](https://img.shields.io/badge/Frontend-Next.js-blue?style=for-the-badge&logo=nextdotjs)
+![Node.js](https://img.shields.io/badge/Backend-Node.js-green?style=for-the-badge&logo=node.js)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge&logo=postgresql)
+![Docker](https://img.shields.io/badge/Infra-Docker-2496ED?style=for-the-badge&logo=docker)
+![WebSocket](https://img.shields.io/badge/Realtime-WebSocket-purple?style=for-the-badge&logo=socketdotio)
+![WebRTC](https://img.shields.io/badge/Video-WebRTC-red?style=for-the-badge&logo=webrtc)
+![Gemini](https://img.shields.io/badge/AI-Gemini_API-orange?style=for-the-badge&logo=google)
+
+**Frontend:** Next.js, TailwindCSS, Zustand  
+**Backend:** Node.js, WebSocket (ws), Express, Prisma  
+**Database:** PostgreSQL  
+**Infra:** Docker, Turborepo  
+**AI:** Gemini API (LLM-powered agents)  
 
 ---
 
@@ -35,41 +53,39 @@ Built using **Next.js, Node.js, WebSockets, PostgreSQL, and Docker**, this platf
 
 ## 📸 Screenshots
 
-| Lobby View | Real-Time Collaboration | Video Call & Emoji Reactions |
+| Home View | Dashboard View | Space View |
 |-------------|-------------------------|-------------------------------|
-| ![Lobby](./metaverse/meta/apps/frontend/public/img1.png) | ![Image](./metaverse/meta/apps/frontend/public/img2.png) | ![Image](./metaverse/meta/apps/frontend/public/img3.png) |
-![Video](./metaverse/meta/apps/frontend/public/img3.png) |![Image](./metaverse/meta/apps/frontend/public/img4.png) |![Image](./metaverse/meta/apps/frontend/public/img5.png) |
-|![Image](./metaverse/meta/apps/frontend/public/img6.png) |![Image](./metaverse/meta/apps/frontend/public/img7.png) | 
+| ![Lobby](./metaverse/meta/apps/frontend/public/img1.png) | ![Chat](./metaverse/meta/apps/frontend/public/img2.png) | ![Video](./metaverse/meta/apps/frontend/public/img3.png) |
+
+| Lobby View | Whiteboard | Multi-User Session |
+|-------------|--------------|--------------------|
+| ![Whiteboard](./metaverse/meta/apps/frontend/public/img4.png) | ![AI](./metaverse/meta/apps/frontend/public/img5.png) | ![Multi](./metaverse/meta/apps/frontend/public/img6.png) |
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture Overview
 
 | Service | Container | Role |
 |----------|------------|------|
-| **Frontend** | `sunnyrajput9198/meta-frontend` | Next.js UI, connects to WS & HTTP API |
-| **HTTP API** | `sunnyrajput9198/meta-http` | Handles REST APIs, authentication, database queries |
-| **WebSocket** | `sunnyrajput9198/meta-ws` | Real-time events: movement, chat, reactions |
-| **Database** | PostgreSQL | Stores users, spaces, chat messages, avatar states |
+| 🖥️ **Frontend** | `sunnyrajput9198/meta-frontend` | Next.js UI connecting to WS & HTTP APIs |
+| ⚙️ **HTTP API** | `sunnyrajput9198/meta-http` | REST APIs, authentication, Prisma DB queries |
+| 💬 **WebSocket Server** | `sunnyrajput9198/meta-ws` | Real-time movement, chat, and reactions |
+| 🗄️ **Database** | PostgreSQL | Stores users, spaces, messages, avatar states |
+
+📈 **Latency:** <100 ms event broadcast  
+🧩 **Scaling:** Horizontal scaling with Docker Compose & Nginx load balancing  
 
 ---
 
-## 🧠 Tech Stack
+## 🚀 Getting Started
 
-**Frontend:** Next.js, TailwindCSS, Zustand  
-**Backend:** Node.js, WebSocket (ws), Express, Prisma  
-**Database:** PostgreSQL  
-**Infra:** Docker, Turborepo  
-**AI:** Gemini API (LLM-based conversational agents)
+```bash
+# Clone the repository
+git clone https://github.com/SunnyRajput9198/2-d-metaverse.git
+cd 2-d-metaverse
 
----
+# Install dependencies
+npm install
 
-## 💡 Highlights
-
-- Built **real-time multiplayer world** with synchronized avatar movement and emoji reactions.  
-- Integrated **LiveKit SFU** for scalable group video calls.  
-- Designed **singleton RoomManager** for efficient state handling across distributed WebSocket clusters.  
-- Achieved **<100ms latency** in event broadcasting through optimized message batching.  
-- Fully containerized stack for easy scaling and CI/CD pipeline integration.
-
----
+# Start the dev server
+npm run dev
