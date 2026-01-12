@@ -171,7 +171,6 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
         Close Canvas
       </button>
       <Excalidraw
-        // @ts-ignore
         excalidrawAPI={handleExcalidrawAPI}
         initialData={{ 
           elements: excalidrawElements || [],

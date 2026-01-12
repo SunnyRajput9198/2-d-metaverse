@@ -1,6 +1,9 @@
 import type { User } from "./User";
 import { OutgoingMessage } from "./types";
 
+//RoomManager Class Explanation
+// Purpose
+// Manages all virtual "rooms" (spaces) and the users in them. It's a singleton (only one instance exists globally).
 export class RoomManager {
   rooms: Map<string, User[]> = new Map();
   static instance: RoomManager;
@@ -8,7 +11,7 @@ export class RoomManager {
   private constructor() {
     this.rooms = new Map();
   }
-
+// Singleton Pattern Implementation -> it ensures only one instance of RoomManager exists.
   static getInstance() {
     if (!this.instance) {
       this.instance = new RoomManager();
@@ -28,18 +31,22 @@ export class RoomManager {
 
   public addUser(spaceId: string, user: User) {
     if (!this.rooms.has(spaceId)) {
-      this.rooms.set(spaceId, [user]);
+      this.rooms.set(spaceId, [user]);// create new room with user
       return;
     }
+    // add user to existing room
     this.rooms.set(spaceId, [...(this.rooms.get(spaceId) ?? []), user]);
   }
+
+  // Purpose: Send message to EVERYONE including sender
+// Use Case: Chat messages (sender sees their own message too)
   public broadcastToAll(message: OutgoingMessage, roomId: string) {
     if (!this.rooms.has(roomId)) return;
     this.rooms.get(roomId)?.forEach((u) => {
       u.send(message);
     });
   }
-
+//  exclude sender when broadcasting->Send message to everyone EXCEPT the sender
   public broadcast(message: OutgoingMessage, user: User, roomId: string) {
     if (!this.rooms.has(roomId)) {
       return;
@@ -51,7 +58,9 @@ export class RoomManager {
     });
   }
   
-  // ✅ ADD THIS METHOD to find a user by their `userId` across all rooms
+ 
+//   Purpose: Find a user across ALL rooms by their database userId
+// Use Case: WebRTC video calls (need to send signal to specific user)
   public findUserByUserId(userId: string): User | undefined {
     for (const [, users] of this.rooms) {
       const match = users.find((u) => u.userId === userId);
