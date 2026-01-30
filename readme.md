@@ -3,6 +3,7 @@
 > 🌍 **A browser-based 2D metaverse enabling real-time collaboration, video calls, and AI-driven interactions.**
 ---
 
+
 ## 🧩 Problem & Vision
 
 Traditional video calls feel static and disconnected.  
