@@ -7,8 +7,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:5173',
-
-    'https://your-vercel-app.vercel.app', // Replace with your actual Vercel URL
+    'https://2-d-metaverse-phi.vercel.app',// Replace with your actual Vercel URL
     process.env.FRONTEND_URL! // Add this to your backend env vars
   ],
   credentials: true
