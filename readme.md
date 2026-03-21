@@ -2,6 +2,14 @@
 
 > 🌍 **A browser-based 2D metaverse enabling real-time collaboration, video calls, and AI-driven interactions.**
 ---
+## 🌐 Live Demo
+> 🚀 **[Open Metaspace](https://2-d-metaverse-phi.vercel.app)**
+
+| Service | URL |
+|---------|-----|
+| 🖥️ Frontend | https://2-d-metaverse-phi.vercel.app |
+| ⚙️ HTTP API | https://two-d-metaverse-gnmb.onrender.com |
+| 💬 WebSocket | wss://two-d-metaverse-ws.onrender.com |
 
 
 ## 🧩 Problem & Vision
@@ -62,13 +70,12 @@ Traditional video calls feel static and disconnected.
 ---
 
 ## 🏗️ Architecture Overview
-
-| Service | Container | Role |
-|----------|------------|------|
-| 🖥️ **Frontend** | `sunnyrajput9198/meta-frontend` | Next.js UI connecting to WS & HTTP APIs |
-| ⚙️ **HTTP API** | `sunnyrajput9198/meta-http` | REST APIs, authentication, Prisma DB queries |
-| 💬 **WebSocket Server** | `sunnyrajput9198/meta-ws` | Real-time movement, chat, and reactions |
-| 🗄️ **Database** | PostgreSQL | Stores users, spaces, messages, avatar states |
+| Service | Deployment | Role |
+|---------|------------|------|
+| 🖥️ **Frontend** | Vercel | Vite + React UI |
+| ⚙️ **HTTP API** | Render | REST APIs, auth, Prisma DB |
+| 💬 **WebSocket Server** | Render | Real-time movement, chat |
+| 🗄️ **Database** | Neon PostgreSQL | Users, spaces, messages |
 
 📈 **Latency:** <100 ms event broadcast  
 🧩 **Scaling:** Horizontal scaling with Docker Compose & Nginx load balancing  
