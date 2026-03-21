@@ -1,8 +1,7 @@
 import express from "express";
 import { router } from "./routes/v1";
 import client from "@repo/db";
-
-const cors = require('cors');
+import cors from "cors";
 const app = express();
 app.use(cors({
   origin: [
@@ -10,7 +9,7 @@ app.use(cors({
     'http://localhost:5173',
 
     'https://your-vercel-app.vercel.app', // Replace with your actual Vercel URL
-    process.env.FRONTEND_URL // Add this to your backend env vars
+    process.env.FRONTEND_URL! // Add this to your backend env vars
   ],
   credentials: true
 }));
