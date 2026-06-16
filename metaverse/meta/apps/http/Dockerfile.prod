@@ -1,13 +1,11 @@
 # --------------------
-# Stage 1: Build and Prisma Client Generation
+# Stage 1: Build (Install deps & compile code)
 # --------------------
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Accept DB URL at build time
 ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
 
 # Enable Corepack
 RUN corepack enable npm
@@ -15,7 +13,10 @@ RUN corepack enable npm
 # Install native dependencies
 RUN apk add --no-cache openssl libc6-compat
 
-# Copy all monorepo files
+# Set DATABASE_URL for Prisma generation
+ENV DATABASE_URL=${DATABASE_URL}
+
+# Copy monorepo files
 COPY package.json package-lock.json turbo.json ./
 COPY apps ./apps
 COPY packages ./packages
@@ -23,11 +24,8 @@ COPY packages ./packages
 # Install all dependencies
 RUN npm install --legacy-peer-deps
 
-# Generate Prisma client and run migration (for production use migrations, not dev)
+# Generate Prisma Client
 RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
-
-# Optional: if your production DB is ready for migration (use with caution)
-# RUN npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma
 
 # Build the HTTP app
 WORKDIR /app/apps/http
@@ -40,19 +38,19 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Enable Corepack
 RUN corepack enable npm
+
+# Install OpenSSL for Prisma
 RUN apk add --no-cache openssl libc6-compat
 
-# Accept runtime DB URL
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
-
-# Copy only built files and runtime deps
+# Copy only built app and necessary dependencies
 COPY --from=builder /app/apps/http/dist ./dist
 COPY --from=builder /app/apps/http/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/db/generated ./packages/db/generated
+COPY --from=builder /app/packages/db/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 3000
 
+# Start the server
 CMD ["node", "dist/index.js"]

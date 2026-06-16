@@ -1,29 +1,31 @@
 # --------------------
-# Stage 1: Install Dependencies (from root)
+# Stage 1: Install Dependencies
 # --------------------
 FROM node:20-alpine AS installer
 
 WORKDIR /app
 
-# Enable Corepack for npm v9+ support
+# Enable Corepack
 RUN corepack enable npm
 
-# Add any native deps
+# Add native deps
 RUN apk add --no-cache openssl libc6-compat
 
-# Copy lockfile and package.json to install from root
+# ✅ STEP 1: Copy ONLY package files first (monorepo root + workspaces)
 COPY package.json package-lock.json turbo.json ./
-COPY apps ./apps
-COPY packages ./packages
+COPY packages/db/package.json ./packages/db/package.json
+COPY apps/ws/package.json ./apps/ws/package.json
+COPY apps/http/package.json ./apps/http/package.json
 
-# Install all monorepo deps including tsx, turbo, typescript
+# ✅ STEP 2: Install deps (cached until package files change)
 RUN npm install --legacy-peer-deps
 
-# Generate Prisma client
-# RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
+# ✅ STEP 3: Copy source code AFTER install
+COPY packages ./packages
+COPY apps ./apps
 
 # --------------------
-# Stage 2: Dev Runtime for apps/ws
+# Stage 2: Dev Runtime
 # --------------------
 FROM node:20-alpine AS dev
 
@@ -34,12 +36,11 @@ RUN apk add --no-cache openssl libc6-compat
 
 ENV LD_PRELOAD=/lib/libc.so.6
 
-# Copy everything from installer
+# Copy from installer
 COPY --from=installer /app /app
 
 WORKDIR /app/apps/ws
 
 EXPOSE 3001
 
-# Run dev using turbo (recommended), or fallback to workspace script
 CMD ["npm", "run", "dev"]

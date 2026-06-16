@@ -1,18 +1,4 @@
-services: 
-  db:
-    image: postgres:15-alpine
-    container_name: dev-db
-    ports:
-      - "5332:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: dev_db
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - devnet
-
+services:
   livekit:
     image: livekit/livekit-server:latest
     container_name: dev-livekit
@@ -25,6 +11,7 @@ services:
     command: --dev --bind 0.0.0.0
     networks:
       - devnet
+    restart: unless-stopped
 
   ws:
     build:
@@ -34,15 +21,15 @@ services:
     ports:
       - "3001:3001"
     environment:
-       DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+      DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
-      - db
       - livekit
     networks:
       - devnet
+    restart: unless-stopped
 
   http:
     build:
@@ -62,10 +49,10 @@ services:
       - .:/app
       - /app/node_modules
     depends_on:
-      - db
       - livekit
     networks:
       - devnet
+    restart: unless-stopped
 
   frontend:
     build:
@@ -85,9 +72,7 @@ services:
       - livekit
     networks:
       - devnet
-
-volumes:
-  postgres-data:
+    restart: unless-stopped
 
 networks:
   devnet:
