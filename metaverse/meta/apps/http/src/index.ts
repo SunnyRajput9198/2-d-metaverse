@@ -1,7 +1,7 @@
 import express from "express";
 import { router } from "./routes/v1";
-import client from "@repo/db";
 import cors from "cors";
+
 const app = express();
 app.use(cors({
   origin: [

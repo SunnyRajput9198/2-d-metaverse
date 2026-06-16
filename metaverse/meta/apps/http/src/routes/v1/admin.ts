@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Request, Response } from "express";
 import { adminMiddleware } from "../../middleware/admin";
-import { AddElementSchema, CreateAvatarSchema, CreateElementSchema, CreateMapSchema, UpdateElementSchema } from "../../types";
+import { CreateAvatarSchema, CreateElementSchema, CreateMapSchema, UpdateElementSchema } from "../../types";
 import client from "@repo/db";
 export const adminRouter = Router();
 adminRouter.use(adminMiddleware)
@@ -27,13 +27,13 @@ adminRouter.post("/element", async (req :Request, res :Response) => {
     })
 })
 // it updates an element
-adminRouter.put("/element/:elementId", (req: Request, res: Response) => {
+adminRouter.put("/element/:elementId", async (req: Request, res: Response) => {
     const parsedData = UpdateElementSchema.safeParse(req.body)
     if (!parsedData.success) {
         res.status(400).json({message: "Validation failed"})
         return
     }
-    client.element.update({
+    await client.element.update({
         where: {
             id: req.params.elementId
         },
@@ -56,8 +56,6 @@ adminRouter.post("/avatar", async (req: Request, res: Response) => {
             imageUrl: parsedData.data.imageUrl
         }
     })
-    //avatarId: cmbotnz900000wblgvoe7m5k5
-    //cmbotouet0001wblgqsqifijl
     res.json({avatarId: avatar.id})
 })
 // it creates a new map

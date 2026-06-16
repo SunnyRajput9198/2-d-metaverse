@@ -1,22 +1,19 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import useWebSocket from "@/hooks/useWebsocket";
 import { Button } from "@/components/ui/button";
-import { useVideoCall } from "@/hooks/useVideocall";
+import { useLiveKit } from "@/hooks/useLivekit";
+import { LiveKitRoom, VideoConference } from "@livekit/components-react";
+import "@livekit/components-styles";
 import { Fullscreen, VideoOff } from "lucide-react";
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
-import VideoPanel from "@/components/VideoPanel";
 import ChatPanel from "@/components/Chatpanel";
 import MapCanvas from "@/components/Mapcanvas";
 import { Minimap } from "@/components/minimap";
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import ExcalidrawWrapper from "@/components/Excelidrawwrapper";
-
-const TILE_SIZE = 32;
-const SPRITE_WIDTH = 256;
-const SPRITE_HEIGHT = 320;
 
 const SpacePage: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
@@ -40,15 +37,12 @@ const SpacePage: React.FC = () => {
   } = useWebSocket(spaceId ?? "");
 
   const {
-    startVideo,
-    stopVideo,
-    localStream,
-    peerStreams,
-    startScreenShare,
-    isScreenSharing
-  } = useVideoCall(ws, currentUserId!);
+    token: livekitToken,
+    livekitUrl,
+    connect: connectLiveKit,
+    disconnect: disconnectLiveKit,
+  } = useLiveKit(spaceId ?? "");
 
-  const chatBoxRef = useRef<HTMLDivElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const lastReadMessageCount = useRef<number>(0);
@@ -56,7 +50,6 @@ const SpacePage: React.FC = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [avatarEmojiPickerPosition, setAvatarEmojiPickerPosition] = useState<{ top: number, left: number } | null>(null);
   const [showAvatarEmojiPicker, setShowAvatarEmojiPicker] = useState(false);
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const [showCanvas, setShowCanvas] = useState(false);
 
   const recentReactions = useMemo(() => {
@@ -70,12 +63,6 @@ const SpacePage: React.FC = () => {
       })
       .sort((a, b) => (emojiReactions[b.userId].timestamp - emojiReactions[a.userId].timestamp));
   }, [emojiReactions, usersInSpace]);
-
-  useEffect(() => {
-    if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    }
-  }, [chatMessages]);
 
   useEffect(() => {
     const newMessages = chatMessages.length - lastReadMessageCount.current;
@@ -147,10 +134,6 @@ const SpacePage: React.FC = () => {
               spaceElements={spaceElements}
               usersInSpace={usersInSpace}
               emojiReactions={emojiReactions}
-              currentPlayerPosition={currentPlayerPosition}
-              TILE_SIZE={TILE_SIZE}
-              SPRITE_WIDTH={SPRITE_WIDTH}
-              SPRITE_HEIGHT={SPRITE_HEIGHT}
             />
           </div>
 
@@ -267,22 +250,16 @@ const SpacePage: React.FC = () => {
           {/* Normal Controls Area (when canvas is closed) */}
           <div className="absolute top-4 left-4 flex gap-2 z-50">
             {!isVideoOpen && (
-              <Button onClick={() => { startVideo(); setIsVideoOpen(true); }} className="bg-green-600">🎥 Start Video</Button>
+              <Button onClick={() => { connectLiveKit(); setIsVideoOpen(true); }} className="bg-green-600">🎥 Start Video</Button>
             )}
             {isVideoOpen && (
-              <Button onClick={() => { stopVideo(); setIsVideoOpen(false); }} className="bg-red-600 flex items-center gap-2">
+              <Button onClick={() => { disconnectLiveKit(); setIsVideoOpen(false); }} className="bg-red-600 flex items-center gap-2">
                 <VideoOff className="w-4 h-4" /> Stop Video
               </Button>
             )}
 
             <Button onClick={toggleFullscreen} className="bg-gray-700 flex items-center gap-2">
               <Fullscreen className="w-4 h-4" /> Fullscreen
-            </Button>
-            <Button
-              onClick={startScreenShare}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              🖥 Share Screen
             </Button>
           </div>
 
@@ -296,31 +273,24 @@ const SpacePage: React.FC = () => {
         </>
       )}
 
-      {/* Canvas Controls (when canvas is open) - Only Video and Screen Share */}
+      {/* Canvas Controls (when canvas is open) - Only Video */}
       {showCanvas && (
         <div className="fixed top-4 left-4 z-[1002] flex gap-2">
           {!isVideoOpen ? (
             <Button
-              onClick={() => { startVideo(); setIsVideoOpen(true); }}
+              onClick={() => { connectLiveKit(); setIsVideoOpen(true); }}
               className="bg-green-600 hover:bg-green-700"
             >
               🎥 Start Video
             </Button>
           ) : (
             <Button
-              onClick={() => { stopVideo(); setIsVideoOpen(false); }}
+              onClick={() => { disconnectLiveKit(); setIsVideoOpen(false); }}
               className="bg-red-600 hover:bg-red-700 flex items-center gap-2"
             >
               <VideoOff className="w-4 h-4" /> Stop Video
             </Button>
           )}
-
-          <Button
-            onClick={startScreenShare}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
-          >
-            🖥 Share Screen
-          </Button>
         </div>
       )}
 
@@ -333,16 +303,17 @@ const SpacePage: React.FC = () => {
         />
       )}
 
-      {/* Video Panel (always on top when active) */}
-      {isVideoOpen && (
-        <div className="fixed inset-0 z-[1001] pointer-events-none">
-          <VideoPanel
-            localStream={localStream}
-            peerStreams={peerStreams}
-            usersInSpace={usersInSpace}
-            localVideoRef={localVideoRef}
-            isScreenSharing={isScreenSharing}
-          />
+      {/* Video Panel with LiveKit (original working version) */}
+      {isVideoOpen && livekitToken && livekitUrl && (
+        <div className="fixed bottom-4 left-4 z-[1001] w-80 h-60 bg-black rounded-lg overflow-hidden shadow-2xl">
+          <LiveKitRoom
+            token={livekitToken}
+            serverUrl={livekitUrl}
+            connect={true}
+            style={{ height: "100%" }}
+          >
+            <VideoConference />
+          </LiveKitRoom>
         </div>
       )}
     </div>

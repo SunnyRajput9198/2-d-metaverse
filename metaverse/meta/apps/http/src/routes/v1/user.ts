@@ -8,24 +8,18 @@ import { userMiddleware } from "../../middleware/user";
 export const userRouter = Router();
 // it updates the metadata of the user
 userRouter.post("/metadata", userMiddleware, async (req: Request, res: Response) => {
-    const parsedData = UpdateMetadataSchema.safeParse(req.body)       
+    const parsedData = UpdateMetadataSchema.safeParse(req.body)
     if (!parsedData.success) {
-        console.log("parsed data incorrect")
         res.status(400).json({message: "Validation failed"})
         return
     }
     try {
         await client.user.update({
-            where: {
-                id: req.userId
-            },
-            data: {
-                avatarId: parsedData.data.avatarId
-            }
+            where: { id: req.userId },
+            data: { avatarId: parsedData.data.avatarId }
         })
         res.json({message: "Metadata updated"})
     } catch(e) {
-        console.log("error")
         res.status(400).json({message: "Internal server error"})
     }
 })

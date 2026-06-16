@@ -30,11 +30,7 @@ type Props = {
   map: string[][];
   spaceElements: SpaceElement[];
   usersInSpace: Record<string, User>;
-   currentPlayerPosition: { x: number; y: number }; // ✅ Add this line
   emojiReactions: Record<string, EmojiReaction>;
-    TILE_SIZE: number;
-  SPRITE_WIDTH: number;
-  SPRITE_HEIGHT: number;
 };
 
 const MapCanvas: React.FC<Props> = ({ map, spaceElements, usersInSpace, emojiReactions }) => {

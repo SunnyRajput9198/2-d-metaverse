@@ -17,15 +17,11 @@ type ChatMessage = {
 };
 
 const renderer: RendererObject = {
-
   link({ href, title, text }) {
     if (!href) return text;
-    console.log("Rendering link:", href); // 👈 check this runs
     const safeHref = DOMPurify.sanitize(href);
     const safeTitle = title ? ` title="${DOMPurify.sanitize(title)}"` : "";
-
     return `<a href="${safeHref}"${safeTitle} target="_blank" rel="noopener noreferrer">${text}</a>`;
-
   },
 };
 const handleLinkClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -39,6 +35,7 @@ const handleLinkClick = (e: React.MouseEvent<HTMLDivElement>) => {
 
 // Register renderer
 marked.use({ renderer });
+
 const linkify = (text: string): string => {
   // Don't double wrap markdown links
   const mdLinkRegex = /\[.*?\]\(.*?\)/g;
@@ -64,8 +61,6 @@ interface ChatPanelProps {
   onTyping: () => void; // 👈 add this
 
 }
-
-console.log(marked.parse(linkify("https://google.com")));
 
 const ChatPanel: React.FC<ChatPanelProps> = ({
   isOpen,
@@ -154,7 +149,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             className={`mb-1 flex ${msg.userId === currentUserId ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[70%] px-3 py-2 rounded-xl text-sm ${msg.userId === currentUserId ? "bg-gray-200 text-black" :"bg-gray-200 text-black"}`}
+              className={`max-w-[70%] px-3 py-2 rounded-xl text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-200 text-black"}`}
             >
               <div className="font-semibold text-xs opacity-80 ">
                 {msg.username || "Anonymous"}

@@ -18,6 +18,7 @@ import type { ExcalidrawElement } from '../types/Excelidraw';
 function useWebSocket(spaceId: string) {
     const { token, WS_URL, userId, username, avatarId } = useAuth();
     const wsRef = useRef<WebSocket | null>(null);
+    const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [usersInSpace, setUsersInSpace] = useState<{ [key: string]: UserMetadata }>({});
     const [spaceElements, setSpaceElements] = useState<SpaceElementInstance[]>([]);
@@ -40,22 +41,29 @@ function useWebSocket(spaceId: string) {
         }
     }, []);
 
-    // ✅ sendChatMessage properly defined outside `move`
     const sendChatMessage = useCallback((message: string) => {
         if (!userId) return;
 
         const payload: ChatMessageBroadcast = {
-            username: username!,
+            username: username || 'You',
             userId,
             message,
             timestamp: Date.now(),
         };
 
+        // Optimistically add to local state so it appears immediately
+        setChatMessages(prev => [...prev, {
+            userId,
+            username: username || 'You',
+            message,
+            timestamp: payload.timestamp,
+        }]);
+
         sendJsonMessage({
             type: 'chat-message',
             payload,
         });
-    }, [sendJsonMessage, userId]);
+    }, [sendJsonMessage, userId, username]);
     const sendCanvasUpdate = useCallback((elements: readonly ExcalidrawElement[]) => {
         sendJsonMessage({
             type: 'shape-update', // We use your existing message type
@@ -89,10 +97,12 @@ function useWebSocket(spaceId: string) {
         }
 
         wsRef.current = new WebSocket(WS_URL);
+        // Don't set wsInstance here — wait for connection to open!
 
         wsRef.current.onopen = () => {
             console.log('WebSocket connected.');
             setIsConnected(true);
+            setWsInstance(wsRef.current);
             sendJsonMessage({
                 type: "join",
                 payload: { spaceId, token } as JoinPayload
@@ -128,7 +138,7 @@ function useWebSocket(spaceId: string) {
                     setMapDimensions({ width: parseInt(widthStr), height: parseInt(heightStr) });
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map);
-                    setExcalidrawElements(spaceJoinedPayload.excalidrawElemenets || []); // Load shapes from payload
+                    setExcalidrawElements(spaceJoinedPayload.excalidrawElements || []); // Load shapes from payload
                     break;
 
                 case 'user-joined':
@@ -163,7 +173,16 @@ function useWebSocket(spaceId: string) {
                             ? Date.parse(chatPayload.timestamp)
                             : chatPayload.timestamp,
                     };
-                    setChatMessages(prev => [...prev, normalized]);
+                    // Skip if we already added this message optimistically (same userId + message + within 2s)
+                    setChatMessages(prev => {
+                        const isDuplicate = prev.some(
+                            m => m.userId === normalized.userId &&
+                                 m.message === normalized.message &&
+                                 Math.abs(m.timestamp - normalized.timestamp) < 2000
+                        );
+                        if (isDuplicate) return prev;
+                        return [...prev, normalized];
+                    });
                     break;
 
 
@@ -257,12 +276,14 @@ function useWebSocket(spaceId: string) {
         wsRef.current.onclose = () => {
             console.log('WebSocket disconnected.');
             setIsConnected(false);
+            setWsInstance(null);
             setUsersInSpace({});
         };
 
         wsRef.current.onerror = (error) => {
             console.error('WebSocket error:', error);
             setIsConnected(false);
+            setWsInstance(null); // Clear wsInstance on error too
         };
 
         return () => {
@@ -364,7 +385,7 @@ function useWebSocket(spaceId: string) {
         sendCanvasUpdate,
         emojiReactions,
         sendEmojiReaction,
-        ws: wsRef.current
+        ws: wsInstance
     };
 }
 

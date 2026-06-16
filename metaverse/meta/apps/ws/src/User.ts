@@ -1,8 +1,7 @@
 import { WebSocket } from "ws";
 import { RoomManager } from "./RoomManager";
 import { OutgoingMessage } from "./types";
-import client from "@repo/db"; //isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
-//isko tsconfig me jake base.config se match kiya moduleResolution and moduleDetection and module add krke and then root folder(cd ..) me jake npm install folowed by npm run build
+import client from "@repo/db";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
@@ -59,6 +58,7 @@ export class User {
       
       switch (parsedData.type) {
         case "join": {
+          try {
           const spaceId = parsedData.payload.spaceId;
           const token = parsedData.payload.token;
 
@@ -181,6 +181,11 @@ export class User {
               timestamp: m.timestamp.getTime(),
             })),
           });
+          } catch (err) {
+            console.error("Error in join handler:", err);
+            this.ws.close();
+            return;
+          }
           break;
         }
 
@@ -272,8 +277,8 @@ export class User {
           let direction = "down";
           if (moveX > this.x) direction = "right";
           else if (moveX < this.x) direction = "left";
-          else if (moveY > this.y) direction = "down";
           else if (moveY < this.y) direction = "up";
+          // moveY > this.y is the default "down" — no branch needed
 
           // Validate: only 1-tile movement allowed
           if (
@@ -304,52 +309,6 @@ export class User {
               payload: { x: this.x, y: this.y },
             });
           }
-          break;
-        }
-
-        case "video-signal": {
-          if (!parsedData.payload?.to) return;
-
-          const { from, to, signal } = parsedData.payload;
-
-          // Forward WebRTC signal to target user
-          const target = RoomManager.getInstance().findUserByUserId(to);
-          if (target) {
-            target.send({
-              type: "video-signal",
-              payload: { from, to, signal },
-            });
-          }
-          break;
-        }
-
-        case "start-video": {
-          if (!this.spaceId || !this.userId) return;
-
-          // Notify others that user started video
-          RoomManager.getInstance().broadcast(
-            {
-              type: "start-video",
-              payload: { userId: this.userId },
-            },
-            this,
-            this.spaceId
-          );
-          break;
-        }
-
-        case "stop-video": {
-          if (!this.spaceId || !this.userId) return;
-
-          // Notify others that user stopped video
-          RoomManager.getInstance().broadcast(
-            {
-              type: "stop-video",
-              payload: { userId: this.userId },
-            },
-            this,
-            this.spaceId
-          );
           break;
         }
 

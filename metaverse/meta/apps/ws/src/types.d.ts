@@ -1,5 +1,3 @@
-declare module "@google/generative-ai" {
-  export const text: {
-    generate: (options: { model: string; prompt: string }) => Promise<any>;
-  };
-}
+// The @google/generative-ai package ships its own types via the installed package.
+// No ambient declaration needed here.
+export {};

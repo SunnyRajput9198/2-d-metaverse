@@ -6,14 +6,13 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import SpacePage from './Space/[spaceid]/page';
-import HomePage from './pages/Homepage'; // ✅ New homepage
+import HomePage from './pages/Homepage';
 import FeaturesPage from './pages/featurepage';
-// import ExcalidrawWrapper from './components/Excelidrawwrapper'; // Import the new component
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
-// A private route component to protect authenticated routescdconst PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+// A private route component to protect authenticated routes
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   // --- THIS IS THE KEY PART ---
   const { isAuthenticated, isLoadingAuth } = useAuth();
@@ -62,14 +61,7 @@ const App: React.FC = () => {
             <FeaturesPage />
           </PrivateRoute>
         } />
-          {/* This is the new route for the Excalidraw whiteboard */}
-        {/* <Route path="/whiteboard" element={
-          <PrivateRoute>
-            <ExcalidrawWrapper />
-          </PrivateRoute>
-        } /> */}
-      
-<Route path="*" element={<Navigate to="/" />} /> {/* Optional catch-all */}
+        <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>
     </div>

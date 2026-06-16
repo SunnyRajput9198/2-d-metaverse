@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import '../styles/signupcard.css';
 const SignupPage: React.FC = () => {
     const [username, setUsername] = useState<string>('');
@@ -78,7 +79,7 @@ const SignupPage: React.FC = () => {
                     <button type="submit" className="signup-button">Sign Up</button>
                 </form>
                 {error && <p className="error-message">{error}</p>}
-                <p className="login-link-text">Already have an account? <a href="/login" className="login-link">Login here</a></p>
+                <p className="login-link-text">Already have an account? <Link to="/login" className="login-link">Login here</Link></p>
             </div>
         </div>
     );

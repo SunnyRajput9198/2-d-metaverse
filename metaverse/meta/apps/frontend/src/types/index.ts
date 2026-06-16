@@ -1,6 +1,4 @@
-// src/types/index.ts
-// Add this at the top of src/types/index.ts
-import type { ExcalidrawElement } from './Excelidraw'; // Or the correct path to your custom type
+import type { ExcalidrawElement } from './Excelidraw';
 
 export interface AuthResponse {
     token: string;
@@ -10,35 +8,26 @@ export interface AuthResponse {
 }
 
 export interface ChatMessage {
-  userId: string;
-  username: string;
-  message: string;
-  timestamp: number; // or number
+    userId: string;
+    username: string;
+    message: string;
+    timestamp: number;
 }
+
 export interface TypingPayload {
-  userId: string;
+    userId: string;
 }
-export interface ChatPayload {
-  message: string;
-}
-export type Shape =
-  | {id:string; type: "rect"; x: number; y: number; width: number; height: number }
-  | {id:string; type: "circle"; centerX: number; centerY: number; radius: number }
-  | {id:string; type: "pencil"; points: { x: number; y: number }[] }
-  | {id:string; type: "arrow"; startX: number; startY: number; endX: number; endY: number }
-  | {id:string; type: "line"; startX: number; startY: number; endX: number; endY: number }
-  | {id:string; type: "diamond"; centerX: number; centerY: number; width: number; height: number }
-  | {id:string; type: "text"; x: number; y: number; text: string };
 
 export interface ChatMessageBroadcast {
-  userId: string;
-  username: string;
-  message: string;
-  timestamp: number;
+    userId: string;
+    username: string;
+    message: string;
+    timestamp: number;
 }
+
 export interface UserMetadata {
-    id: string; //Internal WebSocket connection ID
-    userId: string; //the actual  user's unique userID
+    id: string;        // Internal WebSocket connection ID
+    userId: string;    // The actual user's unique userID
     x: number;
     y: number;
     avatarId?: string;
@@ -48,7 +37,7 @@ export interface UserMetadata {
 }
 
 export interface SpaceElementInstance {
-    id: string; // ID of this specific instance of the element in the space
+    id: string;        // ID of this specific instance of the element in the space
     elementId: string; // ID of the base element from /admin/element
     x: number;
     y: number;
@@ -57,18 +46,6 @@ export interface SpaceElementInstance {
         width: number;
         height: number;
     };
-}
-
-export interface MapData {
-    id: string;
-    thumbnail: string;
-    dimensions: string; // e.g., "100x200"
-    name: string;
-    defaultElements: {
-        elementId: string;
-        x: number;
-        y: number;
-    }[];
 }
 
 export interface Space {
@@ -80,35 +57,23 @@ export interface Space {
     ownerId: string;
 }
 
-export interface Avatar {
-    id: string;
-    imageUrl: string;
-    name: string;
-}
-
-// WebSocket Message Type
-
-// --- Payloads for Outgoing Messages (Frontend -> Backend) --
+// WebSocket Payloads — Outgoing (Frontend → Backend)
 export interface JoinPayload {
     spaceId: string;
     token: string;
 }
-export interface MovePayload {
-    x: number;
-    y: number;
-}
-
 
 export interface SpaceJoinedPayload {
     users: UserMetadata[];
     elements: SpaceElementInstance[];
-    excalidrawElemenets: ExcalidrawElement[];
-    dimensions: string; // e.g., "100x200"
+    excalidrawElements: ExcalidrawElement[];
+    dimensions: string;
     spawn: { x: number; y: number };
-    map: string[][]
+    map: string[][];
 }
 
-export interface UserJoinedPayload extends UserMetadata {} // UserMetadata already has userId, x, y, avatarId, name
+export interface UserJoinedPayload extends UserMetadata {}
+
 export type MovementPayload = {
     userId: string;
     x: number;
@@ -116,7 +81,6 @@ export type MovementPayload = {
     direction?: 'up' | 'down' | 'left' | 'right';
     frame?: number;
 };
-
 
 export interface UserLeftPayload {
     userId: string;
@@ -128,34 +92,16 @@ export interface MovementRejectedPayload {
     reason: string;
 }
 
-// Example for a general chat message if you implement it
-export interface ChatMessagePayload {
-    userId: string;
-    message: string;
-    timestamp: number;
-}
 export type WebSocketMessage =
-  | { type: 'join'; payload: JoinPayload }
-  | { type: 'space-joined'; payload: SpaceJoinedPayload }
-  | { type: 'user-joined'; payload: UserJoinedPayload }
-  | { type: 'movement'; payload: MovementPayload }
-  | { type: 'movement-rejected'; payload: MovementRejectedPayload }
-  | { type: 'user-left'; payload: UserLeftPayload }
-  | { type: 'chat-message'; payload: ChatMessageBroadcast }
-  | { type: "emoji-reaction"; payload: { userId: string; emoji: string ; timestamp: number } }
-  | { type: "typing"; payload: TypingPayload }
-  | { type: 'chat-history'; payload: ChatMessage[] }
-  | { type: "shape-update"; payload:{ elements: ExcalidrawElement[] } }
-  | { type: "shape-delete"; payload: { id: string } }; // ✅ ADD THIS LINE
-
-  // Client to Server
-export type SendEmojiPayload = {
-  emoji: string;
-};
-
-// Server to Client
-export type UserEmojiPayload = {
-  userId: string;
-  emoji: string;
-  timestamp: number;
-};
+    | { type: 'join'; payload: JoinPayload }
+    | { type: 'space-joined'; payload: SpaceJoinedPayload }
+    | { type: 'user-joined'; payload: UserJoinedPayload }
+    | { type: 'movement'; payload: MovementPayload }
+    | { type: 'movement-rejected'; payload: MovementRejectedPayload }
+    | { type: 'user-left'; payload: UserLeftPayload }
+    | { type: 'chat-message'; payload: ChatMessageBroadcast }
+    | { type: 'emoji-reaction'; payload: { userId: string; emoji: string; timestamp: number } }
+    | { type: 'typing'; payload: TypingPayload }
+    | { type: 'chat-history'; payload: ChatMessage[] }
+    | { type: 'shape-update'; payload: { elements: ExcalidrawElement[] } }
+    | { type: 'shape-delete'; payload: { id: string } };

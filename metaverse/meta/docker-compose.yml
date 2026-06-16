@@ -13,6 +13,19 @@ services:
     networks:
       - devnet
 
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: dev-livekit
+    ports:
+      - "7880:7880"   # HTTP API
+      - "7881:7881"   # WebRTC over TCP
+      - "7882:7882/udp"  # WebRTC over UDP
+    environment:
+      LIVEKIT_KEYS: "devkey: devsecret"
+    command: --dev --bind 0.0.0.0
+    networks:
+      - devnet
+
   ws:
     build:
       context: .
@@ -27,6 +40,7 @@ services:
       - /app/node_modules
     depends_on:
       - db
+      - livekit
     networks:
       - devnet
 
@@ -41,11 +55,15 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+      LIVEKIT_API_KEY: "devkey"
+      LIVEKIT_API_SECRET: "devsecret"
+      LIVEKIT_URL: "ws://livekit:7880"
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
       - db
+      - livekit
     networks:
       - devnet
 
@@ -56,12 +74,15 @@ services:
     container_name: dev-frontend
     ports:
       - "5173:5173"
+    environment:
+      VITE_LIVEKIT_URL: "ws://localhost:7880"
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
       - http
       - ws
+      - livekit
     networks:
       - devnet
 

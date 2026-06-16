@@ -2,18 +2,16 @@ import { Router } from "express";
 import client from "@repo/db";
 import { Request, Response } from "express";
 import { userMiddleware } from "../../middleware/user";
-import { AddElementSchema, CreateElementSchema, CreateSpaceSchema, DeleteElementSchema } from "../../types";
+import { AddElementSchema, CreateSpaceSchema, DeleteElementSchema } from "../../types";
 export const spaceRouter = Router();
 
 spaceRouter.post("/", userMiddleware, async (req: Request, res: Response) => {
-    // console.log("endopibnt")
     const parsedData = CreateSpaceSchema.safeParse(req.body)
     if (!parsedData.success) {
-        console.log(JSON.stringify(parsedData))
         res.status(400).json({message: "Validation failed"})
         return
     }
-    const { name, dimensions, mapId, imageUrl } = parsedData.data; // Destructure imageUrl
+    const { imageUrl } = parsedData.data; // only imageUrl needs destructuring; other fields accessed via parsedData.data
 // if no mapId is provided, it creates a new empty space with the provided name and dimensions
     if (!parsedData.data.mapId) {
         //.create(): This is a method on the space model that creates a new record in the Space table/collection in your database.
@@ -73,8 +71,7 @@ spaceRouter.post("/", userMiddleware, async (req: Request, res: Response) => {
 
         return space;
 
-    })
-    console.log("space crated")
+    }, { timeout: 15000 })
     res.json({spaceId: space.id})
 })
 
@@ -109,7 +106,6 @@ spaceRouter.delete("/element", userMiddleware, async (req: Request, res: Respons
 })
 
 spaceRouter.delete("/:spaceId", userMiddleware, async(req: Request, res: Response) => {
-    console.log("req.params.spaceId", req.params.spaceId)
     const space = await client.space.findUnique({
         where: {
             id: req.params.spaceId
@@ -123,7 +119,6 @@ spaceRouter.delete("/:spaceId", userMiddleware, async(req: Request, res: Respons
     }
 
     if (space.creatorId !== req.userId) {
-        console.log("code should reach here")
         res.status(403).json({message: "Unauthorized"})
         return
     }
@@ -171,13 +166,13 @@ spaceRouter.post("/element", userMiddleware, async (req: Request, res: Response)
         }
     })
 
-    if(req.body.x < 0 || req.body.y < 0 || req.body.x > space?.width! || req.body.y > space?.height!) {
-        res.status(400).json({message: "Point is outside of the boundary"})
+    if (!space) {
+        res.status(400).json({message: "Space not found"})
         return
     }
 
-    if (!space) {
-        res.status(400).json({message: "Space not found"})
+    if(req.body.x < 0 || req.body.y < 0 || req.body.x > space.width || req.body.y > space.height) {
+        res.status(400).json({message: "Point is outside of the boundary"})
         return
     }
     await client.spaceElements.create({

@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState, useRef } from "react"
 import { MessageSquare, Zap, Shield, Map, Mic, Users, SmilePlus, Sparkles } from "lucide-react"

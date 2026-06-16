@@ -128,6 +128,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const signout = () => {
         setToken(null);
         setUserId(null);
+        setUsername(null);
+        setAvatarId(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('username');
+        localStorage.removeItem('avatarId');
         navigate('/login');
     };
 

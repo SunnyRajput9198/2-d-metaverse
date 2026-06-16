@@ -8,7 +8,7 @@ const wss = new WebSocketServer({ port: Number(PORT) });
 
 wss.on('connection', function connection(ws: WebSocket) {
   console.log("user connected")
-  let user = new User(ws);
+  const user = new User(ws);
   ws.on('error', console.error);
 
   ws.on('close', () => {
