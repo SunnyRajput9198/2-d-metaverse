@@ -3,37 +3,12 @@ import { RoomManager } from "./RoomManager";
 import { OutgoingMessage } from "./types";
 import client from "@repo/db";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from 'dotenv';
+import { getRandomString } from "./utils/random";
+import { getAIResponse } from "./services/openai";
 dotenv.config();
 
 const JWT_PASSWORD = process.env.JWT_PASSWORD || "123kasdk123";
-
-// Generate random alphanumeric string for connection IDs
-function getRandomString(length: number) {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
-// Initialize Google Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
-
-// Get AI response from Gemini API
-async function getAIResponse(prompt: string): Promise<string> {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(prompt);
-    const text = result?.response?.candidates?.[0]?.content?.parts?.[0]?.text;
-    return text ?? "No response from AI.";
-  } catch (err) {
-    console.error("Gemini API Error:", err);
-    return `Error: ${(err as Error).message}`;
-  }
-}
 
 export class User {
   public id: string;          // Random generated connection ID
@@ -232,6 +207,7 @@ export class User {
                 type: "chat-message",
                 payload: {
                   userId: "ai-bot",
+                  username: "AI",
                   message: "You must type a prompt after @ai",
                   timestamp: Date.now(),
                 },
@@ -244,6 +220,7 @@ export class User {
                     type: "chat-message",
                     payload: {
                       userId: "ai-bot",
+                      username: "AI",
                       message: aiResponse,
                       timestamp: Date.now(),
                     },
@@ -255,6 +232,7 @@ export class User {
                   type: "chat-message",
                   payload: {
                     userId: "ai-bot",
+                    username: "AI",
                     message: "Error fetching AI response: " + (err as Error).message,
                     timestamp: Date.now(),
                   },

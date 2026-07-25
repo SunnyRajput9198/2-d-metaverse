@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useLiveKit } from "@/hooks/useLivekit";
 import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { Fullscreen, VideoOff } from "lucide-react";
+import { Fullscreen, VideoOff, Video, Mic, MicOff, PhoneOff } from "lucide-react";
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
 import ChatPanel from "@/components/Chatpanel";
@@ -14,6 +14,163 @@ import { Minimap } from "@/components/minimap";
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import ExcalidrawWrapper from "@/components/Excelidrawwrapper";
+
+// Local Webcam Fallback Component when LiveKit media server (port 7880) is offline
+function LocalWebcamFallback({ onClose }: { onClose?: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isMicOn, setIsMicOn] = useState(true);
+  const [isVideoOn, setIsVideoOn] = useState(true);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let activeStream: MediaStream | null = null;
+    navigator.mediaDevices
+      ?.getUserMedia({ video: true, audio: true })
+      .then((s) => {
+        activeStream = s;
+        setStream(s);
+        if (videoRef.current) {
+          videoRef.current.srcObject = s;
+        }
+      })
+      .catch((err) => {
+        setCameraError(err.message || "Webcam access denied or unavailable");
+      });
+
+    return () => {
+      if (activeStream) {
+        activeStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  const toggleMic = () => {
+    if (!stream) return;
+    const audioTracks = stream.getAudioTracks();
+    audioTracks.forEach((track) => {
+      track.enabled = !isMicOn;
+    });
+    setIsMicOn(!isMicOn);
+  };
+
+  const toggleVideo = () => {
+    if (!stream) return;
+    const videoTracks = stream.getVideoTracks();
+    videoTracks.forEach((track) => {
+      track.enabled = !isVideoOn;
+    });
+    setIsVideoOn(!isVideoOn);
+  };
+
+  return (
+    <div className="relative w-full h-full bg-gray-950 flex flex-col items-center justify-center p-2 text-white">
+      {/* Video Feed or Muted Placeholder */}
+      {isVideoOn ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="w-full h-full object-cover rounded-lg transform -scale-x-100 border border-emerald-500/30"
+        />
+      ) : (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900 rounded-lg border border-gray-700">
+          <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-2xl font-bold mb-2 shadow-lg">
+            👤
+          </div>
+          <span className="text-xs text-gray-400 font-semibold">Camera Off</span>
+        </div>
+      )}
+
+      {/* Top Banner Notice */}
+      <div className="absolute top-2 left-2 right-2 bg-black/80 backdrop-blur-md text-amber-300 text-[11px] font-semibold px-2.5 py-1 rounded-md border border-amber-500/40 z-20 flex items-center justify-between shadow">
+        <span>📹 Local Media Controls</span>
+      </div>
+
+      {cameraError && (
+        <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center p-4 text-center text-red-400 text-xs z-30">
+          ⚠️ {cameraError}
+        </div>
+      )}
+
+      {/* Bottom Media Control Bar (Mic Mute/Unmute, Camera On/Off, Close) */}
+      <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-center gap-3 bg-black/85 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-2xl z-30">
+        {/* Mic Toggle */}
+        <button
+          onClick={toggleMic}
+          className={`p-2.5 rounded-full transition-all duration-200 shadow ${
+            isMicOn
+              ? "bg-gray-700 hover:bg-gray-600 text-white"
+              : "bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-400/50 animate-pulse"
+          }`}
+          title={isMicOn ? "Mute Microphone" : "Unmute Microphone"}
+        >
+          {isMicOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+        </button>
+
+        {/* Camera Toggle */}
+        <button
+          onClick={toggleVideo}
+          className={`p-2.5 rounded-full transition-all duration-200 shadow ${
+            isVideoOn
+              ? "bg-gray-700 hover:bg-gray-600 text-white"
+              : "bg-red-600 hover:bg-red-700 text-white ring-2 ring-red-400/50"
+          }`}
+          title={isVideoOn ? "Turn Camera Off" : "Turn Camera On"}
+        >
+          {isVideoOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+        </button>
+
+        {/* Close Button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow transition-all duration-200"
+            title="End Call"
+          >
+            <PhoneOff className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Resilient LiveKit Video Container with Fallback
+function VideoCallContainer({
+  token,
+  serverUrl,
+  onClose,
+}: {
+  token: string;
+  serverUrl: string;
+  onClose: () => void;
+}) {
+  const [hasConnectionError, setHasConnectionError] = useState(false);
+
+  if (hasConnectionError) {
+    return <LocalWebcamFallback onClose={onClose} />;
+  }
+
+  return (
+    <LiveKitRoom
+      token={token}
+      serverUrl={serverUrl}
+      connect={true}
+      video={true}
+      audio={true}
+      data-lk-theme="default"
+      onError={(err) => {
+        console.warn("[LiveKit] Media server offline, switching to local webcam fallback:", err);
+        setHasConnectionError(true);
+      }}
+      style={{ height: "100%" }}
+    >
+      <VideoConference />
+    </LiveKitRoom>
+  );
+}
 
 const SpacePage: React.FC = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
@@ -81,19 +238,37 @@ const SpacePage: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!currentPlayerPosition || showCanvas) return;
+
+      // Ignore key events when user is typing in a form input or textarea
+      const activeElement = document.activeElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")
+      ) {
+        return;
+      }
+
       const { x, y } = currentPlayerPosition;
 
       switch (e.key) {
         case "ArrowUp":
+        case "w":
+        case "W":
           move(x, y - 1);
           break;
         case "ArrowLeft":
+        case "a":
+        case "A":
           move(x - 1, y);
           break;
         case "ArrowRight":
+        case "d":
+        case "D":
           move(x + 1, y);
           break;
         case "ArrowDown":
+        case "s":
+        case "S":
           move(x, y + 1);
           break;
         default:
@@ -127,13 +302,14 @@ const SpacePage: React.FC = () => {
       {/* All elements that should disappear when the canvas is open */}
       {!showCanvas && (
         <>
-          {/* Render map & avatars via MapCanvas */}
-          <div className="flex items-center justify-center h-full">
+          {/* Render map & avatars via MapCanvas - Expands to touch message box */}
+          <div className={`flex items-center justify-center h-full transition-all duration-300 ${isChatOpen ? "pr-96" : "w-full"}`}>
             <MapCanvas
               map={map}
               spaceElements={spaceElements}
               usersInSpace={usersInSpace}
               emojiReactions={emojiReactions}
+              currentUserId={currentUserId!}
             />
           </div>
 
@@ -303,17 +479,17 @@ const SpacePage: React.FC = () => {
         />
       )}
 
-      {/* Video Panel with LiveKit (original working version) */}
+      {/* Video Panel with Resilient LiveKit Room & Fallback */}
       {isVideoOpen && livekitToken && livekitUrl && (
-        <div className="fixed bottom-4 left-4 z-[1001] w-80 h-60 bg-black rounded-lg overflow-hidden shadow-2xl">
-          <LiveKitRoom
+        <div className="fixed bottom-4 left-4 z-[1001] w-[420px] h-[310px] bg-gray-900 border-2 border-emerald-500/80 rounded-xl overflow-hidden shadow-2xl">
+          <VideoCallContainer
             token={livekitToken}
             serverUrl={livekitUrl}
-            connect={true}
-            style={{ height: "100%" }}
-          >
-            <VideoConference />
-          </LiveKitRoom>
+            onClose={() => {
+              disconnectLiveKit();
+              setIsVideoOpen(false);
+            }}
+          />
         </div>
       )}
     </div>

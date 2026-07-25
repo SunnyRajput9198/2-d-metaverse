@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
 export function useLiveKit(spaceId: string) {
   const [token, setToken] = useState<string | null>(null);
   const [livekitUrl, setLivekitUrl] = useState<string | null>(null);
@@ -9,8 +11,8 @@ export function useLiveKit(spaceId: string) {
   const connect = useCallback(async () => {
     setIsConnecting(true);
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/livekit/token",
+      const response = await axios.post<{ token: string; url: string }>(
+        `${BACKEND_URL}/api/v1/livekit/token`,
         { spaceId },
         {
           headers: {
@@ -21,7 +23,7 @@ export function useLiveKit(spaceId: string) {
 
       setToken(response.data.token);
       setLivekitUrl(response.data.url);
-      console.log("[LiveKit] Token obtained successfully");
+      console.log("[LiveKit] Token obtained successfully:", response.data);
     } catch (error) {
       console.error("[LiveKit] Failed to get token:", error);
     } finally {

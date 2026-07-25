@@ -1,103 +1,17 @@
 import { Router } from "express";
-import { Request, Response } from "express";
-import { userRouter } from "./user";
-import { spaceRouter } from "./space";
-import { adminRouter } from "./admin";
+import authRoute from "../../modules/auth/auth.route";
+import userRoute from "../../modules/user/user.route";
+import spaceRoute from "../../modules/space/space.route";
+import adminRoute from "../../modules/admin/admin.route";
+import catalogRoute from "../../modules/catalog/catalog.route";
 import livekitRouter from "./livekit";
-import { SigninSchema, SignupSchema } from "../../types";
-import {hash, compare} from "../../scrypt";
-import client from "@repo/db";
-import jwt from "jsonwebtoken";
-import { JWT_PASSWORD } from "../../config";
 
 export const router = Router();
 
-router.post("/signup", async (req: Request, res: Response) => {
-    const parsedData = SignupSchema.safeParse(req.body)
-    if (!parsedData.success) {
-        res.status(400).json({message: "Validation failed"})
-        return
-    }
-
-    const hashedPassword = await hash(parsedData.data.password)
-
-    try {
-        const user = await client.user.create({
-            data: {
-                username: parsedData.data.username,
-                password: hashedPassword,
-                role: parsedData.data.type === "admin" ? "Admin" : "User",
-            }
-        })
-        res.json({
-            userId: user.id
-        })
-    } catch(e: any) {
-        res.status(400).json({message: "User already exists"})
-    }
-})
-
-router.post("/signin", async (req: Request, res: Response) => {
-    const parsedData = SigninSchema.safeParse(req.body)
-    if (!parsedData.success) {
-        res.status(403).json({message: "Validation failed"})
-        return
-    }
-
-    try {
-        //.findUnique(): This is a method on the user model that attempts to find a single record in the User table based on a unique identifier.
-        const user = await client.user.findUnique({
-            where: {
-                username: parsedData.data.username
-            }
-        })
-        
-        if (!user) {
-            res.status(403).json({message: "User not found"})
-            return
-        }
-        const isValid = await compare(parsedData.data.password, user.password)
-
-        if (!isValid) {
-            res.status(403).json({message: "Invalid password"})
-            return
-        }
-
-        const token = jwt.sign({
-            userId: user.id,
-            role: user.role
-        }, JWT_PASSWORD);
-
-        res.json({
-            userId: user.id,
-            username: user.username,
-            avatarId: user.avatarId,
-            token
-        })
-    } catch(e) {
-        res.status(400).json({message: "Internal server error"})
-    }
-})
-router.get("/elements", async (req, res) => {
-    const elements = await client.element.findMany()
-    res.json({elements: elements.map((e: any) => ({
-        id: e.id,
-        imageUrl: e.imageUrl,
-        width: e.width,
-        height: e.height,
-        static: e.static
-    }))})
-})
-router.get("/avatars", async (req: Request, res: Response) => {
-    const avatars = await client.avatar.findMany()
-    res.json({avatars: avatars.map((x: any) => ({
-        id: x.id,
-        imageUrl: x.imageUrl,
-        name: x.name
-    }))})
-})
-
-router.use("/user", userRouter)
-router.use("/space", spaceRouter)
-router.use("/admin", adminRouter)
-router.use("/livekit", livekitRouter)
+// Mount Feature Module Routers
+router.use("/", authRoute);
+router.use("/", catalogRoute);
+router.use("/user", userRoute);
+router.use("/space", spaceRoute);
+router.use("/admin", adminRoute);
+router.use("/livekit", livekitRouter);

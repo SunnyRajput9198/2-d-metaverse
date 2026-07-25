@@ -18,12 +18,7 @@ export interface TypingPayload {
     userId: string;
 }
 
-export interface ChatMessageBroadcast {
-    userId: string;
-    username: string;
-    message: string;
-    timestamp: number;
-}
+export type ChatMessageBroadcast = ChatMessage;
 
 export interface UserMetadata {
     id: string;        // Internal WebSocket connection ID

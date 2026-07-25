@@ -212,7 +212,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\ASUS\\OneDrive\\Desktop\\2-d-metaverse\\metaverse\\meta\\packages\\db\\generated\\client",
+      "value": "d:\\Project\\Metaspace\\2-d-metaverse\\metaverse\\meta\\packages\\db\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -230,7 +230,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\ASUS\\OneDrive\\Desktop\\2-d-metaverse\\metaverse\\meta\\packages\\db\\prisma\\schema.prisma",
+    "sourceFilePath": "d:\\Project\\Metaspace\\2-d-metaverse\\metaverse\\meta\\packages\\db\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

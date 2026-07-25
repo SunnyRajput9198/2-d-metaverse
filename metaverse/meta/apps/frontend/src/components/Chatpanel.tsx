@@ -152,7 +152,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
               className={`max-w-[70%] px-3 py-2 rounded-xl text-sm ${msg.userId === currentUserId ? "bg-blue-600 text-white" : "bg-gray-200 text-black"}`}
             >
               <div className="font-semibold text-xs opacity-80 ">
-                {msg.username || "Anonymous"}
+                {msg.username || (msg.userId === "ai-bot" ? "AI" : "Guest")}
               </div>
               <div
                 className="text-sm leading-snug break-words whitespace-pre-wrap"

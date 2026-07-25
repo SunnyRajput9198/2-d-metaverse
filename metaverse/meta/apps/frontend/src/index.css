@@ -2,10 +2,9 @@
 /* this is the main file for chaging syntax */
 body {
     margin: 0;
-    font-family: 'DM Sans', sans-serif; /* A modern, friendly sans-serif font like Inter, Montserrat, or Poppins works well. You might need to import it from Google Fonts. */
-    font-family: 'Inter', sans-serif; /* A modern, friendly sans-serif font like Inter, Montserrat, or Poppins works well. You might need to import it from Google Fonts. */
-    background-color:#5680E9; /* Light grey background */
-    color: #333;
+    font-family: 'Inter', sans-serif;
+    background-color: #0b0b10;
+    color: #fff;
 }
 @keyframes fadeOut {
   0% {

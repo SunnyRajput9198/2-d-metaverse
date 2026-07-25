@@ -33,7 +33,7 @@ export function VideoCallPanel({ localUserId }: VideoCallPanelProps) {
           className="relative w-80 h-60 bg-gray-900 rounded-lg overflow-hidden shadow-2xl border-2 border-cyan-500"
         >
           <ParticipantTile
-            participant={participant}
+            {...({ participant } as any)}
             className="w-full h-full"
           />
           
@@ -50,7 +50,7 @@ export function VideoCallPanel({ localUserId }: VideoCallPanelProps) {
       {localParticipant && (
         <div className="relative w-40 h-30 bg-gray-900 rounded-lg overflow-hidden shadow-xl border-2 border-blue-500">
           <ParticipantTile
-            participant={localParticipant}
+            {...({ participant: localParticipant } as any)}
             className="w-full h-full"
           />
           

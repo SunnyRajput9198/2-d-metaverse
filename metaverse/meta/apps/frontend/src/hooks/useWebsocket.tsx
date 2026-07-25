@@ -167,7 +167,7 @@ function useWebSocket(spaceId: string) {
                     const chatPayload = message.payload as ChatMessageBroadcast;
                     const normalized: ChatMessage = {
                         userId: chatPayload.userId,
-                        username: (chatPayload as any).username || usersInSpace[chatPayload.userId]?.username || "Unknown",
+                        username: (chatPayload as any).username || (chatPayload.userId === "ai-bot" ? "AI" : usersInSpace[chatPayload.userId]?.username || "Guest"),
                         message: chatPayload.message,
                         timestamp: typeof chatPayload.timestamp === 'string'
                             ? Date.parse(chatPayload.timestamp)
