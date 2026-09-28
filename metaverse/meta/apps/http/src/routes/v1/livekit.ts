@@ -1,25 +1,39 @@
 import { Router } from "express";
 import { AccessToken } from "livekit-server-sdk";
 import { userMiddleware } from "../../middleware/user";
+import client from "@repo/db";
 
 const router = Router();
 
-const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "devkey";
-const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || "devsecret";
-
 router.post("/token", userMiddleware, async (req, res) => {
   try {
-    const { spaceId } = req.body;
+    const spaceId = req.body?.spaceId;
     const userId = req.userId;
+    const livekitApiKey = process.env.LIVEKIT_API_KEY;
+    const livekitApiSecret = process.env.LIVEKIT_API_SECRET;
+    const livekitUrl = process.env.LIVEKIT_URL;
 
-    if (!spaceId) {
+    if (typeof spaceId !== "string" || !spaceId) {
       res.status(400).json({ message: "spaceId is required" });
       return;
     }
+    if (!livekitApiKey || !livekitApiSecret || !livekitUrl) {
+      res.status(503).json({ message: "LiveKit is not configured" });
+      return;
+    }
 
-    // Create LiveKit access token
-    const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+    const [space, user] = await Promise.all([
+      client.space.findUnique({ where: { id: spaceId }, select: { id: true } }),
+      client.user.findUnique({ where: { id: userId }, select: { username: true } }),
+    ]);
+    if (!space || !user) {
+      res.status(404).json({ message: "Space not found" });
+      return;
+    }
+
+    const at = new AccessToken(livekitApiKey, livekitApiSecret, {
       identity: userId!,
+      name: user.username,
       ttl: "2h", // Token valid for 2 hours
     });
 
@@ -34,15 +48,12 @@ router.post("/token", userMiddleware, async (req, res) => {
 
     const token = await at.toJwt();
 
-    // Return public-facing URL for browser
-    const publicUrl = "ws://localhost:7880";
-    
     res.json({
       token,
-      url: publicUrl,
+      url: livekitUrl,
     });
   } catch (error) {
-    console.error("Error generating LiveKit token:", error);
+    console.error("Error generating LiveKit token:", error instanceof Error ? error.message : "unknown error");
     res.status(500).json({ message: "Failed to generate token" });
   }
 });

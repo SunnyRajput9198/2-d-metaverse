@@ -56,7 +56,6 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
 
   // Handle Excalidraw API initialization
   const handleExcalidrawAPI = useCallback((api: ExcalidrawAPI) => {
-    console.log('Excalidraw API initialized');
     setExcalidrawAPI(api);
     initializationComplete.current = true;
   }, []);
@@ -79,7 +78,6 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
           !isUpdatingFromRemote.current && 
           !elementsAreEqual(lastRemoteElements.current, excalidrawElements)) {
         
-        console.log('Updating scene from remote elements:', excalidrawElements.length);
         isUpdatingFromRemote.current = true;
         lastRemoteElements.current = excalidrawElements;
         
@@ -102,13 +100,11 @@ const ExcalidrawWrapper: React.FC<ExcalidrawWrapperProps> = ({
       throttle((elements: readonly ExcalidrawElement[]) => {
         // Don't send updates if we're currently updating from remote
         if (isUpdatingFromRemote.current || !initializationComplete.current) {
-          console.log('Skipping update - updating from remote or not initialized');
           return;
         }
         
         // Only send if elements actually changed
         if (!elementsAreEqual(lastRemoteElements.current, elements)) {
-          console.log('Sending canvas update:', elements.length);
           sendCanvasUpdate(elements);
         }
       }, 300), // Increased throttle time

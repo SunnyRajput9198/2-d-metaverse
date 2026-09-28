@@ -1,45 +1,58 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext";
+import { getHttpFailure } from "@/lib/httpError";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+type LiveKitTokenResponse = { token: string; url: string };
 
 export function useLiveKit(spaceId: string) {
+  const { BACKEND_URL, token: authToken } = useAuth();
   const [token, setToken] = useState<string | null>(null);
   const [livekitUrl, setLivekitUrl] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [isRequestingToken, setIsRequestingToken] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const connect = useCallback(async () => {
-    setIsConnecting(true);
+  const connect = useCallback(async (): Promise<boolean> => {
+    if (!spaceId || !authToken) {
+      setError("Sign in before starting a video call.");
+      return false;
+    }
+    if (isRequestingToken) return false;
+
+    setError(null);
+    setIsRequestingToken(true);
     try {
-      const response = await axios.post<{ token: string; url: string }>(
+      const response = await axios.post<LiveKitTokenResponse>(
         `${BACKEND_URL}/api/v1/livekit/token`,
         { spaceId },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${authToken}` },
         }
       );
-
+      if (!response.data.token || !response.data.url) throw new Error("The video service returned an incomplete connection response.");
       setToken(response.data.token);
       setLivekitUrl(response.data.url);
-      console.log("[LiveKit] Token obtained successfully:", response.data);
-    } catch (error) {
-      console.error("[LiveKit] Failed to get token:", error);
+      return true;
+    } catch (requestError) {
+      setError(getHttpFailure(requestError, "Unable to start the video call.").message);
+      return false;
     } finally {
-      setIsConnecting(false);
+      setIsRequestingToken(false);
     }
-  }, [spaceId]);
+  }, [BACKEND_URL, authToken, isRequestingToken, spaceId]);
 
   const disconnect = useCallback(() => {
     setToken(null);
     setLivekitUrl(null);
+    setError(null);
   }, []);
 
   return {
     token,
     livekitUrl,
-    isConnecting,
+    isRequestingToken,
+    error,
+    setError,
     connect,
     disconnect,
   };

@@ -5,36 +5,23 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test": "bun --cwd=../../tests run test",
     "db:generate": "prisma generate --schema=./packages/db/prisma/schema.prisma",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "@prisma/client": "^6.10.1",
-    "@types/cors": "^2.8.19",
-    "@types/lodash.debounce": "^4.0.9",
-    "@types/node": "^24.0.3",
     "prettier": "^3.5.3",
     "prisma": "^6.10.1",
-    "tsx": "^4.20.3",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">=18"
+    "bun": ">=1.2.0"
   },
-  "packageManager": "npm@11.1.0",
+  "packageManager": "bun@1.4.0",
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "@tailwindcss/typography": "^0.5.16",
-    "@types/ws": "^8.18.1",
-    "dompurify": "^3.2.6",
-    "framer-motion": "^12.23.0",
-    "marked": "^16.0.0",
-    "react-draggable": "^4.5.0",
-    "ws": "^8.18.2"
-  }
+  ]
 }

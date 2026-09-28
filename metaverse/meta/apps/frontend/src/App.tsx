@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import DashboardPage from './pages/DashboardPage';
-import SpacePage from './Space/[spaceid]/page';
-import HomePage from './pages/Homepage';
-import FeaturesPage from './pages/featurepage';
-import AvatarScene from './components/AvatarScene';
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const SpacePage = lazy(() => import('./Space/[spaceid]/page'));
+const HomePage = lazy(() => import('./pages/Homepage'));
+const FeaturesPage = lazy(() => import('./pages/featurepage'));
+const AvatarScene = lazy(() => import('./components/AvatarScene'));
+
+const PageLoader = () => <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Loading…</div>;
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -34,6 +37,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 const App: React.FC = () => {
   return (
     <div className="App">
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -56,6 +60,7 @@ const App: React.FC = () => {
         <Route path="/avatar-demo" element={<AvatarScene />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
+      </Suspense>
     </div>
   );
 };

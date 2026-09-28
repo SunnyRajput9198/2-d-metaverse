@@ -68,7 +68,6 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   currentUserId,
   users,
   onSend,
-  _onClose,
   typingUsers,
   onTyping
 }) => {
@@ -218,7 +217,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           <div className="absolute bottom-14 right-12 z-50">
             <Picker
               data={data}
-              onEmojiSelect={(emoji: any) => {
+              onEmojiSelect={(emoji: { native: string }) => {
                 setInputValue((prev) => prev + emoji.native);
                 setShowEmojiPicker(false);
               }}

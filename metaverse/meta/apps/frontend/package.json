@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "check-types": "tsc -b --pretty",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -13,7 +14,6 @@
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@excalidraw/excalidraw": "^0.18.0",
-    "@google/genai": "^1.11.0",
     "@livekit/components-react": "^2.9.21",
     "@livekit/components-styles": "^1.2.0",
     "@mediapipe/hands": "^0.4.1675469240",
@@ -51,7 +51,6 @@
   "devDependencies": {
     "@eslint/js": "^9.25.0",
     "@tailwindcss/postcss": "^4.1.10",
-    "@types/axios": "^0.9.36",
     "@types/emoji-mart": "^3.0.14",
     "@types/lodash": "^4.17.20",
     "@types/react": "^19.1.0",

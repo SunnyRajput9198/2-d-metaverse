@@ -1,74 +1,45 @@
 import type { User } from "./User";
-import { OutgoingMessage } from "./types";
+import type { OutgoingMessage } from "./types";
 
-//RoomManager Class Explanation
-// Purpose
-// Manages all virtual "rooms" (spaces) and the users in them. It's a singleton (only one instance exists globally).
 export class RoomManager {
-  rooms: Map<string, User[]> = new Map();
-  static instance: RoomManager;
+  private static instance: RoomManager;
+  readonly rooms = new Map<string, Set<User>>();
 
-  private constructor() {
-    this.rooms = new Map();
-  }
-// Singleton Pattern Implementation -> it ensures only one instance of RoomManager exists.
-  static getInstance() {
-    if (!this.instance) {
-      this.instance = new RoomManager();
-    }
-    return this.instance;
+  private constructor() {}
+
+  static getInstance(): RoomManager {
+    return (this.instance ??= new RoomManager());
   }
 
-  public removeUser(user: User, spaceId: string) {
-    if (!this.rooms.has(spaceId)) {
-      return;
-    }
-    this.rooms.set(
-      spaceId,
-      this.rooms.get(spaceId)?.filter((u) => u.id !== user.id) ?? []
-    );
+  getRoom(roomId: string): User[] {
+    return [...(this.rooms.get(roomId) ?? [])];
   }
 
-  public addUser(spaceId: string, user: User) {
-    if (!this.rooms.has(spaceId)) {
-      this.rooms.set(spaceId, [user]);// create new room with user
-      return;
-    }
-    // add user to existing room
-    this.rooms.set(spaceId, [...(this.rooms.get(spaceId) ?? []), user]);
+  addUser(roomId: string, user: User): void {
+    const room = this.rooms.get(roomId) ?? new Set<User>();
+    room.add(user);
+    this.rooms.set(roomId, room);
   }
 
-  // Purpose: Send message to EVERYONE including sender
-// Use Case: Chat messages (sender sees their own message too)
-  public broadcastToAll(message: OutgoingMessage, roomId: string) {
-    if (!this.rooms.has(roomId)) return;
-    this.rooms.get(roomId)?.forEach((u) => {
-      u.send(message);
-    });
+  removeUser(user: User, roomId: string): void {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+    room.delete(user);
+    if (room.size === 0) this.rooms.delete(roomId);
   }
-//  exclude sender when broadcasting->Send message to everyone EXCEPT the sender
-  public broadcast(message: OutgoingMessage, user: User, roomId: string) {
-    if (!this.rooms.has(roomId)) {
-      return;
-    }
-    this.rooms.get(roomId)?.forEach((u) => {
-      if (u.id !== user.id) {
-        u.send(message);
-      }
-    });
+
+  broadcastToAll(message: OutgoingMessage, roomId: string): void {
+    for (const user of this.rooms.get(roomId) ?? []) user.send(message);
   }
-  
- 
-//   Purpose: Find a user across ALL rooms by their database userId
-// Use Case: WebRTC video calls (need to send signal to specific user)
-  public findUserByUserId(userId: string): User | undefined {
-    for (const [, users] of this.rooms) {
-      const match = users.find((u) => u.userId === userId);
-      if (match) return match;
+
+  broadcast(message: OutgoingMessage, sender: User, roomId: string): void {
+    for (const user of this.rooms.get(roomId) ?? []) if (user !== sender) user.send(message);
+  }
+
+  findUserByUserId(userId: string): User | undefined {
+    for (const room of this.rooms.values()) {
+      for (const user of room) if (user.userId === userId) return user;
     }
     return undefined;
   }
 }
-// broadcastToAll(...) = send to everyone
-// broadcast(...) = send to everyone except sender
-// findUserByUserId(...) = used for direct peer-to-peer (e.g., WebRTC)

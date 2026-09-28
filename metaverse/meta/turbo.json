@@ -1,26 +1,27 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "JWT_PASSWORD",
+    "ADMIN_SIGNUP_SECRET",
+    "LIVEKIT_API_KEY",
+    "LIVEKIT_API_SECRET",
+    "LIVEKIT_URL",
+    "OPENAI_API_KEY",
+    "OPENAI_MODEL",
+    "FRONTEND_URL",
+    "VITE_BACKEND_URL",
+    "VITE_WS_URL"
+  ],
   "tasks": {
-  "build": {
-  "dependsOn": ["^build"],
-  "inputs": ["$TURBO_DEFAULT$", ".env*", "packages/db/prisma/schema.prisma"],
-  "outputs": ["dist/**", "node_modules/.prisma/**", ".next/**", "!.next/cache/**"]
-}
-,"prisma:generate": {
-  "outputs": ["node_modules/.prisma/**"]
-}
-,
-    
-    "lint": {
-      "dependsOn": ["^lint"]
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "../../packages/db/prisma/schema.prisma"],
+      "outputs": ["dist/**", "node_modules/.prisma/**", ".next/**", "!.next/cache/**"]
     },
-    "check-types": {
-      "dependsOn": ["^check-types"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    }
+    "lint": { "dependsOn": ["^lint"] },
+    "check-types": { "dependsOn": ["^check-types"] },
+    "dev": { "cache": false, "persistent": true }
   }
 }

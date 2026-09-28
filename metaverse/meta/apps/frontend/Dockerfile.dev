@@ -1,18 +1,9 @@
-FROM node:18-alpine
-
+FROM oven/bun:1
 WORKDIR /app
-
-# ✅ STEP 1: Copy ONLY package files first (best caching)
-COPY apps/frontend/package.json ./
-
-# ✅ STEP 2: Install dependencies (cached until package.json changes)
-RUN npm install --legacy-peer-deps
-
-# ✅ STEP 3: Copy rest of app AFTER install (changes won't trigger reinstall)
-COPY apps/frontend ./
-
-# Expose Vite dev server port
+COPY package.json bun.lock turbo.json ./
+COPY apps ./apps
+COPY packages ./packages
+RUN bun install --frozen-lockfile
+WORKDIR /app/apps/frontend
 EXPOSE 5173
-
-# Run Vite with host flag
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["bun", "run", "dev", "--", "--host", "0.0.0.0"]

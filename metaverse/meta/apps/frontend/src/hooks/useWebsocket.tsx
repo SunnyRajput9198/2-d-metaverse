@@ -29,6 +29,22 @@ function useWebSocket(spaceId: string) {
     const [emojiReactions, setEmojiReactions] = useState<Record<string, { emoji: string, timestamp: number }>>({});
     const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
     const [excalidrawElements, setExcalidrawElements] = useState<readonly ExcalidrawElement[]>([]);
+    const usersInSpaceRef = useRef(usersInSpace);
+    const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+    usersInSpaceRef.current = usersInSpace;
+
+    const scheduleTimeout = useCallback((callback: () => void, delay: number) => {
+        const timer = setTimeout(() => {
+            timersRef.current.delete(timer);
+            callback();
+        }, delay);
+        timersRef.current.add(timer);
+    }, []);
+
+    useEffect(() => () => {
+        for (const timer of timersRef.current) clearTimeout(timer);
+        timersRef.current.clear();
+    }, []);
 
 
 
@@ -96,25 +112,31 @@ function useWebSocket(spaceId: string) {
             wsRef.current = null;
         }
 
-        wsRef.current = new WebSocket(WS_URL);
+        const socket = new WebSocket(WS_URL);
+        wsRef.current = socket;
         // Don't set wsInstance here — wait for connection to open!
 
-        wsRef.current.onopen = () => {
-            console.log('WebSocket connected.');
+        socket.onopen = () => {
+            if (wsRef.current !== socket) return;
             setIsConnected(true);
-            setWsInstance(wsRef.current);
+            setWsInstance(socket);
             sendJsonMessage({
                 type: "join",
                 payload: { spaceId, token } as JoinPayload
             });
         };
 
-        wsRef.current.onmessage = (event) => {
-            const message: WebSocketMessage = JSON.parse(event.data);
-            console.log('Received WS message:', message);
+        socket.onmessage = (event) => {
+            let message: WebSocketMessage;
+            try {
+                message = JSON.parse(event.data);
+            } catch {
+                console.error('Received malformed WebSocket message.');
+                return;
+            }
 
             switch (message.type) {
-                case 'space-joined':
+                case 'space-joined': {
                     const spaceJoinedPayload = message.payload as SpaceJoinedPayload;
                     const initialUsersMap = spaceJoinedPayload.users.reduce((acc, user) => {
                         acc[user.userId] = user;
@@ -139,17 +161,15 @@ function useWebSocket(spaceId: string) {
                     setSpawnPoint(spaceJoinedPayload.spawn);
                     setMap(spaceJoinedPayload.map);
                     setExcalidrawElements(spaceJoinedPayload.excalidrawElements || []); // Load shapes from payload
-                    break;
-
-                case 'user-joined':
+                    break; }
+                case 'user-joined': {
                     const userJoinedPayload = message.payload as UserJoinedPayload;
                     setUsersInSpace(prev => ({
                         ...prev,
                         [userJoinedPayload.userId]: userJoinedPayload
                     }));
-                    break;
-
-                case 'movement':
+                    break; }
+                case 'movement': {
                     const movementPayload = message.payload as MovementPayload;
                     setUsersInSpace(prev => ({
                         ...prev,
@@ -161,13 +181,12 @@ function useWebSocket(spaceId: string) {
                             frame: movementPayload.frame ?? 0
                         }
                     }));
-                    break;
-
-                case 'chat-message':
+                    break; }
+                case 'chat-message': {
                     const chatPayload = message.payload as ChatMessageBroadcast;
                     const normalized: ChatMessage = {
                         userId: chatPayload.userId,
-                        username: (chatPayload as any).username || (chatPayload.userId === "ai-bot" ? "AI" : usersInSpace[chatPayload.userId]?.username || "Guest"),
+                        username: chatPayload.username || (chatPayload.userId === "ai-bot" ? "AI" : usersInSpaceRef.current[chatPayload.userId]?.username || "Guest"),
                         message: chatPayload.message,
                         timestamp: typeof chatPayload.timestamp === 'string'
                             ? Date.parse(chatPayload.timestamp)
@@ -183,19 +202,16 @@ function useWebSocket(spaceId: string) {
                         if (isDuplicate) return prev;
                         return [...prev, normalized];
                     });
-                    break;
-
-
-                case 'user-left':
+                    break; }
+                case 'user-left': {
                     const userLeftPayload = message.payload as UserLeftPayload;
                     setUsersInSpace(prev => {
                         const newUsers = { ...prev };
                         delete newUsers[userLeftPayload.userId];
                         return newUsers;
                     });
-                    break;
-
-                case 'movement-rejected':
+                    break; }
+                case 'movement-rejected': {
                     const rejectedPayload = message.payload as MovementRejectedPayload;
                     console.warn('Movement rejected by server:', rejectedPayload.reason);
                     setUsersInSpace(prev => {
@@ -211,9 +227,8 @@ function useWebSocket(spaceId: string) {
                         }
                         return prev;
                     });
-                    break;
-
-                case 'emoji-reaction':
+                    break; }
+                case 'emoji-reaction': {
                     const { userId: reactingUserId, emoji } = message.payload;
                     setEmojiReactions((prev) => ({
                         ...prev,
@@ -222,22 +237,22 @@ function useWebSocket(spaceId: string) {
 
 
                     // Remove the emoji after 3 seconds
-                    setTimeout(() => {
+                    scheduleTimeout(() => {
                         setEmojiReactions(prev => {
                             const updated = { ...prev };
                             delete updated[reactingUserId];
                             return updated;
                         });
                     }, 5000);
-                    break;
-                case 'typing':
+                    break; }
+                case 'typing': {
                     const typingUserId = message.payload.userId;
                     setTypingUsers(prev => ({
                         ...prev,
                         [typingUserId]: Date.now()
                     }));
 
-                    setTimeout(() => {
+                    scheduleTimeout(() => {
                         setTypingUsers(prev => {
                             const updated = { ...prev };
                             if (Date.now() - (updated[typingUserId] || 0) > 3000) {
@@ -246,8 +261,8 @@ function useWebSocket(spaceId: string) {
                             return updated;
                         });
                     }, 3000);
-                    break;
-                case 'chat-history':
+                    break; }
+                case 'chat-history': {
                     const historyPayload = message.payload as ChatMessage[];
                     // Normalize timestamps
                     const normalizedHistory = historyPayload.map(msg => ({
@@ -258,40 +273,40 @@ function useWebSocket(spaceId: string) {
                                 : msg.timestamp,
                     }));
                     setChatMessages(normalizedHistory);
-                    break;
-                case "shape-update":
+                    break; }
+                case "shape-update": {
                     // The payload now contains the full scene sent by another user.
                     const { elements } = message.payload as { elements: ExcalidrawElement[] };
 
                     // We only need this one line to update our canvas with what they see.
-                      console.log("5. RECEIVED update on Frontend and updating state:", elements);
                     setExcalidrawElements(elements);
 
-                    break;
+                    break; }
                 default:
-                    console.log('Unhandled WS message type:', message.type, message);
+                    break;
             }
         };
 
-        wsRef.current.onclose = () => {
-            console.log('WebSocket disconnected.');
+        socket.onclose = () => {
+            if (wsRef.current !== socket) return;
+            wsRef.current = null;
             setIsConnected(false);
             setWsInstance(null);
             setUsersInSpace({});
         };
 
-        wsRef.current.onerror = (error) => {
-            console.error('WebSocket error:', error);
+        socket.onerror = () => {
             setIsConnected(false);
-            setWsInstance(null); // Clear wsInstance on error too
+            setWsInstance(null);
         };
 
         return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
+            if (wsRef.current === socket) {
+                wsRef.current = null;
+                socket.close();
             }
         };
-    }, [spaceId, token, WS_URL, sendJsonMessage, userId]);
+    }, [spaceId, token, WS_URL, sendJsonMessage, userId, username, avatarId, scheduleTimeout]);
 
     const frameCounterRef = useRef<number>(0);
 
@@ -315,8 +330,6 @@ function useWebSocket(spaceId: string) {
                 newX >= map[0].length       // columns (for non-jagged map)
             )
         ) {
-            // Optionally: Show a warning or just return
-            // console.log('Tried to move outside map');
             return; // CANCEL movement
         }
         const dx = newX - current.x;

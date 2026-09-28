@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getHttpFailure } from '../lib/httpError';
 
 import type { AuthResponse } from '../types';
 
@@ -15,7 +16,7 @@ interface AuthContextType {
     avatarId: string | null;
     isAuthenticated: boolean;
     isLoadingAuth: boolean;
-    signup: (username: string, password: string, type?: "admin" | "user") => Promise<{ success: boolean; error?: string }>;
+    signup: (username: string, password: string, type?: "admin" | "user", adminSecret?: string) => Promise<{ success: boolean; error?: string }>;
     signin: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
     signout: () => void;
     BACKEND_URL: string;
@@ -77,9 +78,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     }, [token]);
 
-    const signup = async (username: string, password: string, type: "admin" | "user" = "user") => {
+    const signup = async (username: string, password: string, type: "admin" | "user" = "user", adminSecret?: string) => {
         try {
-            const response = await axios.post(`${BACKEND_URL}/api/v1/signup`, { username, password, type });
+            const response = await axios.post(`${BACKEND_URL}/api/v1/signup`, { username, password, type, adminSecret });
             if (response.status === 200) {
                 const signinResponse = await axios.post<AuthResponse>(`${BACKEND_URL}/api/v1/signin`, { username, password });
                 if (signinResponse.status === 200 && signinResponse.data.token) {
@@ -90,9 +91,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 }
             }
             return { success: false, error: "Signup failed unexpectedly." };
-        } catch (error: any) {
-            console.error('Signup error:', error.response?.data?.message || error.message);
-            return { success: false, error: error.response?.data?.message || 'Signup failed' };
+        } catch (error: unknown) {
+            const { message } = getHttpFailure(error, 'Signup failed');
+            console.error('Signup error:', message);
+            return { success: false, error: message };
         }
     };
 
@@ -114,14 +116,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return { success: true };
             }
             return { success: false, error: "Invalid response from server. Token or userId missing." };
-        } catch (error: any) {
-            console.log('Signin error:', error.response?.data?.message || error.message);
+        } catch (error: unknown) {
+            const { message } = getHttpFailure(error, 'Signin failed');
+            console.error('Signin error:', message);
             setToken(null);
             setUserId(null);
             setIsAuthenticated(false);
             localStorage.removeItem('token');
             localStorage.removeItem('userId');
-            return { success: false, error: error.response?.data?.message || 'Signin failed' }; // ✅ Return proper object
+            return { success: false, error: message };
         }
     };
 

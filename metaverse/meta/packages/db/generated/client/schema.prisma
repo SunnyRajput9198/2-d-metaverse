@@ -37,6 +37,8 @@ model Space {
   canvasShape  CanvasState[]
   elements     spaceElements[]
   chatMessages ChatMessage[]
+
+  @@index([creatorId])
 }
 
 model CanvasState {
@@ -55,6 +57,8 @@ model ChatMessage {
 
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, timestamp])
 }
 
 model spaceElements {
@@ -65,6 +69,8 @@ model spaceElements {
   y         Int
   space     Space   @relation(fields: [spaceId], references: [id])
   element   Element @relation(fields: [elementId], references: [id])
+
+  @@index([spaceId])
 }
 
 model Element {
@@ -94,6 +100,8 @@ model MapElements {
   y         Int?
   map       Map     @relation(fields: [mapId], references: [id])
   element   Element @relation(fields: [elementId], references: [id])
+
+  @@index([mapId])
 }
 
 model Avatar {

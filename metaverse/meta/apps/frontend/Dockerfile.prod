@@ -1,41 +1,17 @@
-# --------------------
-# Stage 1: Builder – Install deps & build static site
-# --------------------
-FROM node:18-alpine AS builder
-
+FROM oven/bun:1 AS builder
 WORKDIR /app
+COPY package.json bun.lock turbo.json ./
+COPY apps ./apps
+COPY packages ./packages
+RUN bun install --frozen-lockfile
+RUN bun run --filter frontend build
 
-RUN corepack enable
-
-# Copy monorepo root-level lockfile and frontend-specific package.json
-COPY package-lock.json ./
-COPY apps/frontend/package.json apps/frontend/
-
-# Set working directory to frontend app
+FROM oven/bun:1-slim AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/frontend/package.json ./apps/frontend/package.json
+COPY --from=builder /app/apps/frontend/dist ./apps/frontend/dist
 WORKDIR /app/apps/frontend
-
-# Install only frontend deps
-RUN npm install --legacy-peer-deps
-
-# Copy rest of the frontend app AFTER deps (for better layer caching)
-COPY apps/frontend ./  
-
-# Build the Vite app
-RUN npm run build
-
-# --------------------
-# Stage 2: Static file server
-# --------------------
-FROM node:18-alpine AS runner
-
-WORKDIR /app
-
-# Install `serve` to serve the static files
-RUN npm install -g serve
-
-# Copy built static files from builder
-COPY --from=builder /app/apps/frontend/dist ./dist
-
 EXPOSE 4173
-
-CMD ["serve", "-s", "dist", "-l", "4173"]
+CMD ["bun", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]

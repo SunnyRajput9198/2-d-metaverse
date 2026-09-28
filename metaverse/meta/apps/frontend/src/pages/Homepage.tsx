@@ -91,11 +91,11 @@ const HomePage: React.FC = () => {
 
       {/* How It Works Section */}
  <section className="py-14 text-center text-white">
-        <h2 className="text-3xl font-bold mb-6">How MetaSpace Works</h2>
-        <p className="text-gray-400 mb-10 max-w-2xl mx-auto">
-          🧑‍🤝‍🧑 Join Room   →   🚶 Move Around   →   🎥 Talk Nearby
-        </p>
-      </section>
+        <h2 className="text-3xl font-bold mb-6">How MetaSpace Works</h2>
+        <p className="text-gray-400 mb-10 max-w-2xl mx-auto">
+          🧑‍🤝‍🧑 Join Room   →   🚶 Move Around   →   🎥 Talk Nearby
+        </p>
+      </section>
 
 {/* Cards Grid */}
 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-12">

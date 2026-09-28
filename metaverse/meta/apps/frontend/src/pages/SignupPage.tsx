@@ -7,6 +7,7 @@ const SignupPage: React.FC = () => {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [type, setType] = useState<'user' | 'admin'>('user');
+    const [adminSecret, setAdminSecret] = useState('');
     const [error, setError] = useState<string>('');
     const { signup } = useAuth();
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const SignupPage: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        const { success, error: signUpError } = await signup(username, password, type);
+        const { success, error: signUpError } = await signup(username, password, type, adminSecret);
         if (success) {
             navigate('/dashboard');
         } else {
@@ -43,6 +44,20 @@ const SignupPage: React.FC = () => {
                         placeholder="Choose a username"
                     />
                 </div>
+                {type === 'admin' && (
+                    <div className="form-group">
+                        <label htmlFor="admin-secret-input">Administrator setup secret</label>
+                        <input
+                            type="password"
+                            id="admin-secret-input"
+                            value={adminSecret}
+                            onChange={(e) => setAdminSecret(e.target.value)}
+                            required
+                            className="form-input"
+                            autoComplete="off"
+                        />
+                    </div>
+                )}
                 <div className="form-group">
                     <label htmlFor="password-input">Password</label>
                     <input

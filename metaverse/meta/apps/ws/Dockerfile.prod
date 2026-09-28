@@ -1,48 +1,20 @@
-# --------------------
-# Stage 1: Build (Install deps & compile code)
-# --------------------
-FROM node:20-alpine AS builder
-
+FROM oven/bun:1 AS builder
 WORKDIR /app
-
-# Enable Corepack
-RUN corepack enable npm
-
-# Install native dependencies
-RUN apk add --no-cache openssl libc6-compat
-
-# Copy monorepo files
-COPY package.json package-lock.json turbo.json ./
+ENV DATABASE_URL=postgresql://user:password@localhost:5432/database
+COPY package.json bun.lock turbo.json ./
 COPY apps ./apps
 COPY packages ./packages
+RUN bun install --frozen-lockfile
+RUN bun run --filter @metaspace/ws build
 
-# Install all dependencies
-RUN npm install --legacy-peer-deps
-
-# Generate Prisma Client (if needed for ws)
-# Uncomment below if WS accesses database directly
-# RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
-
-# Build the WS app
-WORKDIR /app/apps/ws
-RUN npm run build
-
-# --------------------
-# Stage 2: Production Runtime
-# --------------------
-FROM node:20-alpine
-
+FROM oven/bun:1-slim AS runtime
 WORKDIR /app
-
-# Enable Corepack
-RUN corepack enable npm
-
-# Copy only built app and minimal deps
-COPY --from=builder /app/apps/ws/dist ./dist
-COPY --from=builder /app/apps/ws/package.json ./package.json
+ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
-
+COPY --from=builder /app/apps/ws/package.json ./apps/ws/package.json
+COPY --from=builder /app/apps/ws/dist ./apps/ws/dist
+COPY --from=builder /app/packages/db/package.json ./packages/db/package.json
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --from=builder /app/packages/db/generated ./packages/db/generated
 EXPOSE 3001
-
-# Start the server
-CMD ["node", "dist/index.js"]
+CMD ["bun", "apps/ws/dist/index.js"]

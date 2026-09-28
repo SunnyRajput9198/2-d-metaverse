@@ -1,56 +1,20 @@
-# --------------------
-# Stage 1: Build (Install deps & compile code)
-# --------------------
-FROM node:20-alpine AS builder
-
+FROM oven/bun:1 AS builder
 WORKDIR /app
-
-ARG DATABASE_URL
-
-# Enable Corepack
-RUN corepack enable npm
-
-# Install native dependencies
-RUN apk add --no-cache openssl libc6-compat
-
-# Set DATABASE_URL for Prisma generation
-ENV DATABASE_URL=${DATABASE_URL}
-
-# Copy monorepo files
-COPY package.json package-lock.json turbo.json ./
+ENV DATABASE_URL=postgresql://user:password@localhost:5432/database
+COPY package.json bun.lock turbo.json ./
 COPY apps ./apps
 COPY packages ./packages
+RUN bun install --frozen-lockfile
+RUN bun run --filter http build
 
-# Install all dependencies
-RUN npm install --legacy-peer-deps
-
-# Generate Prisma Client
-RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
-
-# Build the HTTP app
-WORKDIR /app/apps/http
-RUN npm run build
-
-# --------------------
-# Stage 2: Production Runtime
-# --------------------
-FROM node:20-alpine
-
+FROM oven/bun:1-slim AS runtime
 WORKDIR /app
-
-# Enable Corepack
-RUN corepack enable npm
-
-# Install OpenSSL for Prisma
-RUN apk add --no-cache openssl libc6-compat
-
-# Copy only built app and necessary dependencies
-COPY --from=builder /app/apps/http/dist ./dist
-COPY --from=builder /app/apps/http/package.json ./package.json
+ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/db/node_modules/.prisma ./node_modules/.prisma
-
+COPY --from=builder /app/apps/http/package.json ./apps/http/package.json
+COPY --from=builder /app/apps/http/dist ./apps/http/dist
+COPY --from=builder /app/packages/db/package.json ./packages/db/package.json
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
+COPY --from=builder /app/packages/db/generated ./packages/db/generated
 EXPOSE 3000
-
-# Start the server
-CMD ["node", "dist/index.js"]
+CMD ["bun", "apps/http/dist/index.js"]

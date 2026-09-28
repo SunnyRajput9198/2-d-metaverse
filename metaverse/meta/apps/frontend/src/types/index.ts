@@ -67,7 +67,7 @@ export interface SpaceJoinedPayload {
     map: string[][];
 }
 
-export interface UserJoinedPayload extends UserMetadata {}
+export type UserJoinedPayload = UserMetadata;
 
 export type MovementPayload = {
     userId: string;

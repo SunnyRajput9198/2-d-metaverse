@@ -1,4 +1,4 @@
-﻿const axios2 = require("axios");
+const axios2 = require("axios");
 const WebSocket = require("ws");
 
 const BACKEND_URL = "http://localhost:3000"
@@ -9,10 +9,13 @@ const WS_URL = "ws://localhost:3001"
 const axios = {
     post: async (...args) => {
         try {
+            if (String(args[0]).endsWith("/signup") && args[1]?.type === "admin") {
+                args[1] = { ...args[1], adminSecret: process.env.ADMIN_SIGNUP_SECRET }
+            }
             const res = await axios2.post(...args)
             return res
         } catch(e) {
-            return e.response
+            return e.response || { status: 500, data: {} }
         }
     },
     get: async (...args) => {
@@ -20,7 +23,7 @@ const axios = {
             const res = await axios2.get(...args)
             return res
         } catch(e) {
-            return e.response
+            return e.response || { status: 500, data: {} }
         }
     },
     put: async (...args) => {
@@ -28,7 +31,7 @@ const axios = {
             const res = await axios2.put(...args)
             return res
         } catch(e) {
-            return e.response
+            return e.response || { status: 500, data: {} }
         }
     },
     delete: async (...args) => {
@@ -36,7 +39,7 @@ const axios = {
             const res = await axios2.delete(...args)
             return res
         } catch(e) {
-            return e.response
+            return e.response || { status: 500, data: {} }
         }
     },
 }
@@ -979,6 +982,20 @@ describe("Websocket tests – movement, chat, security", () => {
         })
         expect(closed).toBe(true)
     }, 15000)
+
+    // ── LiveKit WebRTC tests ──────────────────────────────
+    test("LiveKit access token endpoint (/api/v1/livekit/token) returns JWT token", async () => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/livekit/token`, {
+            spaceId: spaceId
+        }, {
+            headers: {
+                Authorization: `Bearer ${adminToken}`
+            }
+        })
+        expect(response.status).toBe(200)
+        expect(response.data.token).toBeDefined()
+        expect(response.data.url).toBeDefined()
+    })
 
     // ── Chat / realtime tests ───────────────────────────────
     test("Chat message sent by one user is received by others in the room", async () => {

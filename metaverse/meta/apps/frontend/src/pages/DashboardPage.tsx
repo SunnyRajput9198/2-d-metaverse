@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
 import { Input } from "@/components/ui/input"
+import { getHttpFailure } from '../lib/httpError';
 
 const DashboardPage: React.FC = () => {
     const { token, isAuthenticated, signout, BACKEND_URL } = useAuth();
@@ -23,7 +24,7 @@ const DashboardPage: React.FC = () => {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isHovered, setIsHovered] = useState<string | null>(null)
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>, _spaceId: string) => {
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect()
         const x = e.clientX - rect.left
         const y = e.clientY - rect.top
@@ -38,26 +39,28 @@ const DashboardPage: React.FC = () => {
         setIsHovered(null)
     }
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/login');
-            return;
-        }
-        fetchSpaces();
-    }, [isAuthenticated, navigate, token]);
     const defaultImageUrl = "https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png";
-    const fetchSpaces = async () => {
+    const fetchSpaces = useCallback(async () => {
         if (!token) return;
         try {
             const response = await axios.get<{ spaces: Space[] }>(`${BACKEND_URL}/api/v1/space/all`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSpaces(response.data.spaces);
-        } catch (error: any) {
-            console.error('Error fetching spaces:', error.response?.data || error.message);
-            if (error.response?.status === 403) signout();
+        } catch (error: unknown) {
+            const { status, message } = getHttpFailure(error, 'Unable to fetch spaces');
+            console.error('Error fetching spaces:', message);
+            if (status === 401 || status === 403) signout();
         }
-    };
+    }, [token, BACKEND_URL, signout]);
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+        void fetchSpaces();
+    }, [isAuthenticated, navigate, fetchSpaces]);
 
     const handleCreateSpace = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,9 +80,10 @@ const DashboardPage: React.FC = () => {
                 setNewSpaceDimensions('20x20');
                 setNewSpaceImageUrl('https://withjulio.com/wp-content/uploads/2022/04/Gather-Town-with-Julio-Evanston-1-1024x610.png'); // Clear the image URL input after creation
             }
-        } catch (error: any) {
-            console.error('Error creating space:', error.response?.data || error.message);
-            alert(`Failed to create space: ${error.response?.data?.message || error.message}`);
+        } catch (error: unknown) {
+            const { message } = getHttpFailure(error, 'Unable to create space');
+            console.error('Error creating space:', message);
+            alert(`Failed to create space: ${message}`);
         }
     };
 
@@ -90,9 +94,10 @@ const DashboardPage: React.FC = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchSpaces();
-        } catch (error: any) {
-            console.error('Error deleting space:', error.response?.data || error.message);
-            alert(`Could not delete space: ${error.response?.data?.message || error.message}`);
+        } catch (error: unknown) {
+            const { message } = getHttpFailure(error, 'Unable to delete space');
+            console.error('Error deleting space:', message);
+            alert(`Could not delete space: ${message}`);
         }
     };
     return (
@@ -185,7 +190,7 @@ const DashboardPage: React.FC = () => {
                                 <div
                                     key={space.id}
                                     className="relative"
-                                    onMouseMove={(e) => handleMouseMove(e, space.id)}
+                                    onMouseMove={handleMouseMove}
                                     onMouseEnter={() => handleMouseEnter(space.id)}
                                     onMouseLeave={handleMouseLeave}
                                     style={{

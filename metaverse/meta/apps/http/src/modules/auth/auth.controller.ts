@@ -5,12 +5,24 @@ import { SigninSchema, SignupSchema } from "../../types";
 import { hash, compare } from "../../scrypt";
 import { JWT_PASSWORD } from "../../config";
 import ResponseHelper from "../../utils/response";
+import { timingSafeEqual } from "node:crypto";
 
 export const signupHandler = async (req: Request, res: Response): Promise<void> => {
     const parsedData = SignupSchema.safeParse(req.body);
     if (!parsedData.success) {
         ResponseHelper.error(res, "Validation failed", 400);
         return;
+    }
+
+    if (parsedData.data.type === "admin") {
+        const configuredSecret = process.env.ADMIN_SIGNUP_SECRET;
+        const providedSecret = parsedData.data.adminSecret ?? "";
+        const expected = Buffer.from(configuredSecret ?? "");
+        const provided = Buffer.from(providedSecret);
+        if (!configuredSecret || expected.length !== provided.length || !timingSafeEqual(expected, provided)) {
+            ResponseHelper.error(res, "Administrator signup is unavailable or the setup secret is invalid", 403);
+            return;
+        }
     }
 
     const hashedPassword = await hash(parsedData.data.password);
@@ -59,7 +71,8 @@ export const signinHandler = async (req: Request, res: Response): Promise<void> 
                 userId: user.id,
                 role: user.role,
             },
-            JWT_PASSWORD
+            JWT_PASSWORD,
+            { expiresIn: "7d", algorithm: "HS256" }
         );
 
         ResponseHelper.success(res, {

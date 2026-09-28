@@ -1,4 +1,23 @@
 services:
+  postgres:
+    image: postgres:17
+    container_name: metaspace-postgres
+    environment:
+      POSTGRES_DB: metaspace
+      POSTGRES_USER: metaspace
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - metaspace-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metaspace -d metaspace"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - devnet
+
   livekit:
     image: livekit/livekit-server:latest
     container_name: dev-livekit
@@ -7,7 +26,7 @@ services:
       - "7881:7881"   # WebRTC over TCP
       - "7882:7882/udp"  # WebRTC over UDP
     environment:
-      LIVEKIT_KEYS: "devkey: devsecret"
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-devkey}: ${LIVEKIT_API_SECRET:-devsecret}"
     command: --dev --bind 0.0.0.0
     networks:
       - devnet
@@ -21,12 +40,20 @@ services:
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+      DATABASE_URL: postgresql://metaspace:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/metaspace
+      JWT_PASSWORD: ${JWT_PASSWORD:?Set JWT_PASSWORD in the environment}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini}
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
-      - livekit
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      livekit:
+        condition: service_started
     networks:
       - devnet
     restart: unless-stopped
@@ -35,21 +62,26 @@ services:
     build:
       context: .
       dockerfile: apps/http/Dockerfile.dev
-      args:
-        DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
     container_name: dev-http
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: "postgresql://neondb_owner:npg_Dkx3RVOs6ZTz@ep-soft-pine-a80oge99-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
-      LIVEKIT_API_KEY: "devkey"
-      LIVEKIT_API_SECRET: "devsecret"
-      LIVEKIT_URL: "ws://livekit:7880"
+      DATABASE_URL: postgresql://metaspace:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/metaspace
+      JWT_PASSWORD: ${JWT_PASSWORD:?Set JWT_PASSWORD in the environment}
+      ADMIN_SIGNUP_SECRET: ${ADMIN_SIGNUP_SECRET:-}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-devkey}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-devsecret}
+      LIVEKIT_URL: "ws://localhost:7880"
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
-      - livekit
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      livekit:
+        condition: service_started
     networks:
       - devnet
     restart: unless-stopped
@@ -62,7 +94,8 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_LIVEKIT_URL: "ws://localhost:7880"
+      VITE_BACKEND_URL: "http://localhost:3000"
+      VITE_WS_URL: "ws://localhost:3001"
     volumes:
       - .:/app
       - /app/node_modules
@@ -74,5 +107,23 @@ services:
       - devnet
     restart: unless-stopped
 
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/http/Dockerfile.dev
+    environment:
+      DATABASE_URL: postgresql://metaspace:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/metaspace
+    working_dir: /app
+    command: ["bunx", "prisma", "migrate", "deploy", "--schema=packages/db/prisma/schema.prisma"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devnet
+    restart: "no"
+
 networks:
   devnet:
+
+volumes:
+  metaspace-postgres-data:

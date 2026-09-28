@@ -1,58 +1,40 @@
-// components/Minimap.tsx
-import React from "react";
-
-type User = {
-  id: string;
-  username: string;
-  x: number;
-  y: number;
-};
+import type { UserMetadata } from "@/types";
 
 type Props = {
-  users: User[];
+  users: Record<string, UserMetadata>;
+  currentUserId?: string | null;
   mapWidth: number;
   mapHeight: number;
 };
 
-export const Minimap: React.FC<Props> = ({ users, mapWidth, mapHeight }) => {
-  // Return null or a placeholder if map dimensions aren't loaded yet to prevent division by zero.
-  if (mapWidth === 0 || mapHeight === 0) {
-    return (
-      <div className="w-full h-full border border-gray-400 bg-white/80 rounded-md p-1">
-        <div className="relative w-full h-full bg-gray-100 overflow-hidden rounded"></div>
-      </div>
-    );
-  }
+export function Minimap({ users, currentUserId, mapWidth, mapHeight }: Props) {
+  const participants = Object.values(users);
+  if (!mapWidth || !mapHeight) return null;
 
   return (
-    <div className="w-full h-full border border-gray-400 bg-white/80 rounded-md p-1">
-      <div className="relative w-full h-full bg-gray-100 overflow-hidden rounded">
-        {users.map((user) => {
-          // --- FIXED: Calculate position based on the center of the tile (x + 0.5) ---
-          // This ensures the dot on the minimap aligns with the center of the character on the main map.
-          const leftPercent = ((user.x + 0.5) / mapWidth) * 100;
-          const topPercent = ((user.y + 0.5) / mapHeight) * 100;
-          
+    <div className="w-36 rounded-xl border border-white/15 bg-slate-950/80 p-2 shadow-xl shadow-black/30 backdrop-blur-md sm:w-40">
+      <div className="mb-1.5 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+        <span>Space map</span>
+        <span className="rounded-full bg-emerald-400/15 px-1.5 py-0.5 text-emerald-300">{participants.length} online</span>
+      </div>
+      <div className="relative aspect-square overflow-hidden rounded-lg border border-cyan-300/10 bg-gradient-to-br from-slate-800/90 to-slate-950">
+        <div className="absolute inset-2 rounded border border-dashed border-cyan-200/10" />
+        {participants.map((user) => {
+          const isSelf = user.userId === currentUserId || user.id === "self";
+          const left = Math.min(100, Math.max(0, ((user.x + 0.5) / mapWidth) * 100));
+          const top = Math.min(100, Math.max(0, ((user.y + 0.5) / mapHeight) * 100));
           return (
-            <div
-              key={user.id}
-              className="absolute"
-              style={{
-                left: `${leftPercent}%`,
-                top: `${topPercent}%`,
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              {/* Username label */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 text-[10px] text-black bg-white/80 px-1 rounded shadow z-10 whitespace-nowrap">
-                {user.username}
-              </div>
-              {/* Dot */}
-              <div className="w-2 h-2 rounded-full bg-blue-600 border border-white" />
-            </div>
+            <span
+              key={user.userId}
+              title={isSelf ? `${user.username || "You"} (you)` : user.username}
+              className={`absolute block rounded-full transition-[left,top] duration-150 ${isSelf
+                ? "h-3 w-3 border-2 border-white bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.9)]"
+                : "h-2 w-2 border border-slate-100/70 bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,.7)]"}`}
+              style={{ left: `${left}%`, top: `${top}%`, transform: "translate(-50%, -50%)" }}
+            />
           );
         })}
       </div>
     </div>
   );
-};
+}
